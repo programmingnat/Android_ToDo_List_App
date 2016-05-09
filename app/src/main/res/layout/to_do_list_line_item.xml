@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:orientation="horizontal"
+            style="?android:listSeparatorTextViewStyle">
+
+    <!--<ImageView-->
+    <!--android:id="@+id/deleteThisButton"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:src="@android:drawable/ic_menu_close_clear_cancel"-->
+    <!--android:visibility="gone"/>-->
+
+    <RadioButton
+    android:id="@+id/completedRadioButton"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentLeft="true"/>
+
+    <TextView
+        android:id="@+id/listItemTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp"
+        android:paddingLeft="10dp"
+        android:layout_toRightOf="@id/completedRadioButton"
+        android:text="hi there"
+        android:textSize="25sp"
+        android:textColor="#000000"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:visibility="gone"
+        android:id="@+id/lineItemOptionsButton">
+        <Button
+            android:id="@+id/deleteLineItemButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DEL"
+            android:background="#FF0000"/>
+        <Button
+            android:id="@+id/editLineItemButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MORE"
+            android:background="#777777"/>
+    </LinearLayout>
+
+
+    <!--</TextView>-->
+    <!--<ImageView-->
+    <!--android:id="@+id/infoIcon"-->
+    <!--android:src="@android:drawable/ic_menu_info_details"-->
+    <!--android:layout_width="20dp"-->
+    <!--android:layout_height="20dp"-->
+    <!--android:contentDescription="press for more info"-->
+    <!--android:layout_alignParentRight="true"/>-->
+
+</RelativeLayout>
