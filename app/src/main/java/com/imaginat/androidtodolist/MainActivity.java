@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
 import com.imaginat.androidtodolist.customlayouts.AddListFragment;
 import com.imaginat.androidtodolist.customlayouts.MainListFragment;
+import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
 
 public class MainActivity extends AppCompatActivity
     implements ActionListFragment.IChangeActionBarTitle{
@@ -67,7 +68,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
 
-
+        ToDoListSQLHelper sqlHelper = ToDoListSQLHelper.getInstance(this);
+        sqlHelper.getWritableDatabase();
 
         getSupportActionBar().setTitle("Main");
 
