@@ -28,25 +28,35 @@ import java.util.ArrayList;
  */
 public class ActionListFragment extends Fragment implements ReminderListRecycleAdapter.IHandleListClicks {
 
+    public interface IChangeActionBarTitle{
+        public void onUpdateTitle(String title);
+    }
     private static String TAG= MainListFragment.class.getName();
     ToDoListRecyclerAdapter mAdapter;
     ArrayList<IListItem> mReminders;
     RelativeLayout mTheAddingLayout;
+    RecyclerView mRecyclerView;
+    IChangeActionBarTitle mIChangeActionBarTitle;
+
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View  view= inflater.inflate(R.layout.todos_list_fragment, container, false);
         setHasOptionsMenu(true);
-        mTheAddingLayout =(RelativeLayout)view.findViewById(R.id.addListOverlayView);
+        mTheAddingLayout =(RelativeLayout)view.findViewById(R.id.addItemOverlayView);
         //mAddListOverlayView = (TextView) mTheAddingLayout.findViewById(R.id.addListEditText);
         mAdapter = new ToDoListRecyclerAdapter((Context)getActivity(),mReminders=new ArrayList<IListItem>(),this);
         RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.theRecyclerView);
         recyclerView.setAdapter(mAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mRecyclerView=recyclerView;
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(linearLayoutManager);
 
 
-        for(int i=0;i<20;i++){
+
+
+        for(int i=0;i<10;i++){
             ToDoListItem r = new ToDoListItem();
             r.setText("To do list item "+i);
             mReminders.add(r);
@@ -55,17 +65,58 @@ public class ActionListFragment extends Fragment implements ReminderListRecycleA
 
         mAdapter.notifyDataSetChanged();
 
-        //set height and width
+        if(mIChangeActionBarTitle!=null){
+            mIChangeActionBarTitle.onUpdateTitle("TEST LIST");
+        }
+
 
         //mAddListOverlayView.setHeight(itemFromList.getHeight());
         recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-
+                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                int lastVisiblePosition = layoutManager.findLastVisibleItemPosition();
+                int lastIndex = mReminders.size()-1;
+                if(lastVisiblePosition<lastIndex){
+                    Toast.makeText(getActivity(),"I should display extra text on bottom",Toast.LENGTH_SHORT).show();
+                    mTheAddingLayout.setVisibility(View.VISIBLE);
+                }else{
+                    Toast.makeText(getActivity(),"I should NOT display extra text on bottom",Toast.LENGTH_SHORT).show();
+                    mTheAddingLayout.setVisibility(View.GONE);
+                }
 
             }
         });
         return view;
+    }
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            mIChangeActionBarTitle = (IChangeActionBarTitle) context;
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        //duplicate logic, move to method?
+      /*  LinearLayoutManager linearLayoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        int lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition();
+        int lastIndex=mReminders.size()-1;
+        Toast.makeText(getContext(),"lastVisible vs lastIndex "+lastVisibleItem+" vs "+lastIndex,Toast.LENGTH_SHORT).show();
+        if(linearLayoutManager.findLastVisibleItemPosition()<lastIndex){
+            mTheAddingLayout.setVisibility(View.VISIBLE);
+        }else{
+            mTheAddingLayout.setVisibility(View.GONE);
+        }*/
+        //set height and width
     }
 
     public void toggleEdit(){

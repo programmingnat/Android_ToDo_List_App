@@ -21,11 +21,12 @@
     </android.support.v7.widget.RecyclerView>
 
     <RelativeLayout
-        android:id="@+id/addListOverlayView"
+        android:id="@+id/addItemOverlayView"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_alignParentBottom="true"
-        android:background="@drawable/textlines">
+        android:background="@drawable/textlines"
+        android:visibility="gone">
         <ImageButton
             android:id="@+id/addListButton"
             android:layout_width="40dp"
@@ -33,7 +34,7 @@
             android:layout_alignParentLeft="true"
             android:src="@android:drawable/ic_menu_add"/>
         <TextView
-            android:id="@+id/addListEditText"
+            android:id="@+id/addItemList"
             android:layout_toRightOf="@id/addListButton"
             android:text="Add Stuff here"
             android:layout_width="wrap_content"

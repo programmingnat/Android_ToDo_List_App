@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
@@ -17,7 +18,8 @@ import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
 import com.imaginat.androidtodolist.customlayouts.AddListFragment;
 import com.imaginat.androidtodolist.customlayouts.MainListFragment;
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity
+    implements ActionListFragment.IChangeActionBarTitle{
 
     private static final String TAG= MainActivity.class.getName();
 
@@ -96,4 +98,12 @@ public class MainActivity extends AppCompatActivity  {
         }
     }
 
+    @Override
+    public void onUpdateTitle(String title) {
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle(title);
+        //actionBar.setBackgroundDrawable(new ColorDrawable(0xff00DDED));
+        //actionBar.setDisplayShowTitleEnabled(false);
+        //actionBar.setDisplayShowTitleEnabled(true);
+    }
 }

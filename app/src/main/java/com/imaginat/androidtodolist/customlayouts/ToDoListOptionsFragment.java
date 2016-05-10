@@ -13,8 +13,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import com.imaginat.androidtodolist.R;
 import com.imaginat.androidtodolist.businessModels.AlarmReceiver;
@@ -48,42 +49,44 @@ public class ToDoListOptionsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.todos_more_options, container, false);
 
-        mAlarmCalendar=Calendar.getInstance();
-        Button selectDateButton = (Button)view.findViewById(R.id.selectDate_button);
+        mAlarmCalendar = Calendar.getInstance();
+        Button selectDateButton = (Button) view.findViewById(R.id.selectDate_button);
         selectDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FragmentManager manager = getFragmentManager();
                 DatePickerFragment dialog = DatePickerFragment.newInstance(new Date(System.currentTimeMillis()));
                 //DatePickerFragment dialog = new DatePickerFragment();
-                dialog.setTargetFragment(ToDoListOptionsFragment.this,REQUEST_DATE);
-                dialog.show(manager,DIALOG_DATE);
+                dialog.setTargetFragment(ToDoListOptionsFragment.this, REQUEST_DATE);
+                dialog.show(manager, DIALOG_DATE);
             }
         });
 
-        Button selectTimeButton = (Button)view.findViewById(R.id.selectTime_button);
+        Button selectTimeButton = (Button) view.findViewById(R.id.selectTime_button);
         selectTimeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FragmentManager manager = getFragmentManager();
                 TimePickerFragment dialog = TimePickerFragment.newInstance(new Date(System.currentTimeMillis()));
                 //TimePickerFragment dialog = new TimePickerFragment();
-                dialog.setTargetFragment(ToDoListOptionsFragment.this,REQUEST_TIME);
-                dialog.show(manager,DIALOG_TIME);
+                dialog.setTargetFragment(ToDoListOptionsFragment.this, REQUEST_TIME);
+                dialog.show(manager, DIALOG_TIME);
 
             }
         });
-        displayAlarmTimeTextView = (TextView)view.findViewById(R.id.displayTime_textView);
-        displayAlarmDateTextView = (TextView)view.findViewById(R.id.displayDate_textView);
-       // alarmTimePicker = (TimePicker) view.findViewById(R.id.alarmTimePicker);
+        displayAlarmTimeTextView = (TextView) view.findViewById(R.id.displayTime_textView);
+        displayAlarmDateTextView = (TextView) view.findViewById(R.id.displayDate_textView);
+        // alarmTimePicker = (TimePicker) view.findViewById(R.id.alarmTimePicker);
         alarmTextView = (TextView) view.findViewById(R.id.alarmText);
-        ToggleButton alarmToggle = (ToggleButton) view.findViewById(R.id.alarmToggle);
+        Switch alarmToggle = (Switch) view.findViewById(R.id.alarmToggle);
         alarmManager = (AlarmManager) getActivity().getSystemService(getContext().ALARM_SERVICE);
 
-        alarmToggle.setOnClickListener(new View.OnClickListener() {
+        alarmToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View tgView) {
-                if (((ToggleButton) tgView).isChecked()) {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+
+                if (isChecked) {
                     Log.d("MyActivity", "Alarm On");
 
                     Calendar calendar = Calendar.getInstance();
@@ -99,17 +102,19 @@ public class ToDoListOptionsFragment extends Fragment {
                     Date copiedDate = new Date(calendar.getTimeInMillis());
 
                     DateFormat df = new SimpleDateFormat("MM.dd:yy:HH:mm:ss");
-                    Log.d(TAG,"pendingItent sent for "+df.format(copiedDate));
+                    Log.d(TAG, "pendingItent sent for " + df.format(copiedDate));
                 } else {
                     alarmManager.cancel(pendingIntent);
-                    setAlarmText("");
                     Log.d("MyActivity", "Alarm Off");
                 }
             }
         });
         return view;
-
     }
+
+
+
+
 
     public void setAlarmText(String alarmText) {
         alarmTextView.setText(alarmText);

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -24,6 +23,7 @@ import java.util.ArrayList;
  */
 public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecyclerAdapter.ToDoListItemHolder> {
 
+    private static final String TAG = ToDoListRecyclerAdapter.class.getSimpleName();
     private Context mContext;
     private ArrayList<IListItem>mToDoListItems;
     private ReminderListRecycleAdapter.IHandleListClicks mClickInterface;
@@ -43,7 +43,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mClickInterface.handleClick("Clicked");
+               // mClickInterface.handleClick("Clicked");
             }
         });
 
@@ -60,40 +60,25 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
                 mClickInterface.handleClick("MORE_OPTIONS");
             }
         });
-        view.setOnTouchListener(new View.OnTouchListener() {
-            int downX, upX;
 
+        view.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    downX = (int) event.getX();
-                    Log.i("event.getX()", " downX " + downX);
-                    return true;
+            public boolean onLongClick(View v) {
+                Toast.makeText(mContext,"On long clicked pressed",Toast.LENGTH_SHORT).show();
+                LinearLayout ll = (LinearLayout)v.findViewById(R.id.lineItemOptionsButton);
+
+                if (ll.getVisibility()==View.VISIBLE){
+                    Log.d(TAG, "setting delButton to GONE");
+                    ll.setVisibility(View.GONE);
+                }else{
+                    ll.setVisibility(View.VISIBLE);
+                    Log.d(TAG, "setting delButton to VISIBLE");
                 }
 
-                else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    upX = (int) event.getX();
-                    Log.i("event.getX()", " upX " + downX);
-                    if (upX - downX > 100) {
-                        Toast.makeText(mContext,"Swipe Right",Toast.LENGTH_SHORT).show();
-                        LinearLayout ll = (LinearLayout)v.findViewById(R.id.lineItemOptionsButton);
-                        ll.setVisibility(View.GONE);
-                        // swipe right
-                    }
-
-                    else if (downX - upX > -100) {
-                        Toast.makeText(mContext,"Swipe Left",Toast.LENGTH_SHORT).show();
-                        LinearLayout ll = (LinearLayout)v.findViewById(R.id.lineItemOptionsButton);
-                        ll.setVisibility(View.VISIBLE);
-                        // swipe left
-                    }
-                    return true;
-
-                }
                 return false;
-
             }
         });
+
 
         return new ToDoListItemHolder(view);
     }
@@ -102,6 +87,8 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
     public void onBindViewHolder(ToDoListItemHolder holder, int position) {
         ToDoListItem toDoListItem =(ToDoListItem)mToDoListItems.get(position);
         holder.mTextView.setText(toDoListItem.getText());
+
+
 
 
 
@@ -114,11 +101,13 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
         return mToDoListItems.size();
     }
 
+
     //====================================================================================
     public class ToDoListItemHolder extends RecyclerView.ViewHolder{
 
         public RadioButton mRadioButton;
         public TextView mTextView;
+
 
         public ToDoListItemHolder(View itemView) {
             super(itemView);
@@ -127,5 +116,8 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
 
         }
     }
+    //=================================
+
+
 
 }
