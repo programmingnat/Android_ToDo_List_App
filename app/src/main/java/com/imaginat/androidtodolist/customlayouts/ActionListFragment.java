@@ -1,6 +1,7 @@
 package com.imaginat.androidtodolist.customlayouts;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,49 +19,51 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.businessModels.IListItem;
-import com.imaginat.androidtodolist.businessModels.ToDoListItem;
-
-import java.util.ArrayList;
+import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 
 /**
  * Created by nat on 4/26/16.
  */
-public class ActionListFragment extends Fragment implements ReminderListRecycleAdapter.IHandleListClicks {
+public class ActionListFragment extends Fragment implements ToDoListRecyclerAdapter.IHandleListClicks {
 
     public interface IChangeActionBarTitle{
         public void onUpdateTitle(String title);
     }
+
+
     private static String TAG= MainListFragment.class.getName();
+    private String mListId=null;
     ToDoListRecyclerAdapter mAdapter;
-    ArrayList<IListItem> mReminders;
     RelativeLayout mTheAddingLayout;
     RecyclerView mRecyclerView;
     IChangeActionBarTitle mIChangeActionBarTitle;
+    ToDoListItemManager mToDoListItemManager;
 
 
+    public void setListId(String id){
+        mListId=id;
+    }
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View  view= inflater.inflate(R.layout.todos_list_fragment, container, false);
         setHasOptionsMenu(true);
+
+         mToDoListItemManager = ToDoListItemManager.getInstance(getContext());
+        mToDoListItemManager.loadAllRemindersForList(mListId);
         mTheAddingLayout =(RelativeLayout)view.findViewById(R.id.addItemOverlayView);
         //mAddListOverlayView = (TextView) mTheAddingLayout.findViewById(R.id.addListEditText);
-        mAdapter = new ToDoListRecyclerAdapter((Context)getActivity(),mReminders=new ArrayList<IListItem>(),this);
+        mAdapter = new ToDoListRecyclerAdapter((Context)getActivity(),mToDoListItemManager.getReminders(),this);
         RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.theRecyclerView);
         recyclerView.setAdapter(mAdapter);
         mRecyclerView=recyclerView;
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity());
+        MyLinearLayoutManager linearLayoutManager = new MyLinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
 
 
 
 
-        for(int i=0;i<10;i++){
-            ToDoListItem r = new ToDoListItem();
-            r.setText("To do list item "+i);
-            mReminders.add(r);
-        }
+
 
 
         mAdapter.notifyDataSetChanged();
@@ -77,7 +80,7 @@ public class ActionListFragment extends Fragment implements ReminderListRecycleA
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
                 int lastVisiblePosition = layoutManager.findLastVisibleItemPosition();
-                int lastIndex = mReminders.size()-1;
+                int lastIndex = mToDoListItemManager.getReminders().size()-1;
                 if(lastVisiblePosition<lastIndex){
                     Toast.makeText(getActivity(),"I should display extra text on bottom",Toast.LENGTH_SHORT).show();
                     mTheAddingLayout.setVisibility(View.VISIBLE);
@@ -141,6 +144,30 @@ public class ActionListFragment extends Fragment implements ReminderListRecycleA
 //        ft.commit();
     }
 
+    @Override
+    public void handleClickToCreateNewReminder(String data) {
+        Log.d(TAG, "Attempting to create new reminder " + mListId + " " + data);
+        UpdateDatabaseTask updateDatabaseTask = new UpdateDatabaseTask();
+        updateDatabaseTask.execute("CREATE",data);
+
+
+    }
+
+    @Override
+    public void handleClickToUpdateReminder(String id, String data) {
+        Log.d(TAG, "Attempting to update reminder " + id + " with " + data);
+
+        UpdateDatabaseTask updateDatabaseTask = new UpdateDatabaseTask();
+        updateDatabaseTask.execute("UPDATE", id,data);
+
+    }
+
+    @Override
+    public void handleDeleteButton(String id) {
+        UpdateDatabaseTask updateDatabaseTask = new UpdateDatabaseTask();
+        updateDatabaseTask.execute("DELETE", id);
+    }
+
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
@@ -156,5 +183,47 @@ public class ActionListFragment extends Fragment implements ReminderListRecycleA
         MenuItem m = menu.add(Menu.NONE, MENU_ITEM_ITEM1, Menu.NONE, "Item name");
         m.setIcon(android.R.drawable.ic_menu_edit);
         m.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+    }
+
+
+    private class UpdateDatabaseTask extends AsyncTask<String, Void, Void> {
+
+
+        @Override
+        protected Void doInBackground(String... params) {
+            if(params[0].equals("CREATE")){
+                mToDoListItemManager.createNewReminder(mListId, params[1]);
+            }else if(params[0].equals("UPDATE")){
+                mToDoListItemManager.updateReminder(mListId, params[1], params[2]);
+            }else if(params[0].equals("DELETE")){
+                mToDoListItemManager.deleteReminder(mListId,params[1]);
+
+            }
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private class MyLinearLayoutManager extends LinearLayoutManager{
+
+        @Override
+        public boolean supportsPredictiveItemAnimations() {
+            return false;
+        }
+
+        public MyLinearLayoutManager(Context context) {
+            super(context);
+        }
+
+        public MyLinearLayoutManager(Context context, int orientation, boolean reverseLayout) {
+            super(context, orientation, reverseLayout);
+        }
     }
 }

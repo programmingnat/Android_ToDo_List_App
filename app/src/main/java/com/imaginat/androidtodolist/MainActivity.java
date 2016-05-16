@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity
     public void onUpdateTitle(String title) {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(title);
+
         //actionBar.setBackgroundDrawable(new ColorDrawable(0xff00DDED));
         //actionBar.setDisplayShowTitleEnabled(false);
         //actionBar.setDisplayShowTitleEnabled(true);

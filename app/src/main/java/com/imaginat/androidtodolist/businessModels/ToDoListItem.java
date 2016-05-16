@@ -6,34 +6,43 @@ package com.imaginat.androidtodolist.businessModels;
 public class ToDoListItem implements IListItem {
 
     private String mText;
-    private String mItem_id;
-    private boolean mHasAlarm;
+    private String mReminder_id;
+    private boolean isCalendarAlarm=false;
+    private boolean isGeoFenceAlarm=false;
+
+
 
     public ToDoListItem(){
 
     }
-    public ToDoListItem(String text, String item_id, boolean hasAlarm) {
+    public ToDoListItem(String text, String item_id) {
         mText = text;
-        mItem_id = item_id;
-        mHasAlarm = hasAlarm;
+        mReminder_id = item_id;
+
     }
 
-    public boolean isHasAlarm() {
-        return mHasAlarm;
+    public boolean isCalendarAlarm() {
+        return isCalendarAlarm;
     }
 
-    public void setHasAlarm(boolean hasAlarm) {
-        mHasAlarm = hasAlarm;
+    public void setIsCalendarAlarm(boolean isCalendarAlarm) {
+        this.isCalendarAlarm = isCalendarAlarm;
     }
 
-
-
-    public String getItem_id() {
-        return mItem_id;
+    public boolean isGeoFenceAlarm() {
+        return isGeoFenceAlarm;
     }
 
-    public void setItem_id(String item_id) {
-        mItem_id = item_id;
+    public void setIsGeoFenceAlarm(boolean isGeoFenceAlarm) {
+        this.isGeoFenceAlarm = isGeoFenceAlarm;
+    }
+
+    public String getReminder_id() {
+        return mReminder_id;
+    }
+
+    public void setReminder_id(String reminder_id) {
+        mReminder_id = reminder_id;
     }
 
     @Override

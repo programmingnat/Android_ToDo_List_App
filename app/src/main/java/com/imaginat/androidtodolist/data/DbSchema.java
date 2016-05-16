@@ -29,6 +29,7 @@ public class DbSchema {
                         cols.REMINDER_ID+" INTEGER PRIMARY KEY, "+
                         cols.LIST_ID+" INTEGER NOT NULL, "+
                         cols.REMINDER_TEXT+" TEXT NOT NULL, "+
+                        cols.IS_COMPLETED+" INTEGER DEFAULT 0, "+
                         "FOREIGN KEY("+cols.LIST_ID+") REFERENCES "+lists_table.NAME+"("+lists_table.cols.LIST_ID+")"+
                         ")";
 
@@ -36,6 +37,7 @@ public class DbSchema {
             public static final String REMINDER_ID="reminder_id";
             public static final String LIST_ID="list_id";
             public static final String REMINDER_TEXT="reminderText";
+            public static final String IS_COMPLETED="isCompleted";
         }
     }
     //=============================================================================

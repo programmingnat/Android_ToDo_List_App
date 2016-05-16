@@ -13,8 +13,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.businessModels.AListItem;
 import com.imaginat.androidtodolist.businessModels.IListItem;
+import com.imaginat.androidtodolist.businessModels.ListTitle;
 
 import java.util.ArrayList;
 
@@ -30,13 +30,13 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
 
     private final static String TAG = ReminderListRecycleAdapter.class.getName();
     private Context mContext;
-    private ArrayList<IListItem> mReminders;
+    private ArrayList<ListTitle> mReminders;
     private IHandleListClicks mIHandleListClicks;
 
     public class ReminderHolder extends RecyclerView.ViewHolder {
 
         public TextView mTextView;
-       // public RadioButton mRadioButton;
+        //public RadioButton mRadioButton;
         public View mLineItemView;
         public String mList_id = "someListID";
 
@@ -44,7 +44,6 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
             super(itemView);
             mLineItemView = itemView;
             mTextView = (TextView) itemView.findViewById(R.id.listItemTextView);
-            //mRadioButton = (RadioButton) itemView.findViewById(R.id.competedRadioButton);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -90,12 +89,15 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
         return mReminders.get(position);
     }
 
-    public ReminderListRecycleAdapter(Context context, ArrayList<IListItem> reminders, IHandleListClicks iHandleListClicks) {
+    public ReminderListRecycleAdapter(Context context, ArrayList<ListTitle> reminders, IHandleListClicks iHandleListClicks) {
         mContext = context;
         mReminders = reminders;
         mIHandleListClicks = iHandleListClicks;
     }
 
+    public void setToRemindersArray(ArrayList<ListTitle>list){
+        mReminders=list;
+    }
     @Override
     public ReminderHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(mContext);
@@ -107,7 +109,7 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
 
     @Override
     public void onBindViewHolder(ReminderHolder holder, int position) {
-        AListItem reminder = (AListItem) mReminders.get(position);
+        ListTitle reminder =  mReminders.get(position);
         if (reminder == null) {
 
 
@@ -120,7 +122,7 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
             holder.mTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
             holder.mTextView.setText("Add List Here");
         } else {
-
+            holder.mList_id=reminder.getList_id();
             holder.itemView.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.textlines, null));
 
 //            holder.mLineItemView.setBackgroundColor(Color.argb(255, 255, 255, 255));

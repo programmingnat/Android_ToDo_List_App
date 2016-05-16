@@ -18,8 +18,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.businessModels.AListItem;
 import com.imaginat.androidtodolist.businessModels.IListItem;
+import com.imaginat.androidtodolist.businessModels.ListManager;
+import com.imaginat.androidtodolist.businessModels.ListTitle;
 
 import java.util.ArrayList;
 
@@ -31,7 +32,7 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
     private TextView anchorTextView;
     private static String TAG= MainListFragment.class.getName();
     ReminderListRecycleAdapter mAdapter;
-    ArrayList<IListItem> mReminders;
+    ArrayList<ListTitle> mReminders;
     private int lastFirstIndex;
 
     @Nullable
@@ -41,14 +42,14 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
         RelativeLayout rl = (RelativeLayout)view.findViewById(R.id.topPlaceHolder);
         anchorTextView = (TextView)rl.findViewById(R.id.listItemTextView);
         //mAddListOverlayView = (TextView) mTheAddingLayout.findViewById(R.id.addListEditText);
-        mAdapter = new ReminderListRecycleAdapter((Context)getActivity(),mReminders=new ArrayList<IListItem>(),this);
+        mAdapter = new ReminderListRecycleAdapter((Context)getActivity(),mReminders=new ArrayList<ListTitle>(),this);
         RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.theRecyclerView);
         recyclerView.setAdapter(mAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
 
         for(int i=0;i<20;i++){
-            AListItem r = new AListItem();
+            ListTitle r = new ListTitle();
             r.setText("LIST "+i);
             mReminders.add(r);
         }
@@ -176,10 +177,29 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        ListManager listManager = ListManager.getInstance(getContext());
+        listManager.updateAllListTitles();
+        ArrayList<ListTitle>titles =listManager.getListTitles();
+        mAdapter.setToRemindersArray(titles);
+        mAdapter.notifyDataSetChanged();
+
+    }
+
+    @Override
     public void handleClick(String data) {
 
         FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.replace(R.id.my_frame, new ActionListFragment());
+        ActionListFragment alf = new ActionListFragment();
+        Log.d(TAG,"List id is "+data);
+        alf.setListId(data);
+            ft.replace(R.id.my_frame, alf);
             ft.setTransition(FragmentTransaction.TRANSIT_NONE);
             ft.addToBackStack(null);
         ft.commit();
