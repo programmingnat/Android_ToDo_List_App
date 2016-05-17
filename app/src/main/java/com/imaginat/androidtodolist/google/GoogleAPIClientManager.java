@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.com.imaginat.androidtodolist.google;
+package com.imaginat.androidtodolist.google;
 
 import android.content.Context;
 import android.os.Bundle;

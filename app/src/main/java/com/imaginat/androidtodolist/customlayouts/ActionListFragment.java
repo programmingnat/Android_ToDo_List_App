@@ -31,14 +31,20 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     }
 
 
+
+
     private static String TAG= MainListFragment.class.getName();
     private String mListId=null;
     ToDoListRecyclerAdapter mAdapter;
     RelativeLayout mTheAddingLayout;
     RecyclerView mRecyclerView;
     IChangeActionBarTitle mIChangeActionBarTitle;
+    ToDoListOptionsFragment.IGeoOptions mIGeoOptions;
     ToDoListItemManager mToDoListItemManager;
 
+    public void setIGeoOptions(ToDoListOptionsFragment.IGeoOptions IGeoOptions) {
+        mIGeoOptions = IGeoOptions;
+    }
 
     public void setListId(String id){
         mListId=id;
@@ -130,7 +136,9 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
 
         if(data.equals("MORE_OPTIONS")){
             FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ft.replace(R.id.my_frame, new ToDoListOptionsFragment());
+            ToDoListOptionsFragment toDoListOptionsFragment = new ToDoListOptionsFragment();
+            toDoListOptionsFragment.setIGeoOptions(mIGeoOptions);
+            ft.replace(R.id.my_frame,toDoListOptionsFragment) ;
             ft.setTransition(FragmentTransaction.TRANSIT_NONE);
             ft.addToBackStack(null);
             ft.commit();

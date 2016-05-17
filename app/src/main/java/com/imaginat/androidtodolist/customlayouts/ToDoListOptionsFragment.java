@@ -30,6 +30,10 @@ import java.util.Date;
  */
 public class ToDoListOptionsFragment extends Fragment {
 
+    public interface IGeoOptions{
+        public void getAddressFromLocation();
+
+    }
     private static final String TAG =ToDoListOptionsFragment.class.getSimpleName();
     private static final String DIALOG_DATE="DialogDate";
     private static final String DIALOG_TIME="DialogTime";
@@ -43,6 +47,9 @@ public class ToDoListOptionsFragment extends Fragment {
     private TextView displayAlarmDateTextView,displayAlarmTimeTextView;
     //private Date mAlarmDate,mAlarmTime;
     private Calendar mAlarmCalendar;
+    private Button  mCoordinatesToAddressButton;
+    private IGeoOptions mIGeoOptions;
+
 
     @Nullable
     @Override
@@ -109,12 +116,20 @@ public class ToDoListOptionsFragment extends Fragment {
                 }
             }
         });
+
+        mCoordinatesToAddressButton =(Button)view.findViewById(R.id.getAddressFromCoordinates);
+        mCoordinatesToAddressButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mIGeoOptions.getAddressFromLocation();
+            }
+        });
         return view;
     }
 
-
-
-
+    public void setIGeoOptions(IGeoOptions IGeoOptions) {
+        mIGeoOptions = IGeoOptions;
+    }
 
     public void setAlarmText(String alarmText) {
         alarmTextView.setText(alarmText);

@@ -3,9 +3,11 @@ package com.imaginat.androidtodolist;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -20,20 +22,29 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
-import com.imaginat.androidtodolist.com.imaginat.androidtodolist.google.GoogleAPIClientManager;
+import com.google.android.gms.common.api.Status;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
 import com.imaginat.androidtodolist.customlayouts.AddListFragment;
 import com.imaginat.androidtodolist.customlayouts.MainListFragment;
+import com.imaginat.androidtodolist.customlayouts.ToDoListOptionsFragment;
 import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
+import com.imaginat.androidtodolist.google.AddressResultReceiver;
+import com.imaginat.androidtodolist.google.GeoCoder;
+import com.imaginat.androidtodolist.google.GoogleAPIClientManager;
+import com.imaginat.androidtodolist.google.LocationServices;
 
 public class MainActivity extends AppCompatActivity
-    implements ActionListFragment.IChangeActionBarTitle,GoogleAPIClientManager.IUseGoogleApiClient{
+    implements ActionListFragment.IChangeActionBarTitle,GoogleAPIClientManager.IUseGoogleApiClient,
+        com.imaginat.androidtodolist.google.LocationServices.ILocationServiceClient, ToDoListOptionsFragment.IGeoOptions{
 
     private static final String TAG= MainActivity.class.getName();
     private GoogleApiClient mGoogleApiClient;
     private static final int REQUEST_FINE_LOCATION = 0;
     protected Location mLastLocation;
+    final static int REQUEST_LOCATION = 199;
+    private LocationServices mLocationServices;
+    protected Boolean mRequestingLocationUpdates;
+    private AddressResultReceiver mAddressResultReceiver;
 
 
 
@@ -83,6 +94,10 @@ public class MainActivity extends AppCompatActivity
         GoogleAPIClientManager googleAPIClientManager = GoogleAPIClientManager.getInstance(this,this);
         mGoogleApiClient = googleAPIClientManager.getGoogleApiClient();
 
+        mLocationServices = new LocationServices(mGoogleApiClient,this);
+
+
+        mAddressResultReceiver = new AddressResultReceiver(new Handler());
         ToDoListSQLHelper sqlHelper = ToDoListSQLHelper.getInstance(this);
         sqlHelper.getWritableDatabase();
 
@@ -93,6 +108,7 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         MainListFragment fragment = new MainListFragment();
+        fragment.setIGeoOptions(this);
         fragmentTransaction.add(R.id.my_frame, fragment);
         fragmentTransaction.commit();
 
@@ -102,13 +118,29 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        mLocationServices.stopLocationUpdates();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
+            mLocationServices.startLocationUpdates();
+        }
+    }
+
+    @Override
     protected void onStart() {
+
         mGoogleApiClient.connect();
         super.onStart();
     }
 
     @Override
     protected void onStop() {
+
         mGoogleApiClient.disconnect();
         super.onStop();
     }
@@ -142,17 +174,32 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG,"MainActivity onConnectedtoGoogleAPIClient");
 
         loadPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_FINE_LOCATION);
-        try {
-            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        }catch(SecurityException se){
-                se.printStackTrace();
+        mLocationServices.createLocationRequest();
+        mRequestingLocationUpdates=true;
+
+        if (mRequestingLocationUpdates) {
+            try {
+                mLocationServices.startLocationUpdates();
+            }catch(SecurityException ex){
+                ex.printStackTrace();
+            }
+        }else{
+
         }
-        if (mLastLocation != null) {
-            Log.d(TAG,"Last location "+mLastLocation.getLatitude()+" "+mLastLocation.getLongitude());
-        } else {
-            Toast.makeText(this, "Location Detected", Toast.LENGTH_LONG).show();
-        }
+
+
     }
+
+
+
+    @Override
+    public void displayDialogBasedOnStatus(Status status) throws IntentSender.SendIntentException{
+        status.startResolutionForResult(
+                MainActivity.this,
+                REQUEST_LOCATION);
+    }
+
+
 
     private void loadPermissions(String perm,int requestCode) {
         if (ContextCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED) {
@@ -160,5 +207,17 @@ public class MainActivity extends AppCompatActivity
                 ActivityCompat.requestPermissions(this, new String[]{perm},requestCode);
             }
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void getAddressFromLocation() {
+        Log.d(TAG, "inside getAddressFromLocatin");
+        Location lastLocation = mLocationServices.getLocation();
+        GeoCoder.startIntentService(this,lastLocation,mAddressResultReceiver);
     }
 }

@@ -35,6 +35,12 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
     ArrayList<ListTitle> mReminders;
     private int lastFirstIndex;
 
+    public void setIGeoOptions(ToDoListOptionsFragment.IGeoOptions IGeoOptions) {
+        mIGeoOptions = IGeoOptions;
+    }
+
+    ToDoListOptionsFragment.IGeoOptions mIGeoOptions;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -129,6 +135,9 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
                 Log.d(TAG, "inside onScrollStateChanged, first" + layoutManager.findFirstVisibleItemPosition());
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     View itemView = recyclerView.getChildAt(0);
+//                    if(itemView==null){
+//                        return;
+//                    }
                     int top = Math.abs(itemView.getTop());
                     int bottom = Math.abs(itemView.getBottom());
                     int scrollBy = top >= bottom ? bottom : -top;
@@ -197,6 +206,7 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
 
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ActionListFragment alf = new ActionListFragment();
+        alf.setIGeoOptions(mIGeoOptions);
         Log.d(TAG,"List id is "+data);
         alf.setListId(data);
             ft.replace(R.id.my_frame, alf);
