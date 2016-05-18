@@ -169,6 +169,7 @@ public class LocationServices implements LocationListener {
         // Add the geofences to be monitored by geofencing service.
         builder.addGeofences(mGeofenceList);
 
+
         // Return a GeofencingRequest.
         return builder.build();
     }

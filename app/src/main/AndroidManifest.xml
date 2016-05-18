@@ -40,6 +40,9 @@
             android:name="com.imaginat.androidtodolist.google.FetchAddressIntentService"
             android:exported="false"/>
         <service
+            android:name="com.imaginat.androidtodolist.google.FetchCoordinatesIntentService"
+            android:exported="false"/>
+        <service
             android:name="com.imaginat.androidtodolist.businessModels.AlarmService"
             android:enabled="true" />
         <receiver android:name="com.imaginat.androidtodolist.businessModels.AlarmReceiver" />

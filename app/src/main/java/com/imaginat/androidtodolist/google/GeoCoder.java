@@ -2,13 +2,7 @@ package com.imaginat.androidtodolist.google;
 
 import android.content.Context;
 import android.content.Intent;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
-
-import com.google.android.gms.vision.barcode.Barcode;
-
-import java.util.List;
 
 /**
  * Created by nat on 5/17/16.
@@ -23,28 +17,12 @@ public class GeoCoder {
         c.startService(intent);
     }
 
-    public static Location getLocationFromAddress(Context c,String strAddress){
+    public static void getLocationFromAddress(Context c,String strAddress,CoordinatesResultReceiver resultReceiver){
 
-        Geocoder coder = new Geocoder(c);
-        List<Address> address;
-        Barcode.GeoPoint p1 = null;
-        Location l=null;
-        try {
-            address = coder.getFromLocationName(strAddress,5);
-            if (address==null) {
-                return null;
-            }
-            Address location=address.get(0);
+        Intent intent = new Intent(c,FetchCoordinatesIntentService.class);
+        intent.putExtra(Constants.RECEIVER,resultReceiver);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA,strAddress);
+        c.startService(intent);
 
-            l = new Location("");
-            l.setLatitude(location.getLatitude());
-            l.setLongitude(location.getLongitude());
-
-
-
-        }catch(Exception ex){
-            ex.printStackTrace();
-        }
-        return l;
     }
 }

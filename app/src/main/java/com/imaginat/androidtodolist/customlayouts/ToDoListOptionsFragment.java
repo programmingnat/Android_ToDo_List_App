@@ -32,7 +32,8 @@ public class ToDoListOptionsFragment extends Fragment {
 
     public interface IGeoOptions{
         public void getAddressFromLocation();
-        public void setGeoFenceAddress();
+        public void setGeoFenceAddress(String street,String city,String state, String zipCode);
+
 
     }
     private static final String TAG =ToDoListOptionsFragment.class.getSimpleName();
@@ -122,7 +123,8 @@ public class ToDoListOptionsFragment extends Fragment {
         mCoordinatesToAddressButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mIGeoOptions.getAddressFromLocation();
+                //mIGeoOptions.getAddressFromLocation();
+                mIGeoOptions.setGeoFenceAddress("71 Warren Ave","Tuckahoe","NY","10707");
             }
         });
         return view;

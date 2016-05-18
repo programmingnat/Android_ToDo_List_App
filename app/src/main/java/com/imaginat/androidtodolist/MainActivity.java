@@ -32,6 +32,8 @@ import com.imaginat.androidtodolist.customlayouts.MainListFragment;
 import com.imaginat.androidtodolist.customlayouts.ToDoListOptionsFragment;
 import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
 import com.imaginat.androidtodolist.google.AddressResultReceiver;
+import com.imaginat.androidtodolist.google.CoordinatesResultReceiver;
+import com.imaginat.androidtodolist.google.GeoCoder;
 import com.imaginat.androidtodolist.google.GeofenceErrorMessages;
 import com.imaginat.androidtodolist.google.GeofenceTransitionsIntentService;
 import com.imaginat.androidtodolist.google.GoogleAPIClientManager;
@@ -50,7 +52,7 @@ public class MainActivity extends AppCompatActivity
     private LocationServices mLocationServices;
     protected Boolean mRequestingLocationUpdates;
     private AddressResultReceiver mAddressResultReceiver;
-
+    private CoordinatesResultReceiver mCoordinatesResultReceiver;
     /**
      * Used when requesting to add or remove geofences.
      */
@@ -107,6 +109,7 @@ public class MainActivity extends AppCompatActivity
 
 
         mAddressResultReceiver = new AddressResultReceiver(new Handler());
+        mCoordinatesResultReceiver = new CoordinatesResultReceiver(new Handler());
         ToDoListSQLHelper sqlHelper = ToDoListSQLHelper.getInstance(this);
         sqlHelper.getWritableDatabase();
 
@@ -228,14 +231,18 @@ public class MainActivity extends AppCompatActivity
         //Log.d(TAG, "inside getAddressFromLocatin");
         //Location lastLocation = mLocationServices.getLocation();
         //GeoCoder.startIntentService(this,lastLocation,mAddressResultReceiver);
-        setGeoFenceAddress();
+
     }
 
     @Override
-    public void setGeoFenceAddress() {
-        Location lastLocation = mLocationServices.getLocation();
-        mLocationServices.addToGeoFenceList("HOME",lastLocation.getLatitude(),lastLocation.getLongitude());
-        addGeofences();
+    public void setGeoFenceAddress(String street,String city,String state, String zipCode) {
+        Log.d(TAG,"Inside setGeoFenceAddress");
+        GeoCoder.getLocationFromAddress(this,street+" "+city+","+state+" "+zipCode,mCoordinatesResultReceiver);
+
+        //ADD FENCE
+        //Location lastLocation = mLocationServices.getLocation();
+        //mLocationServices.addToGeoFenceList("HOME",lastLocation.getLatitude(),lastLocation.getLongitude());
+        //addGeofences();
     }
 
 
