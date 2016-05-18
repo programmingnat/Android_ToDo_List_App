@@ -32,6 +32,7 @@ public class ToDoListOptionsFragment extends Fragment {
 
     public interface IGeoOptions{
         public void getAddressFromLocation();
+        public void setGeoFenceAddress();
 
     }
     private static final String TAG =ToDoListOptionsFragment.class.getSimpleName();

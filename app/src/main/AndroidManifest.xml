@@ -43,6 +43,7 @@
             android:name="com.imaginat.androidtodolist.businessModels.AlarmService"
             android:enabled="true" />
         <receiver android:name="com.imaginat.androidtodolist.businessModels.AlarmReceiver" />
+        <service android:name="com.imaginat.androidtodolist.google.GeofenceTransitionsIntentService" />
     </application>
 <!--AIzaSyDFf_CA8vnWALll9I106fCQhMYMVkWSpY4-->
 </manifest>

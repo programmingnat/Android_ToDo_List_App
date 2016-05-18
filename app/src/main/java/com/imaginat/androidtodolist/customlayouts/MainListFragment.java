@@ -131,7 +131,10 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
 
                 LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
 
-
+                int count = mAdapter.getItemCount();
+                if(count<=1){
+                    return;
+                }
                 Log.d(TAG, "inside onScrollStateChanged, first" + layoutManager.findFirstVisibleItemPosition());
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     View itemView = recyclerView.getChildAt(0);
