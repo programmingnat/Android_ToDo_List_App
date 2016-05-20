@@ -5,6 +5,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import com.imaginat.androidtodolist.customlayouts.MainListFragment;
 import com.imaginat.androidtodolist.customlayouts.ToDoListOptionsFragment;
 import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
 import com.imaginat.androidtodolist.google.AddressResultReceiver;
+import com.imaginat.androidtodolist.google.Constants;
 import com.imaginat.androidtodolist.google.CoordinatesResultReceiver;
 import com.imaginat.androidtodolist.google.GeoCoder;
 import com.imaginat.androidtodolist.google.GeofenceErrorMessages;
@@ -39,25 +41,29 @@ import com.imaginat.androidtodolist.google.GeofenceTransitionsIntentService;
 import com.imaginat.androidtodolist.google.GoogleAPIClientManager;
 import com.imaginat.androidtodolist.google.LocationServices;
 
-public class MainActivity extends AppCompatActivity
-    implements ActionListFragment.IChangeActionBarTitle,GoogleAPIClientManager.IUseGoogleApiClient,
-        com.imaginat.androidtodolist.google.LocationServices.ILocationServiceClient, ToDoListOptionsFragment.IGeoOptions,
-        ResultCallback<Status> {
+import java.util.ArrayList;
 
-    private static final String TAG= MainActivity.class.getName();
+public class MainActivity extends AppCompatActivity
+        implements ActionListFragment.IChangeActionBarTitle, GoogleAPIClientManager.IUseGoogleApiClient,
+        com.imaginat.androidtodolist.google.LocationServices.ILocationServiceClient, ToDoListOptionsFragment.IGeoOptions,
+        ResultCallback<Status>, CoordinatesResultReceiver.ICoordinateReceiver {
+
+    private static final String TAG = MainActivity.class.getName();
     private GoogleApiClient mGoogleApiClient;
     private static final int REQUEST_FINE_LOCATION = 0;
     protected Location mLastLocation;
     final static int REQUEST_LOCATION = 199;
     private LocationServices mLocationServices;
-    protected Boolean mRequestingLocationUpdates;
+    protected Boolean mRequestingLocationUpdates=true;
     private AddressResultReceiver mAddressResultReceiver;
     private CoordinatesResultReceiver mCoordinatesResultReceiver;
+
     /**
      * Used when requesting to add or remove geofences.
      */
     private PendingIntent mGeofencePendingIntent;
-
+    private boolean mGeofencesAdded;
+    private SharedPreferences mSharedPreferences;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -77,8 +83,8 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public boolean onOptionsItemSelected(MenuItem item){
-        switch(item.getItemId()){
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
             case R.id.menu_item_new_list:
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 ft.replace(R.id.my_frame, new AddListFragment());
@@ -87,8 +93,8 @@ public class MainActivity extends AppCompatActivity
                 ft.commit();
                 return true;
             case 100:
-                android.support.v4.app.Fragment f =getSupportFragmentManager().findFragmentById(R.id.my_frame);
-                ActionListFragment alf = (ActionListFragment)f;
+                android.support.v4.app.Fragment f = getSupportFragmentManager().findFragmentById(R.id.my_frame);
+                ActionListFragment alf = (ActionListFragment) f;
                 alf.toggleEdit();
                 return true;
             default:
@@ -102,14 +108,20 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        GoogleAPIClientManager googleAPIClientManager = GoogleAPIClientManager.getInstance(this,this);
+
+        mSharedPreferences = getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,
+                0);
+        mGeofencesAdded = mSharedPreferences.getBoolean(Constants.GEOFENCES_ADDED_KEY, false);
+
+        GoogleAPIClientManager googleAPIClientManager = GoogleAPIClientManager.getInstance(this, this);
         mGoogleApiClient = googleAPIClientManager.getGoogleApiClient();
 
-        mLocationServices = new LocationServices(mGoogleApiClient,this);
+        mLocationServices = new LocationServices(mGoogleApiClient, this);
 
 
         mAddressResultReceiver = new AddressResultReceiver(new Handler());
         mCoordinatesResultReceiver = new CoordinatesResultReceiver(new Handler());
+
         ToDoListSQLHelper sqlHelper = ToDoListSQLHelper.getInstance(this);
         sqlHelper.getWritableDatabase();
 
@@ -183,19 +195,19 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onConnectedToGoogleAPIClient() {
-        Log.d(TAG,"MainActivity onConnectedtoGoogleAPIClient");
+        Log.d(TAG, "MainActivity onConnectedtoGoogleAPIClient");
 
         loadPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_FINE_LOCATION);
         mLocationServices.createLocationRequest();
-        mRequestingLocationUpdates=true;
+        mRequestingLocationUpdates = true;
 
         if (mRequestingLocationUpdates) {
             try {
                 mLocationServices.startLocationUpdates();
-            }catch(SecurityException ex){
+            } catch (SecurityException ex) {
                 ex.printStackTrace();
             }
-        }else{
+        } else {
 
         }
 
@@ -203,20 +215,18 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
     @Override
-    public void displayDialogBasedOnStatus(Status status) throws IntentSender.SendIntentException{
+    public void displayDialogBasedOnStatus(Status status) throws IntentSender.SendIntentException {
         status.startResolutionForResult(
                 MainActivity.this,
                 REQUEST_LOCATION);
     }
 
 
-
-    private void loadPermissions(String perm,int requestCode) {
+    private void loadPermissions(String perm, int requestCode) {
         if (ContextCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED) {
             if (!ActivityCompat.shouldShowRequestPermissionRationale(this, perm)) {
-                ActivityCompat.requestPermissions(this, new String[]{perm},requestCode);
+                ActivityCompat.requestPermissions(this, new String[]{perm}, requestCode);
             }
         }
     }
@@ -235,16 +245,33 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void setGeoFenceAddress(String street,String city,String state, String zipCode) {
-        Log.d(TAG,"Inside setGeoFenceAddress");
-        GeoCoder.getLocationFromAddress(this,street+" "+city+","+state+" "+zipCode,mCoordinatesResultReceiver);
+    public void setGeoFenceAddress(String street, String city, String state, String zipCode) {
+        Log.d(TAG, "Inside setGeoFenceAddress");
+        GeoCoder.getLocationFromAddress(this, street + " " + city + "," + state + " " + zipCode, mCoordinatesResultReceiver);
+        //ToDoListOptionsFragment currentFragment =(ToDoListOptionsFragment) MainActivity.this.getSupportFragmentManager().findFragmentById(R.id.my_frame);
+        mCoordinatesResultReceiver.setResult(this);
 
-        //ADD FENCE
-        //Location lastLocation = mLocationServices.getLocation();
-        //mLocationServices.addToGeoFenceList("HOME",lastLocation.getLatitude(),lastLocation.getLongitude());
-        //addGeofences();
+
     }
 
+    @Override
+    public void removeGeoFence() {
+        removeGeofence();
+    }
+
+
+    public void removeGeofence() {
+        Log.d(TAG, "Remove geofence");
+        ArrayList<String>removeList = new ArrayList<>();
+        removeList.add("HOME");
+        removeList.add("CRESTWOOD");
+        com.google.android.gms.location.LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient,removeList).setResultCallback(this);
+        /*com.google.android.gms.location.LocationServices.GeofencingApi.removeGeofences(
+                mGoogleApiClient,
+                // This is the same pending intent that was used in addGeofences().
+                getGeofencePendingIntent()
+        ).setResultCallback(this); // Result processed in onResult().*/
+    }
 
     /**
      * Gets a PendingIntent to send with the request to add or remove Geofences. Location Services
@@ -266,7 +293,7 @@ public class MainActivity extends AppCompatActivity
 
     public void addGeofences() {
         if (!mGoogleApiClient.isConnected()) {
-            Toast.makeText(this,"NOT CONNECTED", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "NOT CONNECTED", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -286,6 +313,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
     private void logSecurityException(SecurityException securityException) {
         Log.e(TAG, "Invalid location permission. " +
                 "You need to use ACCESS_FINE_LOCATION with geofences", securityException);
@@ -294,26 +322,59 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onResult(@NonNull Status status) {
         if (status.isSuccess()) {
-            // Update state and save in shared preferences.
-//            mGeofencesAdded = !mGeofencesAdded;
-//            SharedPreferences.Editor editor = mSharedPreferences.edit();
-//            editor.putBoolean(Constants.GEOFENCES_ADDED_KEY, mGeofencesAdded);
-//            editor.apply();
+            //Update state and save in shared preferences.
+            mGeofencesAdded = !mGeofencesAdded;
+            SharedPreferences.Editor editor = mSharedPreferences.edit();
+            editor.putBoolean(Constants.GEOFENCES_ADDED_KEY, mGeofencesAdded);
+            editor.apply();
 //
 //            // Update the UI. Adding geofences enables the Remove Geofences button, and removing
 //            // geofences enables the Add Geofences button.
 //            setButtonsEnabledState();
 
-            Toast.makeText(
-                    this,
-                    "GEO FENCE CHANGE",
-                    Toast.LENGTH_SHORT
-            ).show();
+
+            if (mGeofencesAdded) {
+                Log.d(TAG, "geofence added");
+                Toast.makeText(MainActivity.this, "GEO FENCE ADDED", Toast.LENGTH_SHORT).show();
+            } else {
+                Log.d(TAG, "geofence removed");
+                Toast.makeText(MainActivity.this, "GEO FENCE REMOVED", Toast.LENGTH_SHORT).show();
+            }
+
         } else {
             // Get the status code for the error and log it using a user-friendly message.
             String errorMessage = GeofenceErrorMessages.getErrorString(this,
                     status.getStatusCode());
             Log.e(TAG, errorMessage);
         }
+    }
+
+
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData) {
+/*
+        MY_LANDMARKS.put("CRESTWOOD TRAIN STATION", new LatLng(40.958997,-73.820564));
+
+        // WARREN.
+        MY_LANDMARKS.put("WARREN AVENUE", new LatLng(40.9618839,-73.8154516));
+
+        //EASTCHESTER HIGH SCHOOL
+        MY_LANDMARKS.put("WARREN AVENUE", new LatLng(40.961959, -73.817088));
+
+        //LORD & TAYLORS
+        MY_LANDMARKS.put("LORD&TAYLORS", new LatLng(40.972252, -73.803934));
+
+        //KENSICO DAM
+        MY_LANDMARKS.put("KENSICO DAM",new LatLng(41.073794, -73.766287));
+        */
+        if(Constants.SUCCESS_RESULT==resultCode) {
+            //NOW ADD FENCE
+            Location lastLocation = resultData.getParcelable(Constants.RESULT_DATA_KEY);
+
+            mLocationServices.addToGeoFenceList("CRESTWOOD", lastLocation.getLatitude(), lastLocation.getLongitude());
+            addGeofences();
+        }
+
+
     }
 }

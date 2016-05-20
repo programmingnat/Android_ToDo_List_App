@@ -154,6 +154,8 @@ public class LocationServices implements LocationListener {
                 .build());
 
     }
+
+
     /**
      * Builds and returns a GeofencingRequest. Specifies the list of geofences to be monitored.
      * Also specifies how the geofence notifications are initially triggered.

@@ -12,6 +12,12 @@ import android.util.Log;
  */
 @SuppressLint("ParcelCreator")
 public class CoordinatesResultReceiver extends ResultReceiver {
+
+
+    public interface ICoordinateReceiver {
+        public void onReceiveResult(int resultCode, Bundle resultData);
+
+    }
     /**
      * Create a new ResultReceive to receive results.  Your
      * {@link #onReceiveResult} method will be called from the thread running
@@ -20,11 +26,16 @@ public class CoordinatesResultReceiver extends ResultReceiver {
      * @param handler
      */
     private static final String TAG = "CoordinatesResultRec";
+    private ICoordinateReceiver mIReceiver;
 
     public CoordinatesResultReceiver(Handler handler) {
         super(handler);
     }
 
+
+    public void setResult(ICoordinateReceiver receiver){
+        mIReceiver = receiver;
+    }
     /**
      * Receives data sent from FetchAddressIntentService and updates the UI in MainActivity.
      */
@@ -37,10 +48,14 @@ public class CoordinatesResultReceiver extends ResultReceiver {
 
         // Show a toast message if an address was found.
         if (resultCode == Constants.SUCCESS_RESULT) {
+
             Log.d(TAG, "onReceiveResult the coordinates are is " + location.getLongitude()+" "+location.getLatitude());
         } else {
             Log.d(TAG, "onReceiveResult, but is not success");
         }
+        mIReceiver.onReceiveResult(resultCode,resultData);
+
+
 
 
     }

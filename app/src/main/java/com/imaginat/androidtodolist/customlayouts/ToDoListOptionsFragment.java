@@ -28,11 +28,14 @@ import java.util.Date;
 /**
  * Created by nat on 5/1/16.
  */
-public class ToDoListOptionsFragment extends Fragment {
+public class ToDoListOptionsFragment extends Fragment   {
+
+
 
     public interface IGeoOptions{
         public void getAddressFromLocation();
         public void setGeoFenceAddress(String street,String city,String state, String zipCode);
+        public void removeGeoFence();
 
 
     }
@@ -50,13 +53,19 @@ public class ToDoListOptionsFragment extends Fragment {
     //private Date mAlarmDate,mAlarmTime;
     private Calendar mAlarmCalendar;
     private Button  mCoordinatesToAddressButton;
+    private Button mRemoveFenceButton;
     private IGeoOptions mIGeoOptions;
+
+
+
 
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.todos_more_options, container, false);
+
+
 
         mAlarmCalendar = Calendar.getInstance();
         Button selectDateButton = (Button) view.findViewById(R.id.selectDate_button);
@@ -124,7 +133,15 @@ public class ToDoListOptionsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 //mIGeoOptions.getAddressFromLocation();
-                mIGeoOptions.setGeoFenceAddress("71 Warren Ave","Tuckahoe","NY","10707");
+                mIGeoOptions.setGeoFenceAddress("Crestwood Train Station", "Tuckahoe", "NY", "10707");//71 Warren Ave","Tuckahoe","NY","10707");
+            }
+        });
+
+        mRemoveFenceButton =(Button)view.findViewById(R.id.removeFencesButton);
+        mRemoveFenceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mIGeoOptions.removeGeoFence();
             }
         });
         return view;
@@ -167,4 +184,6 @@ public class ToDoListOptionsFragment extends Fragment {
         }
 
     }
+
+
 }

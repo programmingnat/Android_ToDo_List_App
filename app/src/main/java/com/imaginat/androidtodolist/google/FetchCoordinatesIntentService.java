@@ -128,6 +128,7 @@ public class FetchCoordinatesIntentService extends IntentService{
      * Sends a resultCode and message to the receiver.
      */
     private void deliverResultToReceiver(int resultCode, Location location) {
+        Log.d(TAG,"deliverResulToReceiver called");
         Bundle bundle = new Bundle();
         bundle.putParcelable(Constants.RESULT_DATA_KEY, location);
         mReceiver.send(resultCode, bundle);

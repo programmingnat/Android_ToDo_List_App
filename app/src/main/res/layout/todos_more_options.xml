@@ -109,7 +109,12 @@
     </LinearLayout>
     <Button
         android:id="@+id/getAddressFromCoordinates"
-        android:text="Set Alarm"
+        android:text="CRESTWOOD TRAIN STATION GEO FENCE ALARM"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    <Button
+        android:id="@+id/removeFencesButton"
+        android:text="CANCEL THE CRESTWOOD TRAIN STATION GEO FENCE ALARM"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 </LinearLayout>
