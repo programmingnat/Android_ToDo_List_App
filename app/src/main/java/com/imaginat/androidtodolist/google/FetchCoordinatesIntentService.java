@@ -48,6 +48,7 @@ public class FetchCoordinatesIntentService extends IntentService{
         String errorMessage = "";
 
         mReceiver = intent.getParcelableExtra(Constants.RECEIVER);
+        String alarmTag = intent.getStringExtra(Constants.ALARM_TAG);
 
         // Check if receiver was properly registered.
         if (mReceiver == null) {
@@ -64,7 +65,7 @@ public class FetchCoordinatesIntentService extends IntentService{
         if (addressToLookup == null) {
             errorMessage = "No address data provided";
             Log.wtf(TAG, errorMessage);
-            deliverResultToReceiver(Constants.FAILURE_RESULT, null);
+            deliverResultToReceiver(Constants.FAILURE_RESULT, null,alarmTag);
             return;
         }
 
@@ -106,7 +107,8 @@ public class FetchCoordinatesIntentService extends IntentService{
                 Log.e(TAG, errorMessage);
             }
 
-            deliverResultToReceiver(Constants.FAILURE_RESULT, null);
+
+            deliverResultToReceiver(Constants.FAILURE_RESULT, null,alarmTag);
         } else {
 
             if (addresses==null) {
@@ -119,18 +121,20 @@ public class FetchCoordinatesIntentService extends IntentService{
             l.setLongitude(location.getLongitude());
 
 
+
             Log.i(TAG, "looking for coordinates from address");
-            deliverResultToReceiver(Constants.SUCCESS_RESULT, l);
+            deliverResultToReceiver(Constants.SUCCESS_RESULT, l,alarmTag);
         }
     }
 
     /**
      * Sends a resultCode and message to the receiver.
      */
-    private void deliverResultToReceiver(int resultCode, Location location) {
+    private void deliverResultToReceiver(int resultCode, Location location,String alarmTag) {
         Log.d(TAG,"deliverResulToReceiver called");
         Bundle bundle = new Bundle();
         bundle.putParcelable(Constants.RESULT_DATA_KEY, location);
+        bundle.putString(Constants.ALARM_TAG,alarmTag);
         mReceiver.send(resultCode, bundle);
     }
 }

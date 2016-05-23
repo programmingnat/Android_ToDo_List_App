@@ -41,6 +41,7 @@ public class AddListFragment extends Fragment {
                 String newListName = mEditTextOfListName.getText().toString();
                 ListManager listManager = ListManager.getInstance(getContext());
                 listManager.createNewList(newListName);
+                getFragmentManager().popBackStackImmediate();
             }
         });
 

@@ -245,9 +245,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void setGeoFenceAddress(String street, String city, String state, String zipCode) {
-        Log.d(TAG, "Inside setGeoFenceAddress");
-        GeoCoder.getLocationFromAddress(this, street + " " + city + "," + state + " " + zipCode, mCoordinatesResultReceiver);
+    public void setGeoFenceAddress(String street, String city, String state, String zipCode,String alarmTag) {
+        Log.d(TAG, "Inside setGeoFenceAddress "+street+" "+city+" "+state+" "+zipCode);
+        GeoCoder.getLocationFromAddress(this, street + " " + city + "," + state + " " + zipCode,alarmTag, mCoordinatesResultReceiver);
         //ToDoListOptionsFragment currentFragment =(ToDoListOptionsFragment) MainActivity.this.getSupportFragmentManager().findFragmentById(R.id.my_frame);
         mCoordinatesResultReceiver.setResult(this);
 
@@ -370,8 +370,8 @@ public class MainActivity extends AppCompatActivity
         if(Constants.SUCCESS_RESULT==resultCode) {
             //NOW ADD FENCE
             Location lastLocation = resultData.getParcelable(Constants.RESULT_DATA_KEY);
-
-            mLocationServices.addToGeoFenceList("CRESTWOOD", lastLocation.getLatitude(), lastLocation.getLongitude());
+            String requestID=resultData.getString(Constants.ALARM_TAG);
+            mLocationServices.addToGeoFenceList(requestID, lastLocation.getLatitude(), lastLocation.getLongitude());
             addGeofences();
         }
 

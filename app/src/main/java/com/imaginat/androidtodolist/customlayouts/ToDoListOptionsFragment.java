@@ -14,11 +14,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import com.imaginat.androidtodolist.R;
 import com.imaginat.androidtodolist.businessModels.AlarmReceiver;
+import com.imaginat.androidtodolist.businessModels.ToDoListItem;
+import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -31,10 +34,12 @@ import java.util.Date;
 public class ToDoListOptionsFragment extends Fragment   {
 
 
+    private ToDoListItem mToDoListItem;
+
 
     public interface IGeoOptions{
         public void getAddressFromLocation();
-        public void setGeoFenceAddress(String street,String city,String state, String zipCode);
+        public void setGeoFenceAddress(String street,String city,String state, String zipCode,String alarmTag);
         public void removeGeoFence();
 
 
@@ -45,9 +50,28 @@ public class ToDoListOptionsFragment extends Fragment   {
     private static final int REQUEST_DATE=0;
     private static final int REQUEST_TIME=1;
 
+    private String mListID,mItemID;
+
+    public String getListID() {
+        return mListID;
+    }
+
+    public void setListID(String listID) {
+        mListID = listID;
+    }
+
+    public String getItemID() {
+        return mItemID;
+    }
+
+    public void setItemID(String itemID) {
+        mItemID = itemID;
+    }
+
     AlarmManager alarmManager;
     private PendingIntent pendingIntent;
    // private TimePicker alarmTimePicker;
+    private EditText mEditTextOfListItem;
     private TextView alarmTextView;
     private TextView displayAlarmDateTextView,displayAlarmTimeTextView;
     //private Date mAlarmDate,mAlarmTime;
@@ -55,6 +79,7 @@ public class ToDoListOptionsFragment extends Fragment   {
     private Button  mCoordinatesToAddressButton;
     private Button mRemoveFenceButton;
     private IGeoOptions mIGeoOptions;
+    private EditText mStreetAddress_EditText,mCity_EditText,mState_EditText,mZip_EditText;
 
 
 
@@ -65,9 +90,66 @@ public class ToDoListOptionsFragment extends Fragment   {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.todos_more_options, container, false);
 
+        //I. GET REFERENCE TO VIEWS
+        mEditTextOfListItem = (EditText)view.findViewById(R.id.theItemText_EditText);
+        displayAlarmTimeTextView = (TextView) view.findViewById(R.id.displayTime_textView);
+        displayAlarmDateTextView = (TextView) view.findViewById(R.id.displayDate_textView);
 
+        mStreetAddress_EditText = (EditText)view.findViewById(R.id.streetAddress_editText);
+        mCity_EditText = (EditText)view.findViewById(R.id.city_editText);
+        mState_EditText=(EditText)view.findViewById(R.id.state_editText);
+        mZip_EditText=(EditText)view.findViewById(R.id.zipCode_editText);
+
+        // alarmTimePicker = (TimePicker) view.findViewById(R.id.alarmTimePicker);
+        alarmTextView = (TextView) view.findViewById(R.id.alarmText);
+        Switch alarmToggle = (Switch) view.findViewById(R.id.alarmToggle);
+        alarmManager = (AlarmManager) getActivity().getSystemService(getContext().ALARM_SERVICE);
+
+        //II. GET INFO BASED ON TO THE listID,itemID
+        ToDoListItemManager itemManager = ToDoListItemManager.getInstance(getContext());
+        mToDoListItem = itemManager.getSingleListItem(mListID,mItemID);
+        Log.d(TAG,mToDoListItem.getText());
 
         mAlarmCalendar = Calendar.getInstance();
+
+        //III. POPULATE PAGE CONTROLS WITH INFO (from database)
+        //A.set the text
+        mEditTextOfListItem.setText(mToDoListItem.getText());
+
+        //B. set calendar alarm if set
+        SimpleDateFormat sf;
+        if(mToDoListItem.isCalendarAlarm()){
+            //get the date
+            sf = new SimpleDateFormat("MM.dd.yy H:m");
+            String theDate = mToDoListItem.getAlarmMonth()+"."+mToDoListItem.getAlarmDay()+"."+(mToDoListItem.getAlarmYear()-2000);
+            //get the time
+            String theTime=mToDoListItem.getAlarmHour()+":"+mToDoListItem.getAlarmMin();
+            Date date=null;
+
+            try {
+                date = sf.parse(theDate+" "+theTime );
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
+            setAlarmDate(date);
+            setAlarmCalendarTime(date);
+            if(mToDoListItem.isCalendarAlarmActive()) {
+                alarmToggle.setChecked(true);
+            }
+        }
+        //3. set geofence alarm if set
+        //if(toDoListItem.isGeoFenceAlarm()){
+           /* sf = new SimpleDateFormat("hh:mm:ss a");
+            String theTime = "1:34:30 pm";
+            try{
+                date = sf.parse(theTime);
+            }catch(Exception ex){
+
+            }
+            setAlarmCalendarTime(date);*/
+       // }
+
+
         Button selectDateButton = (Button) view.findViewById(R.id.selectDate_button);
         selectDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,48 +174,49 @@ public class ToDoListOptionsFragment extends Fragment   {
 
             }
         });
-        displayAlarmTimeTextView = (TextView) view.findViewById(R.id.displayTime_textView);
-        displayAlarmDateTextView = (TextView) view.findViewById(R.id.displayDate_textView);
-        // alarmTimePicker = (TimePicker) view.findViewById(R.id.alarmTimePicker);
-        alarmTextView = (TextView) view.findViewById(R.id.alarmText);
-        Switch alarmToggle = (Switch) view.findViewById(R.id.alarmToggle);
-        alarmManager = (AlarmManager) getActivity().getSystemService(getContext().ALARM_SERVICE);
+
 
         alarmToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
+                //SETTING THE CALENDAR ALARM
+                ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(getContext());
 
+                //I. CREATING THE INTENT (using a custom tag). Intent can be used to start or cancel alarm
+                Intent myIntent = new Intent(getContext(), AlarmReceiver.class);
+                pendingIntent = PendingIntent.getBroadcast(getContext(), ToDoListOptionsFragment.this.createAlarmTag(),
+                        myIntent, 0);
+
+                //II. IF THE switch is set to ON, update info, save it, and
                 if (isChecked) {
-                    Log.d("MyActivity", "Alarm On");
-
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.set(Calendar.HOUR_OF_DAY, mAlarmCalendar.get(Calendar.HOUR_OF_DAY));
-                    calendar.set(Calendar.MINUTE, mAlarmCalendar.get(Calendar.MINUTE));
-                    Intent myIntent = new Intent(getContext(), AlarmReceiver.class);
-                    //Intent myIntent = new Intent(getContext(), AlarmService.class);
-                    pendingIntent = PendingIntent.getBroadcast(getContext(), 0, myIntent, 0);
-                    //pendingIntent = PendingIntent.getService(getContext(), 0, myIntent, 0);
-                    alarmManager.set(AlarmManager.RTC, calendar.getTimeInMillis(), pendingIntent);
-
-
-                    Date copiedDate = new Date(calendar.getTimeInMillis());
-
+                    alarmManager.set(AlarmManager.RTC, mAlarmCalendar.getTimeInMillis(), pendingIntent);
+                    //now save current setting in database
                     DateFormat df = new SimpleDateFormat("MM.dd:yy:HH:mm:ss");
-                    Log.d(TAG, "pendingItent sent for " + df.format(copiedDate));
+                    ToDoListItemManager itemManager = ToDoListItemManager.getInstance(getContext());
+                    itemManager.saveCalendarAlarm(getCalendarAlarmID(),mItemID,1+mAlarmCalendar.get(Calendar.MONTH),mAlarmCalendar.get(Calendar.DATE),mAlarmCalendar.get(Calendar.YEAR),
+                            mAlarmCalendar.get(Calendar.HOUR_OF_DAY),mAlarmCalendar.get(Calendar.MINUTE),true);
                 } else {
+                    //cancel the pending intent here  (with alarmManager and in database)
                     alarmManager.cancel(pendingIntent);
-                    Log.d("MyActivity", "Alarm Off");
+                    ToDoListItemManager itemManager = ToDoListItemManager.getInstance(getContext());
+                    itemManager.toggleCalendarAlarm(getCalendarAlarmID(),0);
                 }
             }
         });
+
 
         mCoordinatesToAddressButton =(Button)view.findViewById(R.id.getAddressFromCoordinates);
         mCoordinatesToAddressButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //mIGeoOptions.getAddressFromLocation();
-                mIGeoOptions.setGeoFenceAddress("Crestwood Train Station", "Tuckahoe", "NY", "10707");//71 Warren Ave","Tuckahoe","NY","10707");
+                String streetAddress = mStreetAddress_EditText.getText().toString();
+                String cityAddress = mCity_EditText.getText().toString();
+                String stateAddress = mState_EditText.getText().toString();
+                String zipAddress = mZip_EditText.getText().toString();
+                //mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress);
+                mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress,ToDoListOptionsFragment.this.getCalendarAlarmID());//71 Warren Ave","Tuckahoe","NY","10707");
             }
         });
 
@@ -163,27 +246,52 @@ public class ToDoListOptionsFragment extends Fragment   {
 
         if(requestCode == REQUEST_DATE){
             Date date = (Date)data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
-            Calendar result = Calendar.getInstance();
-            result.setTime(date);
-           // mAlarmDate=date;
-            SimpleDateFormat sf = new SimpleDateFormat("MM.dd.yy");
-            displayAlarmDateTextView.setText(sf.format(date));
-            mAlarmCalendar.set(Calendar.MONTH, result.get(Calendar.MONTH));
-            mAlarmCalendar.set(Calendar.DAY_OF_MONTH,result.get(Calendar.DAY_OF_MONTH));
-            mAlarmCalendar.set(Calendar.YEAR,result.get(Calendar.YEAR));
+            setAlarmDate(date);
+
         }else if(requestCode==REQUEST_TIME){
             Date date = (Date)data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
-            Calendar result = Calendar.getInstance();
-            result.setTime(date);
-            //mAlarmTime=date;
-            SimpleDateFormat sf = new SimpleDateFormat("hh:mm:ss a");
-            displayAlarmTimeTextView.setText(sf.format(date));
-            mAlarmCalendar.set(Calendar.HOUR_OF_DAY,result.get(Calendar.HOUR_OF_DAY));
-            mAlarmCalendar.set(Calendar.MINUTE,result.get(Calendar.MINUTE));
+            setAlarmCalendarTime(date);
 
         }
 
+
+
     }
 
+    //=====================CALENDAR ALARM RELATED HELPERS========================================
+    private void setAlarmDate(Date date){
+        Calendar result = Calendar.getInstance();
+        result.setTime(date);
+        // mAlarmDate=date;
+        SimpleDateFormat sf = new SimpleDateFormat("MM.dd.yy");
+        displayAlarmDateTextView.setText(sf.format(date));
+        mAlarmCalendar.set(Calendar.MONTH, result.get(Calendar.MONTH));
+        mAlarmCalendar.set(Calendar.DAY_OF_MONTH,result.get(Calendar.DAY_OF_MONTH));
+        mAlarmCalendar.set(Calendar.YEAR,result.get(Calendar.YEAR));
+    }
+    private void setAlarmCalendarTime(Date date){
 
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        SimpleDateFormat sf = new SimpleDateFormat("hh:mm:ss a");
+        displayAlarmTimeTextView.setText(sf.format(date));
+        mAlarmCalendar.set(Calendar.HOUR_OF_DAY,calendar.get(Calendar.HOUR_OF_DAY));
+        mAlarmCalendar.set(Calendar.MINUTE,calendar.get(Calendar.MINUTE));
+    }
+
+    private String getCalendarAlarmID(){
+        String substring = mToDoListItem.getText().substring(0,5);
+        return substring+"_L"+mListID+"I"+mItemID;
+    }
+
+    private int createAlarmTag(){
+        String result = getCalendarAlarmID();
+        int strlen = result.length();
+        int hash = 7;
+        for (int i = 0; i < strlen; i++) {
+            hash = hash*31 + result.charAt(i);
+        }
+        return hash;
+    }
+    //=========================GEO FENCE RELATED====================================================
 }

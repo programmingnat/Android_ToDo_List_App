@@ -38,6 +38,8 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
     public interface IHandleListClicks {
         public void handleClick(String data);
 
+        public void handleMoreOptions(String list_id,String item_id);
+
         public void handleClickToCreateNewReminder(String data);
 
         public void handleClickToUpdateReminder(String id, String data);
@@ -167,6 +169,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
         }
         holder.mRadioButton.setVisibility(View.VISIBLE);
         holder.mEditText.setText(toDoListItem.getText());
+        holder.mListID=toDoListItem.getListId();
         holder.mReminderId = toDoListItem.getReminder_id();
         ((LinearLayout)holder.itemView.findViewById(R.id.lineItemOptionsButton)).setVisibility(View.GONE);
         holder.mMoreOpts.setVisibility(View.INVISIBLE);
@@ -195,6 +198,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
         public String mReminderId;
         public View mItemView;
         public ImageButton mMoreOpts;
+        public String mListID;
 
 
 
@@ -248,7 +252,8 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
             mOptionsButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mClickInterface.handleClick("MORE_OPTIONS");
+                    //mClickInterface.handleClick("MORE_OPTIONS");
+                    mClickInterface.handleMoreOptions(mListID,mReminderId);
                 }
             });
 

@@ -47,7 +47,7 @@ public class DbSchema {
 
         public static final String createCommand=
                 "CREATE TABLE "+NAME+"("+
-                        cols.CALENDAR_ALARM_ID+" INTEGER PRIMARY KEY, "+
+                        cols.CALENDAR_ALARM_ID+" STRING PRIMARY KEY, "+
                         cols.REMINDER_ID+" INTEGER NOT NULL, "+
                         cols.DAY+" INTEGER NOT NULL, "+
                         cols.MONTH+" INTEGER NOT NULL, "+
@@ -57,6 +57,7 @@ public class DbSchema {
                         cols.IS_ACTIVE+" INTEGER DEFAULT 0,"+
                         "FOREIGN KEY("+cols.REMINDER_ID+") REFERENCES "+reminders_table.NAME+"("+reminders_table.cols.REMINDER_ID+")"+
                         ")";
+
 
         public static final class cols{
             public static final String CALENDAR_ALARM_ID="calendarAlarm_id";
@@ -73,7 +74,8 @@ public class DbSchema {
     //========================================================================
     public static final class geoFenceAlarm_table{
         public static final String NAME="geoFenceAlarm";
-        public static final String[] ALL_COLUMNS=new String[]{};
+        public static final String[] ALL_COLUMNS=new String[]{cols.GEOFENCE_ALARM_ID,cols.REMINDER_ID,cols.LONGITUDE,
+            cols.LATITUDE,cols.ALARM_TAG,cols.RADIUS,cols.IS_ACTIVE};
 
         public static final String createCommand =
                 "CREATE TABLE "+NAME+"("+
@@ -81,6 +83,8 @@ public class DbSchema {
                         cols.REMINDER_ID+" INTEGER NOT NULL, "+
                         cols.LONGITUDE+" REAL NOT NULL, "+
                         cols.LATITUDE+" REAL NOT NULL, "+
+                        cols.ALARM_TAG+" TEXT NOT NULL, "+
+                        cols.RADIUS+" INTEGER NOT NULL, "+
                         cols.IS_ACTIVE+" INTEGER DEFAULT 0,"+
                         "FOREIGN KEY("+cols.REMINDER_ID+") REFERENCES "+reminders_table.NAME+"("+reminders_table.cols.REMINDER_ID+")"+
                         ")";
@@ -90,7 +94,21 @@ public class DbSchema {
             public static final String REMINDER_ID="reminder_id";
             public static final String LONGITUDE="longitude";
             public static final String LATITUDE="latitude";
+            public static final String ALARM_TAG="alarmTag";
+            public static final String RADIUS="meterRadius";
             public static final String IS_ACTIVE="isAlarmActive";
+        }
+    }
+    //===========================================================================
+    public static final class locationsOfAlarm_table{
+        public static final String NAME="locationsOfAlarm";
+        public static final String[] ALL_COLUMNS=new String[]{};
+
+
+
+        public static final class cols{
+            public static final String LOCATION_FENCE_ID="location_id";
+            
         }
     }
 }

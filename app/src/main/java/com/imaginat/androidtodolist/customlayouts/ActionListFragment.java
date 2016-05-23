@@ -26,15 +26,13 @@ import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
  */
 public class ActionListFragment extends Fragment implements ToDoListRecyclerAdapter.IHandleListClicks {
 
-    public interface IChangeActionBarTitle{
+    public interface IChangeActionBarTitle {
         public void onUpdateTitle(String title);
     }
 
 
-
-
-    private static String TAG= MainListFragment.class.getName();
-    private String mListId=null;
+    private static String TAG = MainListFragment.class.getName();
+    private String mListId = null;
     ToDoListRecyclerAdapter mAdapter;
     RelativeLayout mTheAddingLayout;
     RecyclerView mRecyclerView;
@@ -46,35 +44,31 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         mIGeoOptions = IGeoOptions;
     }
 
-    public void setListId(String id){
-        mListId=id;
+    public void setListId(String id) {
+        mListId = id;
     }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View  view= inflater.inflate(R.layout.todos_list_fragment, container, false);
+        View view = inflater.inflate(R.layout.todos_list_fragment, container, false);
         setHasOptionsMenu(true);
 
-         mToDoListItemManager = ToDoListItemManager.getInstance(getContext());
+        mToDoListItemManager = ToDoListItemManager.getInstance(getContext());
         mToDoListItemManager.loadAllRemindersForList(mListId);
-        mTheAddingLayout =(RelativeLayout)view.findViewById(R.id.addItemOverlayView);
+        mTheAddingLayout = (RelativeLayout) view.findViewById(R.id.addItemOverlayView);
         //mAddListOverlayView = (TextView) mTheAddingLayout.findViewById(R.id.addListEditText);
-        mAdapter = new ToDoListRecyclerAdapter((Context)getActivity(),mToDoListItemManager.getReminders(),this);
-        RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.theRecyclerView);
+        mAdapter = new ToDoListRecyclerAdapter((Context) getActivity(), mToDoListItemManager.getReminders(), this);
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.theRecyclerView);
         recyclerView.setAdapter(mAdapter);
-        mRecyclerView=recyclerView;
+        mRecyclerView = recyclerView;
         MyLinearLayoutManager linearLayoutManager = new MyLinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(linearLayoutManager);
 
 
-
-
-
-
-
         mAdapter.notifyDataSetChanged();
 
-        if(mIChangeActionBarTitle!=null){
+        if (mIChangeActionBarTitle != null) {
             mIChangeActionBarTitle.onUpdateTitle("TEST LIST");
         }
 
@@ -86,12 +80,12 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
                 int lastVisiblePosition = layoutManager.findLastVisibleItemPosition();
-                int lastIndex = mToDoListItemManager.getReminders().size()-1;
-                if(lastVisiblePosition<lastIndex){
-                    Toast.makeText(getActivity(),"I should display extra text on bottom",Toast.LENGTH_SHORT).show();
+                int lastIndex = mToDoListItemManager.getReminders().size() - 1;
+                if (lastVisiblePosition < lastIndex) {
+                    Toast.makeText(getActivity(), "I should display extra text on bottom", Toast.LENGTH_SHORT).show();
                     mTheAddingLayout.setVisibility(View.VISIBLE);
-                }else{
-                    Toast.makeText(getActivity(),"I should NOT display extra text on bottom",Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getActivity(), "I should NOT display extra text on bottom", Toast.LENGTH_SHORT).show();
                     mTheAddingLayout.setVisibility(View.GONE);
                 }
 
@@ -106,7 +100,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         super.onAttach(context);
         try {
             mIChangeActionBarTitle = (IChangeActionBarTitle) context;
-        }catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -128,23 +122,16 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         //set height and width
     }
 
-    public void toggleEdit(){
-        Toast.makeText(getContext(),"toggleEdit called",Toast.LENGTH_SHORT).show();
+    public void toggleEdit() {
+        Toast.makeText(getContext(), "toggleEdit called", Toast.LENGTH_SHORT).show();
     }
+
     @Override
     public void handleClick(String data) {
 
-        if(data.equals("MORE_OPTIONS")){
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            ToDoListOptionsFragment toDoListOptionsFragment = new ToDoListOptionsFragment();
-            toDoListOptionsFragment.setIGeoOptions(mIGeoOptions);
-            ft.replace(R.id.my_frame,toDoListOptionsFragment) ;
-            ft.setTransition(FragmentTransaction.TRANSIT_NONE);
-            ft.addToBackStack(null);
-            ft.commit();
-        }
-        Log.d(TAG,"INSIDE ActionListFragment");
-        Toast.makeText(getContext(),"CLICK",Toast.LENGTH_SHORT).show();
+
+        Log.d(TAG, "INSIDE ActionListFragment");
+        Toast.makeText(getContext(), "CLICK", Toast.LENGTH_SHORT).show();
 //        FragmentTransaction ft = getFragmentManager().beginTransaction();
 //        ft.replace(R.id.my_frame, new ActionListFragment());
 //        ft.setTransition(FragmentTransaction.TRANSIT_NONE);
@@ -153,10 +140,25 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     }
 
     @Override
+    public void handleMoreOptions(String list_id, String item_id) {
+
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ToDoListOptionsFragment toDoListOptionsFragment = new ToDoListOptionsFragment();
+        toDoListOptionsFragment.setItemID(item_id);
+        toDoListOptionsFragment.setListID(list_id);
+        toDoListOptionsFragment.setIGeoOptions(mIGeoOptions);
+        ft.replace(R.id.my_frame, toDoListOptionsFragment);
+        ft.setTransition(FragmentTransaction.TRANSIT_NONE);
+        ft.addToBackStack(null);
+        ft.commit();
+
+    }
+
+    @Override
     public void handleClickToCreateNewReminder(String data) {
         Log.d(TAG, "Attempting to create new reminder " + mListId + " " + data);
         UpdateDatabaseTask updateDatabaseTask = new UpdateDatabaseTask();
-        updateDatabaseTask.execute("CREATE",data);
+        updateDatabaseTask.execute("CREATE", data);
 
 
     }
@@ -166,7 +168,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         Log.d(TAG, "Attempting to update reminder " + id + " with " + data);
 
         UpdateDatabaseTask updateDatabaseTask = new UpdateDatabaseTask();
-        updateDatabaseTask.execute("UPDATE", id,data);
+        updateDatabaseTask.execute("UPDATE", id, data);
 
     }
 
@@ -187,7 +189,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        final int MENU_ITEM_ITEM1=100;
+        final int MENU_ITEM_ITEM1 = 100;
         MenuItem m = menu.add(Menu.NONE, MENU_ITEM_ITEM1, Menu.NONE, "Item name");
         m.setIcon(android.R.drawable.ic_menu_edit);
         m.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
@@ -199,12 +201,12 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
 
         @Override
         protected Void doInBackground(String... params) {
-            if(params[0].equals("CREATE")){
+            if (params[0].equals("CREATE")) {
                 mToDoListItemManager.createNewReminder(mListId, params[1]);
-            }else if(params[0].equals("UPDATE")){
+            } else if (params[0].equals("UPDATE")) {
                 mToDoListItemManager.updateReminder(mListId, params[1], params[2]);
-            }else if(params[0].equals("DELETE")){
-                mToDoListItemManager.deleteReminder(mListId,params[1]);
+            } else if (params[0].equals("DELETE")) {
+                mToDoListItemManager.deleteReminder(mListId, params[1]);
 
             }
 
@@ -219,7 +221,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         }
     }
 
-    private class MyLinearLayoutManager extends LinearLayoutManager{
+    private class MyLinearLayoutManager extends LinearLayoutManager {
 
         @Override
         public boolean supportsPredictiveItemAnimations() {

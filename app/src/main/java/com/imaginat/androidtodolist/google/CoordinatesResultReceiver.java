@@ -50,6 +50,7 @@ public class CoordinatesResultReceiver extends ResultReceiver {
         if (resultCode == Constants.SUCCESS_RESULT) {
 
             Log.d(TAG, "onReceiveResult the coordinates are is " + location.getLongitude()+" "+location.getLatitude());
+            Log.d(TAG,"onReceiveResult the tag should be " +resultData.getString(Constants.ALARM_TAG));
         } else {
             Log.d(TAG, "onReceiveResult, but is not success");
         }

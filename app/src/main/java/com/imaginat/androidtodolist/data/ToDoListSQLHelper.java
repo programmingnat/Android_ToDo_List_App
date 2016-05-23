@@ -136,6 +136,14 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
 
         return c;
     }
+    public Cursor getReminderByIDs(String listID,String reminderID){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = "SELECT * FROM reminders r LEFT OUTER JOIN calendarAlarms ca ON ca.reminder_id=r.reminder_id LEFT OUTER JOIN ";
+        sql+=" geoFenceAlarm gfa ON gfa.reminder_id=r.reminder_id WHERE r.list_id=? AND r.reminder_id=?";
+        Cursor c = db.rawQuery(sql,new String[]{listID,reminderID});
+        return c;
+
+    }
     public void updateReminder(String listID,String reminderID,String text){
         ContentValues values = new ContentValues();
         values.put(DbSchema.reminders_table.cols.REMINDER_TEXT,text);
@@ -152,5 +160,55 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
         db.delete(DbSchema.reminders_table.NAME,
                 DbSchema.reminders_table.cols.LIST_ID + "=? AND " + DbSchema.reminders_table.cols.REMINDER_ID + "=?",
                 new String[]{listID, reminderID});
+    }
+
+    public void saveCalendarAlarm(String alarmID, String reminderID,int month,int day, int year,int hour,int min,int isActive){
+        //UPDATE FIRST
+        ContentValues values = new ContentValues();
+        values.put(DbSchema.calendarAlarm_table.cols.MONTH,month);
+        values.put(DbSchema.calendarAlarm_table.cols.DAY,day);
+        values.put(DbSchema.calendarAlarm_table.cols.YEAR,year);
+        values.put(DbSchema.calendarAlarm_table.cols.HOUR,hour);
+        values.put(DbSchema.calendarAlarm_table.cols.MINUTES,min);
+        values.put(DbSchema.calendarAlarm_table.cols.IS_ACTIVE,isActive);
+
+        SQLiteDatabase db= this.getWritableDatabase();
+
+        int noOfRowsAffected=db.update(DbSchema.calendarAlarm_table.NAME,
+                values,
+                DbSchema.calendarAlarm_table.cols.REMINDER_ID + "=? AND " + DbSchema.calendarAlarm_table.cols.CALENDAR_ALARM_ID + "=?",
+                new String[]{reminderID,alarmID});
+        Log.d(TAG,"SEEING IF I CAN UPDATE reminder_id is "+reminderID+" and calrmID is "+alarmID);
+        //IF UPDATE DOESNT WORK THEN INSERT
+        if(noOfRowsAffected>0){
+            Log.d(TAG,"UPDATNG, not need to INSERT");
+            return;
+        }
+        //if it gets here, no update occurred, insert it
+        values.put(DbSchema.calendarAlarm_table.cols.CALENDAR_ALARM_ID,alarmID);
+        values.put(DbSchema.calendarAlarm_table.cols.REMINDER_ID,reminderID);
+
+
+        Log.d(TAG,"INSERTING NEW ENTRY");
+        db.insert(DbSchema.calendarAlarm_table.NAME,
+                null,
+                values);
+    }
+
+    public void toggleCalendarAlarm(String calendarAlarmID,int onOff){
+        ContentValues values = new ContentValues();
+        values.put(DbSchema.calendarAlarm_table.cols.IS_ACTIVE,onOff);
+
+        SQLiteDatabase db= this.getWritableDatabase();
+        int noOfRowsAffected=db.update(DbSchema.calendarAlarm_table.NAME,
+                values,
+                DbSchema.calendarAlarm_table.cols.CALENDAR_ALARM_ID + "=?",
+                new String[]{calendarAlarmID});
+    }
+    public void deleteCalendarAlarm(String calendarAlarmID){
+        SQLiteDatabase db= this.getWritableDatabase();
+        db.delete(DbSchema.calendarAlarm_table.NAME,
+                DbSchema.calendarAlarm_table.cols.CALENDAR_ALARM_ID+ "=?",
+                new String[]{calendarAlarmID});
     }
 }
