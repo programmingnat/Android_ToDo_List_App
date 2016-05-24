@@ -10,11 +10,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <Switch
-        android:id="@+id/alarmToggle"
-        android:text="Create an alarm for this note based on date and time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="CALENDAR ALARM"/>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -49,14 +48,21 @@
 
     </RelativeLayout>
 
-
+    <Switch
+        android:id="@+id/alarmToggle"
+        android:text="Create an alarm for this note based on date and time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
 
     <!--<ToggleButton-->
         <!--android:id="@+id/alarmToggle"-->
         <!--android:layout_width="wrap_content"-->
         <!--android:layout_height="wrap_content"/>-->
-
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="GEOFENCE ALARM"/>
     <TextView
         android:id="@+id/alarmText"
         android:layout_width="wrap_content"
@@ -87,12 +93,14 @@
         <TextView
             android:text="City"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="10"/>
         <EditText
             android:id="@+id/city_editText"
             android:hint="enter city here"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="90"/>
 
     </LinearLayout>
     <LinearLayout
@@ -103,13 +111,15 @@
         <TextView
             android:text="State"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="10"/>
         <EditText
             android:id="@+id/state_editText"
             android:hint="enter state  here"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxLength="2"/>
+            android:maxLength="2"
+            android:layout_weight="90"/>
 
     </LinearLayout>
     <LinearLayout
@@ -120,23 +130,30 @@
         <TextView
             android:text="Zip"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="10"/>
         <EditText
             android:id="@+id/zipCode_editText"
             android:hint="enter state  here"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxLength="10"/>
+            android:maxLength="10"
+            android:layout_weight="90"/>
 
     </LinearLayout>
-    <Button
-        android:id="@+id/getAddressFromCoordinates"
-        android:text="CRESTWOOD TRAIN STATION GEO FENCE ALARM"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-    <Button
-        android:id="@+id/removeFencesButton"
-        android:text="CANCEL THE CRESTWOOD TRAIN STATION GEO FENCE ALARM"
+    <!--<Button-->
+        <!--android:id="@+id/getAddressFromCoordinates"-->
+        <!--android:text="CRESTWOOD TRAIN STATION GEO FENCE ALARM"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"/>-->
+    <!--<Button-->
+        <!--android:id="@+id/removeFencesButton"-->
+        <!--android:text="CANCEL THE CRESTWOOD TRAIN STATION GEO FENCE ALARM"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"/>-->
+    <Switch
+        android:id="@+id/alarmGEOToggle"
+        android:text="Create an alarm for this note based on location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 </LinearLayout>

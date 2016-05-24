@@ -7,6 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 /**
  * Created by nat on 5/10/16.
  */
@@ -161,7 +165,52 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
                 DbSchema.reminders_table.cols.LIST_ID + "=? AND " + DbSchema.reminders_table.cols.REMINDER_ID + "=?",
                 new String[]{listID, reminderID});
     }
+    //============================================================================================
+    public void saveGeoFenceAlarm(String alarmID, String reminderID, HashMap<String,String>data){
+        Log.d(TAG,"saveGeoFenceAlarm Called");
 
+        ContentValues values = new ContentValues();
+        Iterator it = data.entrySet().iterator();
+        while(it.hasNext()){
+            Map.Entry pair = (Map.Entry)it.next();
+            values.put((String)pair.getKey(),(String)pair.getValue());
+        }
+
+        Log.d(TAG,"attempting to update first");
+        SQLiteDatabase db= this.getWritableDatabase();
+        int noOfRowsAffected=db.update(DbSchema.geoFenceAlarm_table.NAME,
+                values,
+                DbSchema.geoFenceAlarm_table.cols.GEOFENCE_ALARM_ID + "=? AND " + DbSchema.geoFenceAlarm_table.cols.REMINDER_ID + "=?",
+                new String[]{alarmID, reminderID});
+
+        if(noOfRowsAffected>0){
+            Log.d(TAG,"saveGeoFenceAlarm, noOfRowsAffected "+noOfRowsAffected+" exiting");
+            return;
+        }
+        Log.d(TAG,"attempting to insert");
+        values.put("meterRadius","100");
+        db.insert(DbSchema.geoFenceAlarm_table.NAME,
+                null,
+                values);
+
+    }
+    public void toggleGeoFenceAlarm(String geoFenceAlarmID,int onOff){
+        ContentValues values = new ContentValues();
+        values.put(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE,onOff);
+
+        SQLiteDatabase db= this.getWritableDatabase();
+        int noOfRowsAffected=db.update(DbSchema.geoFenceAlarm_table.NAME,
+                values,
+                DbSchema.calendarAlarm_table.cols.CALENDAR_ALARM_ID + "=?",
+                new String[]{geoFenceAlarmID});
+    }
+    public void deleteGeoFenceAlarm(String geoFenceAlarmID){
+        SQLiteDatabase db= this.getWritableDatabase();
+        db.delete(DbSchema.calendarAlarm_table.NAME,
+                DbSchema.calendarAlarm_table.cols.CALENDAR_ALARM_ID+ "=?",
+                new String[]{geoFenceAlarmID});
+    }
+    //============================================================================================
     public void saveCalendarAlarm(String alarmID, String reminderID,int month,int day, int year,int hour,int min,int isActive){
         //UPDATE FIRST
         ContentValues values = new ContentValues();

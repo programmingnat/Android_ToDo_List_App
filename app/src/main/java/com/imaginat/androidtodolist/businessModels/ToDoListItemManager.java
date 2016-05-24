@@ -8,6 +8,7 @@ import com.imaginat.androidtodolist.data.DbSchema;
 import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by nat on 5/12/16.
@@ -119,6 +120,46 @@ public class ToDoListItemManager {
             listItem.setIsGeoFenceAlarm(false);
         } else{
             listItem.setIsGeoFenceAlarm(true);
+            //geoFenceAlarm_id,
+            colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.GEOFENCE_ALARM_ID);
+            String geoID = c.getString(colIndex);
+            listItem.setGeoFenceAlarm_id(geoID);
+            //street
+            colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.STREET);
+            String street = c.getString(colIndex);
+            listItem.setStreet(street);
+            //city
+            colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.CITY);
+            String city = c.getString(colIndex);
+            listItem.setCity(city);
+            //state
+            colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.STATE);
+            String state = c.getString(colIndex);
+            listItem.setState(state);
+            //zip
+            colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.ZIPCODE);
+            String zipCode = c.getString(colIndex);
+            listItem.setZip(zipCode);
+            //latitude
+            colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.LATITUDE);
+            String latitude = c.getString(colIndex);
+            listItem.setLatitude(latitude);
+            //longiguted
+            colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.LONGITUDE);
+            String longitude = c.getString(colIndex);
+            listItem.setLongitude(longitude);
+            //alarmTag
+            colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG);
+            String alarmTag = c.getString(colIndex);
+            listItem.setAlarmTag(alarmTag);
+            //meterRadius
+            colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.RADIUS);
+            String radius = c.getString(colIndex);
+            listItem.setMeterRadius(radius);
+            //isAlarmActive
+            colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE);
+            boolean isActive = c.getInt(c.getInt(colIndex))==1?true:false;
+            listItem.setGeoAlarmActive(isActive);
         }
         return listItem;
 
@@ -134,6 +175,10 @@ public class ToDoListItemManager {
 
     }
 
+    //=============================================================================
+    public void saveGeoFenceAlarm(String alarmID, String reminderID, HashMap<String,String>data){
+        mSqlHelper.saveGeoFenceAlarm(alarmID,reminderID,data);
+    }
     public void toggleCalendarAlarm(String alarmID,int onOff){
         mSqlHelper.toggleCalendarAlarm(alarmID,onOff);
     }

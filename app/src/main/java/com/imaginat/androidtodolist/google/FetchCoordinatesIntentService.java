@@ -48,6 +48,7 @@ public class FetchCoordinatesIntentService extends IntentService{
         String errorMessage = "";
 
         mReceiver = intent.getParcelableExtra(Constants.RECEIVER);
+        String reminderID = intent.getStringExtra(Constants.REMINDER_ID);
         String alarmTag = intent.getStringExtra(Constants.ALARM_TAG);
 
         // Check if receiver was properly registered.
@@ -65,7 +66,7 @@ public class FetchCoordinatesIntentService extends IntentService{
         if (addressToLookup == null) {
             errorMessage = "No address data provided";
             Log.wtf(TAG, errorMessage);
-            deliverResultToReceiver(Constants.FAILURE_RESULT, null,alarmTag);
+            deliverResultToReceiver(Constants.FAILURE_RESULT, null,alarmTag,reminderID);
             return;
         }
 
@@ -108,7 +109,7 @@ public class FetchCoordinatesIntentService extends IntentService{
             }
 
 
-            deliverResultToReceiver(Constants.FAILURE_RESULT, null,alarmTag);
+            deliverResultToReceiver(Constants.FAILURE_RESULT, null,alarmTag,reminderID);
         } else {
 
             if (addresses==null) {
@@ -123,18 +124,19 @@ public class FetchCoordinatesIntentService extends IntentService{
 
 
             Log.i(TAG, "looking for coordinates from address");
-            deliverResultToReceiver(Constants.SUCCESS_RESULT, l,alarmTag);
+            deliverResultToReceiver(Constants.SUCCESS_RESULT, l,alarmTag,reminderID);
         }
     }
 
     /**
      * Sends a resultCode and message to the receiver.
      */
-    private void deliverResultToReceiver(int resultCode, Location location,String alarmTag) {
+    private void deliverResultToReceiver(int resultCode, Location location,String alarmTag,String reminderID) {
         Log.d(TAG,"deliverResulToReceiver called");
         Bundle bundle = new Bundle();
         bundle.putParcelable(Constants.RESULT_DATA_KEY, location);
         bundle.putString(Constants.ALARM_TAG,alarmTag);
+        bundle.putString(Constants.REMINDER_ID,reminderID);
         mReceiver.send(resultCode, bundle);
     }
 }

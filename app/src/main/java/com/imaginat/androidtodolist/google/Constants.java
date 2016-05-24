@@ -28,4 +28,5 @@ public final class Constants {
             GEOFENCE_EXPIRATION_IN_HOURS * 60 * 60 * 1000;
     public static final float GEOFENCE_RADIUS_IN_METERS = 200; // 1 mile, 1.6 km
     public static final String ALARM_TAG=PACKAGE_NAME+"ALARM_TAG";
+    public static final String REMINDER_ID=PACKAGE_NAME+"REMINDER_ID";
 }

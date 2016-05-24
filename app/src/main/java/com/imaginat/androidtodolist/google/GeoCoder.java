@@ -17,12 +17,14 @@ public class GeoCoder {
         c.startService(intent);
     }
 
-    public static void getLocationFromAddress(Context c,String strAddress,String alarmTag,CoordinatesResultReceiver resultReceiver){
+    public static void getLocationFromAddress(Context c,String strAddress,String alarmTag,String reminderID,CoordinatesResultReceiver resultReceiver){
 
         Intent intent = new Intent(c,FetchCoordinatesIntentService.class);
         intent.putExtra(Constants.RECEIVER,resultReceiver);
         intent.putExtra(Constants.LOCATION_DATA_EXTRA,strAddress);
         intent.putExtra(Constants.ALARM_TAG,alarmTag);
+        intent.putExtra(Constants.REMINDER_ID,reminderID);
+
         c.startService(intent);
 
     }

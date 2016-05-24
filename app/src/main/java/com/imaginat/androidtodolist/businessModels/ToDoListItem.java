@@ -16,7 +16,90 @@ public class ToDoListItem implements IListItem {
     private int mReminderID,mAlarmDay,mAlarmMonth,mAlarmYear,mAlarmHour,mAlarmMin;
     private boolean isCalendarAlarmActive;
 
+    private String mGeoFenceAlarm_id;
+    private String mStreet, mCity, mState, mZip,mLatitude,mLongitude, mAlarmTag,mMeterRadius;
 
+    public boolean isGeoAlarmActive() {
+        return isGeoAlarmActive;
+    }
+
+    public void setGeoAlarmActive(boolean geoAlarmActive) {
+        isGeoAlarmActive = geoAlarmActive;
+    }
+
+    public String getGeoFenceAlarm_id() {
+        return mGeoFenceAlarm_id;
+    }
+
+    public void setGeoFenceAlarm_id(String geoFenceAlarm_id) {
+        mGeoFenceAlarm_id = geoFenceAlarm_id;
+    }
+
+    public String getStreet() {
+        return mStreet;
+    }
+
+    public void setStreet(String street) {
+        mStreet = street;
+    }
+
+    public String getCity() {
+        return mCity;
+    }
+
+    public void setCity(String city) {
+        mCity = city;
+    }
+
+    public String getState() {
+        return mState;
+    }
+
+    public void setState(String state) {
+        mState = state;
+    }
+
+    public String getZip() {
+        return mZip;
+    }
+
+    public void setZip(String zip) {
+        mZip = zip;
+    }
+
+    public String getLatitude() {
+        return mLatitude;
+    }
+
+    public void setLatitude(String latitude) {
+        mLatitude = latitude;
+    }
+
+    public String getLongitude() {
+        return mLongitude;
+    }
+
+    public void setLongitude(String longitude) {
+        mLongitude = longitude;
+    }
+
+    public String getAlarmTag() {
+        return mAlarmTag;
+    }
+
+    public void setAlarmTag(String alarmTag) {
+        mAlarmTag = alarmTag;
+    }
+
+    public String getMeterRadius() {
+        return mMeterRadius;
+    }
+
+    public void setMeterRadius(String meterRadius) {
+        mMeterRadius = meterRadius;
+    }
+
+    private boolean isGeoAlarmActive;
 
     public ToDoListItem(){
 

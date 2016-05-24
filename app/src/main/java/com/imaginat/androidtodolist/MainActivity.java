@@ -27,10 +27,12 @@ import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
 import com.imaginat.androidtodolist.customlayouts.AddListFragment;
 import com.imaginat.androidtodolist.customlayouts.MainListFragment;
 import com.imaginat.androidtodolist.customlayouts.ToDoListOptionsFragment;
+import com.imaginat.androidtodolist.data.DbSchema;
 import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
 import com.imaginat.androidtodolist.google.AddressResultReceiver;
 import com.imaginat.androidtodolist.google.Constants;
@@ -42,6 +44,7 @@ import com.imaginat.androidtodolist.google.GoogleAPIClientManager;
 import com.imaginat.androidtodolist.google.LocationServices;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity
         implements ActionListFragment.IChangeActionBarTitle, GoogleAPIClientManager.IUseGoogleApiClient,
@@ -245,9 +248,19 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void setGeoFenceAddress(String street, String city, String state, String zipCode,String alarmTag) {
+    public void setGeoFenceAddress(String street, String city, String state, String zipCode,String alarmTag,String reminderID) {
         Log.d(TAG, "Inside setGeoFenceAddress "+street+" "+city+" "+state+" "+zipCode);
-        GeoCoder.getLocationFromAddress(this, street + " " + city + "," + state + " " + zipCode,alarmTag, mCoordinatesResultReceiver);
+        HashMap<String,String>data = new HashMap<>();
+        data.put(DbSchema.geoFenceAlarm_table.cols.STREET,street);
+        data.put(DbSchema.geoFenceAlarm_table.cols.CITY,city);
+        data.put(DbSchema.geoFenceAlarm_table.cols.STATE,state);
+        data.put(DbSchema.geoFenceAlarm_table.cols.ZIPCODE,zipCode);
+        data.put(DbSchema.geoFenceAlarm_table.cols.REMINDER_ID,reminderID);
+        data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG,alarmTag);
+        ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(this);
+        listItemManager.saveGeoFenceAlarm(alarmTag,reminderID,data);
+
+        GeoCoder.getLocationFromAddress(this, street + " " + city + "," + state + " " + zipCode,alarmTag,reminderID, mCoordinatesResultReceiver);
         //ToDoListOptionsFragment currentFragment =(ToDoListOptionsFragment) MainActivity.this.getSupportFragmentManager().findFragmentById(R.id.my_frame);
         mCoordinatesResultReceiver.setResult(this);
 
@@ -255,16 +268,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void removeGeoFence() {
-        removeGeofence();
+    public void removeGeoFence(String alarmID) {
+        removeGeofence(alarmID);
     }
 
 
-    public void removeGeofence() {
+    public void removeGeofence(String alarmID) {
         Log.d(TAG, "Remove geofence");
         ArrayList<String>removeList = new ArrayList<>();
-        removeList.add("HOME");
-        removeList.add("CRESTWOOD");
+        removeList.add(alarmID);
         com.google.android.gms.location.LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient,removeList).setResultCallback(this);
         /*com.google.android.gms.location.LocationServices.GeofencingApi.removeGeofences(
                 mGoogleApiClient,
@@ -371,7 +383,17 @@ public class MainActivity extends AppCompatActivity
             //NOW ADD FENCE
             Location lastLocation = resultData.getParcelable(Constants.RESULT_DATA_KEY);
             String requestID=resultData.getString(Constants.ALARM_TAG);
+            String reminderID = resultData.getString(Constants.REMINDER_ID);
             mLocationServices.addToGeoFenceList(requestID, lastLocation.getLatitude(), lastLocation.getLongitude());
+            Log.d(TAG,"ABOUT TO SAVE SOME INFO");
+
+            HashMap<String,String>data = new HashMap<>();
+            data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG,requestID);
+            data.put(DbSchema.geoFenceAlarm_table.cols.LATITUDE,Double.toString(lastLocation.getLatitude()));
+            data.put(DbSchema.geoFenceAlarm_table.cols.LONGITUDE,Double.toString(lastLocation.getLatitude()));
+
+            ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(this);
+            //listItemManager.saveGeoFenceAlarm(requestID,reminderID,data);
             addGeofences();
         }
 
