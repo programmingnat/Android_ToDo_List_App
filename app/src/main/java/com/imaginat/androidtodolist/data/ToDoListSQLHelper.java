@@ -176,11 +176,11 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
             values.put((String)pair.getKey(),(String)pair.getValue());
         }
 
-        Log.d(TAG,"attempting to update first");
+        Log.d(TAG,"attempting to update first WHERE ALARM_TAG is "+alarmID+" and reminderID is "+reminderID);
         SQLiteDatabase db= this.getWritableDatabase();
         int noOfRowsAffected=db.update(DbSchema.geoFenceAlarm_table.NAME,
                 values,
-                DbSchema.geoFenceAlarm_table.cols.GEOFENCE_ALARM_ID + "=? AND " + DbSchema.geoFenceAlarm_table.cols.REMINDER_ID + "=?",
+                DbSchema.geoFenceAlarm_table.cols.ALARM_TAG + "=? AND " + DbSchema.geoFenceAlarm_table.cols.REMINDER_ID + "=?",
                 new String[]{alarmID, reminderID});
 
         if(noOfRowsAffected>0){
@@ -194,15 +194,15 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
                 values);
 
     }
-    public void toggleGeoFenceAlarm(String geoFenceAlarmID,int onOff){
+    public void toggleGeoFenceAlarm(String requestID,int onOff){
         ContentValues values = new ContentValues();
         values.put(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE,onOff);
 
         SQLiteDatabase db= this.getWritableDatabase();
         int noOfRowsAffected=db.update(DbSchema.geoFenceAlarm_table.NAME,
                 values,
-                DbSchema.calendarAlarm_table.cols.CALENDAR_ALARM_ID + "=?",
-                new String[]{geoFenceAlarmID});
+                DbSchema.geoFenceAlarm_table.cols.ALARM_TAG + "=?",
+                new String[]{requestID});
     }
     public void deleteGeoFenceAlarm(String geoFenceAlarmID){
         SQLiteDatabase db= this.getWritableDatabase();

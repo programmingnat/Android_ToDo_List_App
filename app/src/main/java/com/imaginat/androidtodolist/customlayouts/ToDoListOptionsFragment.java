@@ -135,9 +135,14 @@ public class ToDoListOptionsFragment extends Fragment {
             }
             setAlarmDate(date);
             setAlarmCalendarTime(date);
-            if (mToDoListItem.isCalendarAlarmActive()) {
+            boolean isActive=mToDoListItem.isCalendarAlarmActive();
+            if (isActive) {
                 alarmToggle.setChecked(true);
+
             }
+            setCalendarAlarm(isActive);
+
+
         }
         //3. set geofence alarm if set
         if(mToDoListItem.isGeoFenceAlarm()){
@@ -146,6 +151,21 @@ public class ToDoListOptionsFragment extends Fragment {
             String city=mToDoListItem.getCity();
             String state = mToDoListItem.getState();
             String zip=mToDoListItem.getZip();
+            boolean isActive = mToDoListItem.isGeoAlarmActive();
+
+            mStreetAddress_EditText.setText(streetAddress);
+            mCity_EditText.setText(city);
+            mState_EditText.setText(state);
+            mZip_EditText.setText(zip);
+
+            if(isActive){
+                Switch alarmGEOToggle = (Switch) view.findViewById(R.id.alarmGEOToggle);
+                alarmGEOToggle.setChecked(true);
+
+            }
+            setGeoFenceAlarm(isActive);
+
+
          }
 
 
@@ -179,28 +199,7 @@ public class ToDoListOptionsFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                //SETTING THE CALENDAR ALARM
-                ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(getContext());
-
-                //I. CREATING THE INTENT (using a custom tag). Intent can be used to start or cancel alarm
-                Intent myIntent = new Intent(getContext(), AlarmReceiver.class);
-                pendingIntent = PendingIntent.getBroadcast(getContext(), ToDoListOptionsFragment.this.createAlarmTag(CALENDAR),
-                        myIntent, 0);
-
-                //II. IF THE switch is set to ON, update info, save it, and
-                if (isChecked) {
-                    alarmManager.set(AlarmManager.RTC, mAlarmCalendar.getTimeInMillis(), pendingIntent);
-                    //now save current setting in database
-                    DateFormat df = new SimpleDateFormat("MM.dd:yy:HH:mm:ss");
-                    ToDoListItemManager itemManager = ToDoListItemManager.getInstance(getContext());
-                    itemManager.saveCalendarAlarm(getCalendarAlarmID(CALENDAR), mItemID, 1 + mAlarmCalendar.get(Calendar.MONTH), mAlarmCalendar.get(Calendar.DATE), mAlarmCalendar.get(Calendar.YEAR),
-                            mAlarmCalendar.get(Calendar.HOUR_OF_DAY), mAlarmCalendar.get(Calendar.MINUTE), true);
-                } else {
-                    //cancel the pending intent here  (with alarmManager and in database)
-                    alarmManager.cancel(pendingIntent);
-                    ToDoListItemManager itemManager = ToDoListItemManager.getInstance(getContext());
-                    itemManager.toggleCalendarAlarm(getCalendarAlarmID(CALENDAR), 0);
-                }
+                setCalendarAlarm(isChecked);
             }
         });
 
@@ -209,16 +208,7 @@ public class ToDoListOptionsFragment extends Fragment {
         alarmGEOToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    String streetAddress = mStreetAddress_EditText.getText().toString();
-                    String cityAddress = mCity_EditText.getText().toString();
-                    String stateAddress = mState_EditText.getText().toString();
-                    String zipAddress = mZip_EditText.getText().toString();
-                    //mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress);
-                    mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress, ToDoListOptionsFragment.this.getCalendarAlarmID(GEOFENCE),mItemID);
-                } else {
-                    mIGeoOptions.removeGeoFence(getCalendarAlarmID(GEOFENCE));
-                }
+                setGeoFenceAlarm(isChecked);
             }
         });
 
@@ -288,5 +278,45 @@ public class ToDoListOptionsFragment extends Fragment {
         }
         return hash;
     }
+
+
+    private void setCalendarAlarm(boolean onOff){
+        //SETTING THE CALENDAR ALARM
+        ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(getContext());
+
+        //I. CREATING THE INTENT (using a custom tag). Intent can be used to start or cancel alarm
+        Intent myIntent = new Intent(getContext(), AlarmReceiver.class);
+        pendingIntent = PendingIntent.getBroadcast(getContext(), ToDoListOptionsFragment.this.createAlarmTag(CALENDAR),
+                myIntent, 0);
+
+        //II. IF THE switch is set to ON, update info, save it, and
+        if (onOff) {
+            alarmManager.set(AlarmManager.RTC, mAlarmCalendar.getTimeInMillis(), pendingIntent);
+            //now save current setting in database
+            DateFormat df = new SimpleDateFormat("MM.dd:yy:HH:mm:ss");
+            ToDoListItemManager itemManager = ToDoListItemManager.getInstance(getContext());
+            itemManager.saveCalendarAlarm(getCalendarAlarmID(CALENDAR), mItemID, 1 + mAlarmCalendar.get(Calendar.MONTH), mAlarmCalendar.get(Calendar.DATE), mAlarmCalendar.get(Calendar.YEAR),
+                    mAlarmCalendar.get(Calendar.HOUR_OF_DAY), mAlarmCalendar.get(Calendar.MINUTE), true);
+        } else {
+            //cancel the pending intent here  (with alarmManager and in database)
+            alarmManager.cancel(pendingIntent);
+            ToDoListItemManager itemManager = ToDoListItemManager.getInstance(getContext());
+            itemManager.toggleCalendarAlarm(getCalendarAlarmID(CALENDAR), 0);
+        }
+    }
+
     //=========================GEO FENCE RELATED====================================================
+    private void setGeoFenceAlarm(boolean onOff){
+        Log.d(TAG,"alarmGEOToggle set");
+        if (onOff) {
+            String streetAddress = mStreetAddress_EditText.getText().toString();
+            String cityAddress = mCity_EditText.getText().toString();
+            String stateAddress = mState_EditText.getText().toString();
+            String zipAddress = mZip_EditText.getText().toString();
+            //mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress);
+            mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress, ToDoListOptionsFragment.this.getCalendarAlarmID(GEOFENCE),mItemID);
+        } else {
+            mIGeoOptions.removeGeoFence(getCalendarAlarmID(GEOFENCE));
+        }
+    }
 }

@@ -175,11 +175,16 @@ public class ToDoListItemManager {
 
     }
 
+
+    public void toggleCalendarAlarm(String alarmID,int onOff){
+        mSqlHelper.toggleCalendarAlarm(alarmID,onOff);
+    }
     //=============================================================================
     public void saveGeoFenceAlarm(String alarmID, String reminderID, HashMap<String,String>data){
         mSqlHelper.saveGeoFenceAlarm(alarmID,reminderID,data);
     }
-    public void toggleCalendarAlarm(String alarmID,int onOff){
-        mSqlHelper.toggleCalendarAlarm(alarmID,onOff);
+
+    public void toggleGEOAlarm(String alarmID,int onOff){
+        mSqlHelper.toggleGeoFenceAlarm(alarmID,onOff);
     }
 }

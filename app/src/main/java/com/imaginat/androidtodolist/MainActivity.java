@@ -278,6 +278,9 @@ public class MainActivity extends AppCompatActivity
         ArrayList<String>removeList = new ArrayList<>();
         removeList.add(alarmID);
         com.google.android.gms.location.LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient,removeList).setResultCallback(this);
+
+        ToDoListItemManager itemManager = ToDoListItemManager.getInstance(this);
+        itemManager.toggleGEOAlarm(alarmID,0);
         /*com.google.android.gms.location.LocationServices.GeofencingApi.removeGeofences(
                 mGoogleApiClient,
                 // This is the same pending intent that was used in addGeofences().
@@ -344,7 +347,6 @@ public class MainActivity extends AppCompatActivity
 //            // geofences enables the Add Geofences button.
 //            setButtonsEnabledState();
 
-
             if (mGeofencesAdded) {
                 Log.d(TAG, "geofence added");
                 Toast.makeText(MainActivity.this, "GEO FENCE ADDED", Toast.LENGTH_SHORT).show();
@@ -352,6 +354,8 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "geofence removed");
                 Toast.makeText(MainActivity.this, "GEO FENCE REMOVED", Toast.LENGTH_SHORT).show();
             }
+
+
 
         } else {
             // Get the status code for the error and log it using a user-friendly message.
@@ -391,9 +395,11 @@ public class MainActivity extends AppCompatActivity
             data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG,requestID);
             data.put(DbSchema.geoFenceAlarm_table.cols.LATITUDE,Double.toString(lastLocation.getLatitude()));
             data.put(DbSchema.geoFenceAlarm_table.cols.LONGITUDE,Double.toString(lastLocation.getLatitude()));
+            data.put(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE,"1");
 
             ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(this);
-            //listItemManager.saveGeoFenceAlarm(requestID,reminderID,data);
+            listItemManager.saveGeoFenceAlarm(requestID,reminderID,data);
+
             addGeofences();
         }
 
