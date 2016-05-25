@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -46,6 +47,9 @@
             android:name="com.imaginat.androidtodolist.businessModels.AlarmService"
             android:enabled="true" />
         <receiver android:name="com.imaginat.androidtodolist.businessModels.AlarmReceiver" />
+        <receiver android:name="com.imaginat.androidtodolist.google.GeofenceReceiver"
+                  android:exported="false">
+        </receiver>
         <service android:name="com.imaginat.androidtodolist.google.GeofenceTransitionsIntentService" />
     </application>
 <!--AIzaSyDFf_CA8vnWALll9I106fCQhMYMVkWSpY4-->

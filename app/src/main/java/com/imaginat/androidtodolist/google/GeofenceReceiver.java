@@ -1,10 +1,5 @@
 package com.imaginat.androidtodolist.google;
 
-/**
- * Created by nat on 5/17/16.
- */
-
-import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -13,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -24,28 +20,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Listener for geofence transition changes.
- *
- * Receives geofence transition events from Location Services in the form of an Intent containing
- * the transition type and geofence id(s) that triggered the transition. Creates a notification
- * as the output.
+ * Created by nat on 5/25/16.
  */
-public class GeofenceTransitionsIntentService extends IntentService {
-
-    protected static final String TAG = "GeofenceTransitionsIS";
-
-    /**
-     * This constructor is required, and calls the super IntentService(String)
-     * constructor with the name for a worker thread.
-     */
-    public GeofenceTransitionsIntentService() {
-        // Use the TAG to name the worker thread.
-        super(TAG);
-    }
+public class GeofenceReceiver extends WakefulBroadcastReceiver {
+    private String TAG = GeofenceReceiver.class.getSimpleName();
+    private Context mContext;
+    private Intent broadcastIntent = new Intent();
 
     @Override
-    public void onCreate() {
-        super.onCreate();
+    public void onReceive(Context context, Intent intent) {
+        this.mContext=context;
+
+        Log.d(TAG,"GeofenceReceiver reached");
+        onHandleIntent(intent);
     }
 
     /**
@@ -53,11 +40,11 @@ public class GeofenceTransitionsIntentService extends IntentService {
      * @param intent sent by Location Services. This Intent is provided to Location
      *               Services (inside a PendingIntent) when addGeofences() is called.
      */
-    @Override
+
     protected void onHandleIntent(Intent intent) {
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
         if (geofencingEvent.hasError()) {
-            String errorMessage = GeofenceErrorMessages.getErrorString(this,
+            String errorMessage = GeofenceErrorMessages.getErrorString(mContext,
                     geofencingEvent.getErrorCode());
             Log.e(TAG, errorMessage);
             return;
@@ -75,7 +62,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
             // Get the transition details as a String.
             String geofenceTransitionDetails = getGeofenceTransitionDetails(
-                    this,
+                    mContext,
                     geofenceTransition,
                     triggeringGeofences
             );
@@ -120,10 +107,10 @@ public class GeofenceTransitionsIntentService extends IntentService {
      */
     private void sendNotification(String notificationDetails) {
         // Create an explicit content Intent that starts the main Activity.
-        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent notificationIntent = new Intent(mContext.getApplicationContext(), MainActivity.class);
 
         // Construct a task stack.
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
 
         // Add the main Activity to the task stack as the parent.
         stackBuilder.addParentStack(MainActivity.class);
@@ -136,13 +123,13 @@ public class GeofenceTransitionsIntentService extends IntentService {
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Get a notification builder that's compatible with platform versions >= 4
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext);
 
         // Define the notification settings.
         builder.setSmallIcon(android.R.drawable.ic_dialog_map)
                 // In a real app, you may want to use a library like Volley
                 // to decode the Bitmap.
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(),
+                .setLargeIcon(BitmapFactory.decodeResource(mContext.getResources(),
                         android.R.drawable.ic_dialog_map))
                 .setColor(Color.RED)
                 .setContentTitle(notificationDetails)
@@ -154,7 +141,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
         // Get an instance of the Notification manager
         NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Issue the notification
         mNotificationManager.notify(0, builder.build());

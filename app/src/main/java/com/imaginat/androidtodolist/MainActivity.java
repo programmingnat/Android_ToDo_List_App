@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.imaginat.androidtodolist.businessModels.ToDoListItem;
 import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
 import com.imaginat.androidtodolist.customlayouts.AddListFragment;
@@ -39,7 +40,7 @@ import com.imaginat.androidtodolist.google.Constants;
 import com.imaginat.androidtodolist.google.CoordinatesResultReceiver;
 import com.imaginat.androidtodolist.google.GeoCoder;
 import com.imaginat.androidtodolist.google.GeofenceErrorMessages;
-import com.imaginat.androidtodolist.google.GeofenceTransitionsIntentService;
+import com.imaginat.androidtodolist.google.GeofenceReceiver;
 import com.imaginat.androidtodolist.google.GoogleAPIClientManager;
 import com.imaginat.androidtodolist.google.LocationServices;
 
@@ -248,7 +249,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void setGeoFenceAddress(String street, String city, String state, String zipCode,String alarmTag,String reminderID) {
+    public void setGeoFenceAddress(String street, String city, String state, String zipCode,String alarmTag,String reminderID,String listID) {
         Log.d(TAG, "Inside setGeoFenceAddress "+street+" "+city+" "+state+" "+zipCode);
         HashMap<String,String>data = new HashMap<>();
         data.put(DbSchema.geoFenceAlarm_table.cols.STREET,street);
@@ -260,7 +261,7 @@ public class MainActivity extends AppCompatActivity
         ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(this);
         listItemManager.saveGeoFenceAlarm(alarmTag,reminderID,data);
 
-        GeoCoder.getLocationFromAddress(this, street + " " + city + "," + state + " " + zipCode,alarmTag,reminderID, mCoordinatesResultReceiver);
+        GeoCoder.getLocationFromAddress(this, street + " " + city + "," + state + " " + zipCode,alarmTag,reminderID,listID, mCoordinatesResultReceiver);
         //ToDoListOptionsFragment currentFragment =(ToDoListOptionsFragment) MainActivity.this.getSupportFragmentManager().findFragmentById(R.id.my_frame);
         mCoordinatesResultReceiver.setResult(this);
 
@@ -295,18 +296,34 @@ public class MainActivity extends AppCompatActivity
      *
      * @return A PendingIntent for the IntentService that handles geofence transitions.
      */
-    private PendingIntent getGeofencePendingIntent() {
+    private PendingIntent getGeofencePendingIntent(String theText,String listID,String reminderID) {
         // Reuse the PendingIntent if we already have it.
         if (mGeofencePendingIntent != null) {
             return mGeofencePendingIntent;
         }
+
+        /*
         Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
+        intent.putExtra(Constants.THE_TEXT,theText);
         // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
         // addGeofences() and removeGeofences().
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);*/
+
+        Intent intent = new Intent(this,GeofenceReceiver.class);
+        intent.putExtra(Constants.THE_TEXT,theText);
+        String substring = theText.substring(0, 5);
+        String flag= substring + "_L" + listID + "I" + reminderID+"GEO";
+        int strlen = flag.length();
+        int hash = 7;
+        for (int i = 0; i < strlen; i++) {
+            hash = hash * 31 + flag.charAt(i);
+        }
+
+        return PendingIntent.getBroadcast(this,hash,intent,PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    public void addGeofences() {
+    public void addGeofences(String theText,String listID,String reminderID) {
         if (!mGoogleApiClient.isConnected()) {
             Toast.makeText(this, "NOT CONNECTED", Toast.LENGTH_SHORT).show();
             return;
@@ -320,7 +337,7 @@ public class MainActivity extends AppCompatActivity
                     // A pending intent that that is reused when calling removeGeofences(). This
                     // pending intent is used to generate an intent when a matched geofence
                     // transition is observed.
-                    getGeofencePendingIntent()
+                    getGeofencePendingIntent(theText,listID,reminderID)
             ).setResultCallback(this); // Result processed in onResult().
         } catch (SecurityException securityException) {
             // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
@@ -388,19 +405,20 @@ public class MainActivity extends AppCompatActivity
             Location lastLocation = resultData.getParcelable(Constants.RESULT_DATA_KEY);
             String requestID=resultData.getString(Constants.ALARM_TAG);
             String reminderID = resultData.getString(Constants.REMINDER_ID);
+            String listID = resultData.getString(Constants.LIST_ID);
             mLocationServices.addToGeoFenceList(requestID, lastLocation.getLatitude(), lastLocation.getLongitude());
             Log.d(TAG,"ABOUT TO SAVE SOME INFO");
 
             HashMap<String,String>data = new HashMap<>();
             data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG,requestID);
             data.put(DbSchema.geoFenceAlarm_table.cols.LATITUDE,Double.toString(lastLocation.getLatitude()));
-            data.put(DbSchema.geoFenceAlarm_table.cols.LONGITUDE,Double.toString(lastLocation.getLatitude()));
+            data.put(DbSchema.geoFenceAlarm_table.cols.LONGITUDE,Double.toString(lastLocation.getLongitude()));
             data.put(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE,"1");
 
             ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(this);
             listItemManager.saveGeoFenceAlarm(requestID,reminderID,data);
-
-            addGeofences();
+            ToDoListItem toDoItem = listItemManager.getSingleListItem(listID,reminderID);
+            addGeofences(toDoItem.getText(),listID,reminderID);
         }
 
 

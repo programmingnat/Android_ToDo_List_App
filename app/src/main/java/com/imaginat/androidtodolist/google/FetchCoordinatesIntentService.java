@@ -49,6 +49,7 @@ public class FetchCoordinatesIntentService extends IntentService{
 
         mReceiver = intent.getParcelableExtra(Constants.RECEIVER);
         String reminderID = intent.getStringExtra(Constants.REMINDER_ID);
+        String listID = intent.getStringExtra(Constants.LIST_ID);
         String alarmTag = intent.getStringExtra(Constants.ALARM_TAG);
 
         // Check if receiver was properly registered.
@@ -66,7 +67,7 @@ public class FetchCoordinatesIntentService extends IntentService{
         if (addressToLookup == null) {
             errorMessage = "No address data provided";
             Log.wtf(TAG, errorMessage);
-            deliverResultToReceiver(Constants.FAILURE_RESULT, null,alarmTag,reminderID);
+            deliverResultToReceiver(Constants.FAILURE_RESULT, null,alarmTag,reminderID,listID);
             return;
         }
 
@@ -109,7 +110,7 @@ public class FetchCoordinatesIntentService extends IntentService{
             }
 
 
-            deliverResultToReceiver(Constants.FAILURE_RESULT, null,alarmTag,reminderID);
+            deliverResultToReceiver(Constants.FAILURE_RESULT, null,alarmTag,reminderID,listID);
         } else {
 
             if (addresses==null) {
@@ -124,19 +125,20 @@ public class FetchCoordinatesIntentService extends IntentService{
 
 
             Log.i(TAG, "looking for coordinates from address");
-            deliverResultToReceiver(Constants.SUCCESS_RESULT, l,alarmTag,reminderID);
+            deliverResultToReceiver(Constants.SUCCESS_RESULT, l,alarmTag,reminderID,listID);
         }
     }
 
     /**
      * Sends a resultCode and message to the receiver.
      */
-    private void deliverResultToReceiver(int resultCode, Location location,String alarmTag,String reminderID) {
+    private void deliverResultToReceiver(int resultCode, Location location,String alarmTag,String reminderID,String listID) {
         Log.d(TAG,"deliverResulToReceiver called");
         Bundle bundle = new Bundle();
         bundle.putParcelable(Constants.RESULT_DATA_KEY, location);
         bundle.putString(Constants.ALARM_TAG,alarmTag);
         bundle.putString(Constants.REMINDER_ID,reminderID);
+        bundle.putString(Constants.LIST_ID,listID);
         mReceiver.send(resultCode, bundle);
     }
 }

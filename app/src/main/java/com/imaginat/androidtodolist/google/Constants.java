@@ -29,4 +29,6 @@ public final class Constants {
     public static final float GEOFENCE_RADIUS_IN_METERS = 200; // 1 mile, 1.6 km
     public static final String ALARM_TAG=PACKAGE_NAME+"ALARM_TAG";
     public static final String REMINDER_ID=PACKAGE_NAME+"REMINDER_ID";
+    public static final String LIST_ID=PACKAGE_NAME+"LIST_ID";
+    public static final String THE_TEXT=PACKAGE_NAME+"TEXT";
 }

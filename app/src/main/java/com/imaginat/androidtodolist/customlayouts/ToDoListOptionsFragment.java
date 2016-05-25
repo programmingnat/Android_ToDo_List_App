@@ -42,7 +42,7 @@ public class ToDoListOptionsFragment extends Fragment {
     public interface IGeoOptions {
         public void getAddressFromLocation();
 
-        public void setGeoFenceAddress(String street, String city, String state, String zipCode, String alarmTag,String reminderID);
+        public void setGeoFenceAddress(String street, String city, String state, String zipCode, String alarmTag,String reminderID,String listID);
 
         public void removeGeoFence(String alarmTag);
 
@@ -314,7 +314,7 @@ public class ToDoListOptionsFragment extends Fragment {
             String stateAddress = mState_EditText.getText().toString();
             String zipAddress = mZip_EditText.getText().toString();
             //mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress);
-            mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress, ToDoListOptionsFragment.this.getCalendarAlarmID(GEOFENCE),mItemID);
+            mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress, ToDoListOptionsFragment.this.getCalendarAlarmID(GEOFENCE),mItemID,mListID);
         } else {
             mIGeoOptions.removeGeoFence(getCalendarAlarmID(GEOFENCE));
         }
