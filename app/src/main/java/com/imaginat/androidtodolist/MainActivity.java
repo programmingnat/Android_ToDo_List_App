@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.imaginat.androidtodolist.businessModels.AlarmReceiver;
 import com.imaginat.androidtodolist.businessModels.ToDoListItem;
 import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
@@ -40,7 +41,6 @@ import com.imaginat.androidtodolist.google.Constants;
 import com.imaginat.androidtodolist.google.CoordinatesResultReceiver;
 import com.imaginat.androidtodolist.google.GeoCoder;
 import com.imaginat.androidtodolist.google.GeofenceErrorMessages;
-import com.imaginat.androidtodolist.google.GeofenceReceiver;
 import com.imaginat.androidtodolist.google.GoogleAPIClientManager;
 import com.imaginat.androidtodolist.google.LocationServices;
 
@@ -273,6 +273,13 @@ public class MainActivity extends AppCompatActivity
         removeGeofence(alarmID);
     }
 
+    @Override
+    public void testButton(PendingIntent pi) {
+        mLocationServices.populateGeofenceList();
+        addGeofences("THIS IS A TEST","1","1",getGeofencePendingIntent("test","1","1"));
+
+    }
+
 
     public void removeGeofence(String alarmID) {
         Log.d(TAG, "Remove geofence");
@@ -302,17 +309,24 @@ public class MainActivity extends AppCompatActivity
             return mGeofencePendingIntent;
         }
 
-        /*
-        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
+/*
+        Intent intent = new Intent(getApplicationContext(), GeofenceTransitionsIntentService.class);
         intent.putExtra(Constants.THE_TEXT,theText);
         // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
         // addGeofences() and removeGeofences().
 
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);*/
+        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+*/
 
-        Intent intent = new Intent(this,GeofenceReceiver.class);
+        Intent intent = new Intent(this, AlarmReceiver.class);//GeofenceReceiver.class);
+        intent.setAction("com.imaginat.androidtodolist.LOCATiON_RECEIVED");
         intent.putExtra(Constants.THE_TEXT,theText);
-        String substring = theText.substring(0, 5);
+
+        int maxSize=5;
+        if(theText.length()<maxSize){
+            maxSize = theText.length()-1;
+        }
+        String substring = theText.substring(0, maxSize);
         String flag= substring + "_L" + listID + "I" + reminderID+"GEO";
         int strlen = flag.length();
         int hash = 7;
@@ -320,10 +334,15 @@ public class MainActivity extends AppCompatActivity
             hash = hash * 31 + flag.charAt(i);
         }
 
-        return PendingIntent.getBroadcast(this,hash,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+
+        return PendingIntent.getBroadcast(getApplicationContext(),hash,intent,0);
+
+        //Intent myIntent = new Intent(getContext(), AlarmReceiver.class);
+        //pendingIntent = PendingIntent.getBroadcast(getContext(), ToDoListOptionsFragment.this.createAlarmTag(CALENDAR),
+        //        myIntent, 0);
     }
 
-    public void addGeofences(String theText,String listID,String reminderID) {
+    public void addGeofences(String theText,String listID,String reminderID,PendingIntent pi) {
         if (!mGoogleApiClient.isConnected()) {
             Toast.makeText(this, "NOT CONNECTED", Toast.LENGTH_SHORT).show();
             return;
@@ -337,8 +356,8 @@ public class MainActivity extends AppCompatActivity
                     // A pending intent that that is reused when calling removeGeofences(). This
                     // pending intent is used to generate an intent when a matched geofence
                     // transition is observed.
-                    getGeofencePendingIntent(theText,listID,reminderID)
-            ).setResultCallback(this); // Result processed in onResult().
+                    pi
+            );//.setResultCallback(this); // Result processed in onResult().
         } catch (SecurityException securityException) {
             // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
             logSecurityException(securityException);
@@ -409,6 +428,7 @@ public class MainActivity extends AppCompatActivity
             mLocationServices.addToGeoFenceList(requestID, lastLocation.getLatitude(), lastLocation.getLongitude());
             Log.d(TAG,"ABOUT TO SAVE SOME INFO");
 
+            //save info to local databasae
             HashMap<String,String>data = new HashMap<>();
             data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG,requestID);
             data.put(DbSchema.geoFenceAlarm_table.cols.LATITUDE,Double.toString(lastLocation.getLatitude()));
@@ -418,9 +438,11 @@ public class MainActivity extends AppCompatActivity
             ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(this);
             listItemManager.saveGeoFenceAlarm(requestID,reminderID,data);
             ToDoListItem toDoItem = listItemManager.getSingleListItem(listID,reminderID);
-            addGeofences(toDoItem.getText(),listID,reminderID);
+            addGeofences(toDoItem.getText(),listID,reminderID,getGeofencePendingIntent(toDoItem.getText(),listID,reminderID));
         }
 
 
     }
+
+
 }

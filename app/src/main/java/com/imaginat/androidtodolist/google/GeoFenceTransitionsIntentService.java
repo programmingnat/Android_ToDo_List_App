@@ -41,6 +41,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
     public GeofenceTransitionsIntentService() {
         // Use the TAG to name the worker thread.
         super(TAG);
+
     }
 
     @Override
@@ -55,6 +56,8 @@ public class GeofenceTransitionsIntentService extends IntentService {
      */
     @Override
     protected void onHandleIntent(Intent intent) {
+        Log.d(TAG,"onHandleIntent called");
+
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
         if (geofencingEvent.hasError()) {
             String errorMessage = GeofenceErrorMessages.getErrorString(this,
@@ -63,6 +66,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
             return;
         }
 
+        Log.d(TAG,"onHandleIntent called2");
         // Get the transition type.
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
 
@@ -81,7 +85,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
             );
 
             // Send notification and log the transition details.
-            sendNotification(intent.getStringExtra(Constants.THE_TEXT));//geofenceTransitionDetails);
+            sendNotification(geofenceTransitionDetails);
             Log.i(TAG, geofenceTransitionDetails);
         } else {
             // Log the error.

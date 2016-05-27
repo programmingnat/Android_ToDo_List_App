@@ -22,6 +22,7 @@ import com.imaginat.androidtodolist.R;
 import com.imaginat.androidtodolist.businessModels.AlarmReceiver;
 import com.imaginat.androidtodolist.businessModels.ToDoListItem;
 import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
+import com.imaginat.androidtodolist.google.GeofenceTransitionsIntentService;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -45,6 +46,8 @@ public class ToDoListOptionsFragment extends Fragment {
         public void setGeoFenceAddress(String street, String city, String state, String zipCode, String alarmTag,String reminderID,String listID);
 
         public void removeGeoFence(String alarmTag);
+
+        public void testButton(PendingIntent pendingIntent);
 
 
     }
@@ -163,7 +166,7 @@ public class ToDoListOptionsFragment extends Fragment {
                 alarmGEOToggle.setChecked(true);
 
             }
-            setGeoFenceAlarm(isActive);
+            //setGeoFenceAlarm(isActive);
 
 
          }
@@ -212,6 +215,19 @@ public class ToDoListOptionsFragment extends Fragment {
             }
         });
 
+
+        Button testButton = (Button)view.findViewById(R.id.test_button);
+        testButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG,"PRessing testbutton");
+                Intent myIntent = new Intent(getContext(), GeofenceTransitionsIntentService.class);
+                myIntent.setAction("com.imaginat.androidtodolist.LOCATiON_RECEIVED");
+                pendingIntent = PendingIntent.getBroadcast(getContext(), ToDoListOptionsFragment.this.createAlarmTag(GEOFENCE),
+                        myIntent, 0);
+                mIGeoOptions.testButton(pendingIntent);
+            }
+        });
         return view;
     }
 
@@ -265,7 +281,12 @@ public class ToDoListOptionsFragment extends Fragment {
     }
 
     private String getCalendarAlarmID(String type) {
-        String substring = mToDoListItem.getText().substring(0, 5);
+        String text = mToDoListItem.getText();
+        int maxSize=5;
+        if(text.length()<5){
+            maxSize=text.length()-1;
+        }
+        String substring = text.substring(0, maxSize);
         return substring + "_L" + mListID + "I" + mItemID + type;
     }
 
