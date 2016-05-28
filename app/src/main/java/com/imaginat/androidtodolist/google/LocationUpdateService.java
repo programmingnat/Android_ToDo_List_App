@@ -337,7 +337,15 @@ public class LocationUpdateService extends Service
         }
 
 
-        return PendingIntent.getBroadcast(getApplicationContext(),hash,intent,0);
+
+         intent = new Intent(getApplicationContext(), GeofenceTransitionsIntentService.class);
+        intent.putExtra(Constants.THE_TEXT,theText);
+        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
+        // addGeofences() and removeGeofences().
+
+        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        //return PendingIntent.getBroadcast(getApplicationContext(),hash,intent,0);
     }
 
     public void onResult(Status status) {
