@@ -10,4 +10,12 @@
           android:icon="@android:drawable/ic_menu_add"
           android:title="ADD LIST"
         app:showAsAction="ifRoom"/>
+    <item android:id="@+id/testStartService"
+          android:icon="@android:drawable/ic_menu_add"
+          android:title="START SERVICE"
+          app:showAsAction="ifRoom"/>
+    <item android:id="@+id/testStopService"
+          android:icon="@android:drawable/ic_menu_add"
+          android:title="STOP SERVICE"
+          app:showAsAction="ifRoom"/>
 </menu>

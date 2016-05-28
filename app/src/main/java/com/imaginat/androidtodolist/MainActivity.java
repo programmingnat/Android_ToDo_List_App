@@ -36,13 +36,12 @@ import com.imaginat.androidtodolist.customlayouts.MainListFragment;
 import com.imaginat.androidtodolist.customlayouts.ToDoListOptionsFragment;
 import com.imaginat.androidtodolist.data.DbSchema;
 import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
-import com.imaginat.androidtodolist.google.AddressResultReceiver;
 import com.imaginat.androidtodolist.google.Constants;
 import com.imaginat.androidtodolist.google.CoordinatesResultReceiver;
 import com.imaginat.androidtodolist.google.GeoCoder;
 import com.imaginat.androidtodolist.google.GeofenceErrorMessages;
 import com.imaginat.androidtodolist.google.GoogleAPIClientManager;
-import com.imaginat.androidtodolist.google.LocationServices;
+import com.imaginat.androidtodolist.google.LocationUpdateService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,9 +56,9 @@ public class MainActivity extends AppCompatActivity
     private static final int REQUEST_FINE_LOCATION = 0;
     protected Location mLastLocation;
     final static int REQUEST_LOCATION = 199;
-    private LocationServices mLocationServices;
+    //private LocationServices mLocationServices;
     protected Boolean mRequestingLocationUpdates=true;
-    private AddressResultReceiver mAddressResultReceiver;
+    //private AddressResultReceiver mAddressResultReceiver;
     private CoordinatesResultReceiver mCoordinatesResultReceiver;
 
     /**
@@ -96,6 +95,16 @@ public class MainActivity extends AppCompatActivity
                 ft.addToBackStack(null);
                 ft.commit();
                 return true;
+            case R.id.testStartService:
+                Log.d(TAG,"startService selected");
+                Intent startServiceIntent = new Intent(MainActivity.this, LocationUpdateService.class);
+                startService(startServiceIntent);
+                return true;
+            case R.id.testStopService:
+                Log.d(TAG,"stopService selected");
+                Intent stopServiceIntent = new Intent(MainActivity.this,LocationUpdateService.class);
+                stopService(stopServiceIntent);
+                return true;
             case 100:
                 android.support.v4.app.Fragment f = getSupportFragmentManager().findFragmentById(R.id.my_frame);
                 ActionListFragment alf = (ActionListFragment) f;
@@ -113,17 +122,18 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
 
-        mSharedPreferences = getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,
-                0);
-        mGeofencesAdded = mSharedPreferences.getBoolean(Constants.GEOFENCES_ADDED_KEY, false);
 
-        GoogleAPIClientManager googleAPIClientManager = GoogleAPIClientManager.getInstance(this, this);
-        mGoogleApiClient = googleAPIClientManager.getGoogleApiClient();
+        //mSharedPreferences = getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,
+        //        0);
+        //mGeofencesAdded = mSharedPreferences.getBoolean(Constants.GEOFENCES_ADDED_KEY, false);
 
-        mLocationServices = new LocationServices(mGoogleApiClient, this);
+        //GoogleAPIClientManager googleAPIClientManager = GoogleAPIClientManager.getInstance(this, this);
+        //mGoogleApiClient = googleAPIClientManager.getGoogleApiClient();
+
+        //mLocationServices = new LocationServices(mGoogleApiClient, this);
 
 
-        mAddressResultReceiver = new AddressResultReceiver(new Handler());
+        //mAddressResultReceiver = new AddressResultReceiver(new Handler());
         mCoordinatesResultReceiver = new CoordinatesResultReceiver(new Handler());
 
         ToDoListSQLHelper sqlHelper = ToDoListSQLHelper.getInstance(this);
@@ -142,34 +152,35 @@ public class MainActivity extends AppCompatActivity
 
         handleIntent(getIntent());
 
+        loadPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_FINE_LOCATION);
 
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mLocationServices.stopLocationUpdates();
+        //mLocationServices.stopLocationUpdates();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
-            mLocationServices.startLocationUpdates();
-        }
+      //  if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
+            //mLocationServices.startLocationUpdates();
+       // }
     }
 
     @Override
     protected void onStart() {
 
-        mGoogleApiClient.connect();
+       // mGoogleApiClient.connect();
         super.onStart();
     }
 
     @Override
     protected void onStop() {
 
-        mGoogleApiClient.disconnect();
+       // mGoogleApiClient.disconnect();
         super.onStop();
     }
 
@@ -202,12 +213,12 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "MainActivity onConnectedtoGoogleAPIClient");
 
         loadPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_FINE_LOCATION);
-        mLocationServices.createLocationRequest();
+        //mLocationServices.createLocationRequest();
         mRequestingLocationUpdates = true;
 
         if (mRequestingLocationUpdates) {
             try {
-                mLocationServices.startLocationUpdates();
+                //mLocationServices.startLocationUpdates();
             } catch (SecurityException ex) {
                 ex.printStackTrace();
             }
@@ -275,7 +286,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void testButton(PendingIntent pi) {
-        mLocationServices.populateGeofenceList();
+        //mLocationServices.populateGeofenceList();
         addGeofences("THIS IS A TEST","1","1",getGeofencePendingIntent("test","1","1"));
 
     }
@@ -349,15 +360,15 @@ public class MainActivity extends AppCompatActivity
         }
 
         try {
-            com.google.android.gms.location.LocationServices.GeofencingApi.addGeofences(
-                    mGoogleApiClient,
+            //com.google.android.gms.location.LocationServices.GeofencingApi.addGeofences(
+             //       mGoogleApiClient,
                     // The GeofenceRequest object.
-                    mLocationServices.getGeofencingRequest(),
+                    //mLocationServices.getGeofencingRequest(),
                     // A pending intent that that is reused when calling removeGeofences(). This
                     // pending intent is used to generate an intent when a matched geofence
                     // transition is observed.
-                    pi
-            );//.setResultCallback(this); // Result processed in onResult().
+             //       pi
+          //  );//.setResultCallback(this); // Result processed in onResult().
         } catch (SecurityException securityException) {
             // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
             logSecurityException(securityException);
@@ -425,7 +436,7 @@ public class MainActivity extends AppCompatActivity
             String requestID=resultData.getString(Constants.ALARM_TAG);
             String reminderID = resultData.getString(Constants.REMINDER_ID);
             String listID = resultData.getString(Constants.LIST_ID);
-            mLocationServices.addToGeoFenceList(requestID, lastLocation.getLatitude(), lastLocation.getLongitude());
+            //mLocationServices.addToGeoFenceList(requestID, lastLocation.getLatitude(), lastLocation.getLongitude());
             Log.d(TAG,"ABOUT TO SAVE SOME INFO");
 
             //save info to local databasae

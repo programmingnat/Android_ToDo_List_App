@@ -38,6 +38,9 @@ public final class Constants {
     public static final String THE_TEXT=PACKAGE_NAME+"TEXT";
 
 
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     /**
      * Map for storing information about airports in the San Francisco bay area.
      */
