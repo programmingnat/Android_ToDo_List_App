@@ -224,9 +224,9 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
     }
     public Cursor getAllActiveAlarmFenceInfo(){
         SQLiteDatabase db = this.getReadableDatabase();
-        String sql="SELECT "+ DbSchema.geoFenceAlarm_table.cols.LATITUDE+","+DbSchema.geoFenceAlarm_table.cols.LATITUDE+
+        String sql="SELECT "+DbSchema.reminders_table.cols.REMINDER_TEXT+","+ DbSchema.geoFenceAlarm_table.cols.LATITUDE+","+DbSchema.geoFenceAlarm_table.cols.LONGITUDE+
                 ","+DbSchema.geoFenceAlarm_table.cols.ALARM_TAG+
-                " FROM "+DbSchema.geoFenceAlarm_table.NAME+" WHERE "+DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE+"=?";
+                " FROM "+DbSchema.geoFenceAlarm_table.NAME+" alarm INNER JOIN "+DbSchema.reminders_table.NAME+" r ON r.reminder_id=alarm.reminder_id  WHERE "+DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE+"=?";
         Log.d(TAG,sql);
         Cursor c = db.rawQuery(sql,new String[]{"1"});
         return c;

@@ -27,11 +27,13 @@ import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 import com.imaginat.androidtodolist.data.DbSchema;
 import com.imaginat.androidtodolist.google.Constants;
 import com.imaginat.androidtodolist.google.CoordinatesResultReceiver;
+import com.imaginat.androidtodolist.google.FenceData;
 import com.imaginat.androidtodolist.google.GeoCoder;
 import com.imaginat.androidtodolist.google.LocationUpdateService;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -387,12 +389,15 @@ public class ToDoListOptionsFragment extends Fragment
         ToDoListItem toDoItem = listItemManager.getSingleListItem(mListID,mItemID);
 
         String theText = toDoItem.getText();
-        int theTextLength=theText.length();
-        int end = theTextLength>5?5:theTextLength;
+        int maxLength=98;
+        if(theText.length()<98){
+            maxLength=theText.length();
+        }
+        theText=theText.substring(0,maxLength);
 
 
-        int tag=createAlarmTag(GEOFENCE);
-        locationUpdateService.removeGeofencesByPendingIntent(tag);
+
+        locationUpdateService.removeGeofencesByTag(theText);
 
     }
     /**
@@ -403,21 +408,7 @@ public class ToDoListOptionsFragment extends Fragment
 
     @Override
     public void onReceiveCoordinatesResult(int resultCode, Bundle resultData) {
-        /*
-        MY_LANDMARKS.put("CRESTWOOD TRAIN STATION", new LatLng(40.958997,-73.820564));
 
-        // WARREN.
-        MY_LANDMARKS.put("WARREN AVENUE", new LatLng(40.9618839,-73.8154516));
-
-        //EASTCHESTER HIGH SCHOOL
-        MY_LANDMARKS.put("WARREN AVENUE", new LatLng(40.961959, -73.817088));
-
-        //LORD & TAYLORS
-        MY_LANDMARKS.put("LORD&TAYLORS", new LatLng(40.972252, -73.803934));
-
-        //KENSICO DAM
-        MY_LANDMARKS.put("KENSICO DAM",new LatLng(41.073794, -73.766287));
-        */
         if(Constants.SUCCESS_RESULT==resultCode) {
             //NOW ADD FENCE
             Location lastLocation = resultData.getParcelable(Constants.RESULT_DATA_KEY);
@@ -445,15 +436,12 @@ public class ToDoListOptionsFragment extends Fragment
             mIGeoOptions.getServiceReference();
             LocationUpdateService locationUpdateService=mIGeoOptions.getServiceReference();
 
-            String theText = toDoItem.getText();
-            int theTextLength=theText.length();
-           if(theTextLength>99){
-               theText=theText.substring(0,98);
-           }
+
 
 
             //locationUpdateService.addToGeoFenceList(theText,lastLocation.getLatitude(),lastLocation.getLongitude());
-            locationUpdateService.populateGeofenceList();
+            ArrayList<FenceData> datas=listItemManager.getActiveFenceData();
+            locationUpdateService.populateGeofenceList(datas);
             locationUpdateService.addGeofences(createAlarmTag(GEOFENCE));
         }
 

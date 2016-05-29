@@ -270,18 +270,19 @@ public class LocationUpdateService extends Service
             logSecurityException(securityException);
         }
     }
-    public void removeGeofencesByPendingIntent(int pendingIntentID){
+    public void removeGeofencesByTag(String tag){
         if (!mGoogleApiClient.isConnected()) {
             Toast.makeText(this, "google api client not connected", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        ArrayList<String>removalList = new ArrayList();
+        removalList.add(tag);
 
         try {
             // Remove geofences.
             com.google.android.gms.location.LocationServices.GeofencingApi.removeGeofences(
                     mGoogleApiClient,
-                    getGeofencePendingIntent(pendingIntentID)
+                    removalList
             ).setResultCallback(this); // Result processed in onResult().
         } catch (SecurityException securityException) {
             // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.

@@ -215,9 +215,16 @@ public class ToDoListItemManager {
             colIndex=c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.LONGITUDE);
             fd.longitude=c.getDouble(colIndex);
 
-            colIndex=c.getColumnIndex(DbSchema.);
-            fd.longitude=c.getDouble(colIndex);
+            colIndex=c.getColumnIndex(DbSchema.reminders_table.cols.REMINDER_TEXT);
 
+            String s=c.getString(colIndex);
+            int maxLength=98;
+            if(s.length()<98){
+                maxLength=s.length();
+            }
+            fd.ninetynineChars=s.substring(0,maxLength);
+
+            fencedDatas.add(fd);
             c.moveToNext();
         }
 
