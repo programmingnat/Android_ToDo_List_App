@@ -354,7 +354,7 @@ public class LocationUpdateService extends Service
             mGeofenceList.add(new Geofence.Builder()
                     // Set the request ID of the geofence. This is a string to identify this
                     // geofence.
-                    .setRequestId(f.ninetynineChars)
+                    .setRequestId(f.tag)
 
                     // Set the circular region of this geofence.
                     .setCircularRegion(

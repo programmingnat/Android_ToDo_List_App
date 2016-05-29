@@ -216,6 +216,7 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
         String sql="SELECT COUNT("+ DbSchema.geoFenceAlarm_table.cols.GEOFENCE_ALARM_ID+
                 ") FROM "+DbSchema.geoFenceAlarm_table.NAME+" WHERE "+DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE+"=?";
         Log.d(TAG,sql);
+
         Cursor c = db.rawQuery(sql,new String[]{"1"});
         c.moveToFirst();
         //int result = c.getInt(0);

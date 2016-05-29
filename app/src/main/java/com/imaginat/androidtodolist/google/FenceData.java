@@ -8,6 +8,7 @@ public class FenceData {
 
     public double latitude, longitude;
     public String ninetynineChars;
+    public String tag;
 
 
 }

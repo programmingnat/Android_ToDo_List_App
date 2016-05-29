@@ -386,18 +386,13 @@ public class ToDoListOptionsFragment extends Fragment
         LocationUpdateService locationUpdateService=mIGeoOptions.getServiceReference();
 
         //Get reference to the item (in order to get the text & any other info)
-        ToDoListItem toDoItem = listItemManager.getSingleListItem(mListID,mItemID);
-
-        String theText = toDoItem.getText();
-        int maxLength=98;
-        if(theText.length()<98){
-            maxLength=theText.length();
-        }
-        theText=theText.substring(0,maxLength);
+        //ToDoListItem toDoItem = listItemManager.getSingleListItem(mListID,mItemID);
 
 
 
-        locationUpdateService.removeGeofencesByTag(theText);
+
+
+        locationUpdateService.removeGeofencesByTag(mToDoListItem.getAlarmTag());
 
     }
     /**

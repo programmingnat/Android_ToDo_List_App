@@ -191,7 +191,8 @@ public class ToDoListItemManager {
     }
 
     public int getTotalActiveGeoAlarms() {
-        return mSqlHelper.getActiveGeoAlarmCount();
+        int total= mSqlHelper.getActiveGeoAlarmCount();
+        return total;
     }
 
     public void toggleGEOAlarm(String alarmID, int onOff) {
@@ -223,6 +224,9 @@ public class ToDoListItemManager {
                 maxLength=s.length();
             }
             fd.ninetynineChars=s.substring(0,maxLength);
+
+            colIndex=c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG);
+            fd.tag=c.getString(colIndex);
 
             fencedDatas.add(fd);
             c.moveToNext();
