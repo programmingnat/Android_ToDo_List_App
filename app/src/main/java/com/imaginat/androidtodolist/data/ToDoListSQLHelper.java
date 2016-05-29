@@ -210,6 +210,28 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
                 DbSchema.calendarAlarm_table.cols.CALENDAR_ALARM_ID+ "=?",
                 new String[]{geoFenceAlarmID});
     }
+
+    public int getActiveGeoAlarmCount(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql="SELECT COUNT("+ DbSchema.geoFenceAlarm_table.cols.GEOFENCE_ALARM_ID+
+                ") FROM "+DbSchema.geoFenceAlarm_table.NAME+" WHERE "+DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE+"=?";
+        Log.d(TAG,sql);
+        Cursor c = db.rawQuery(sql,new String[]{"1"});
+        c.moveToFirst();
+        //int result = c.getInt(0);
+        return c.getInt(0);
+
+    }
+    public Cursor getAllActiveAlarmFenceInfo(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql="SELECT "+ DbSchema.geoFenceAlarm_table.cols.LATITUDE+","+DbSchema.geoFenceAlarm_table.cols.LATITUDE+
+                ","+DbSchema.geoFenceAlarm_table.cols.ALARM_TAG+
+                " FROM "+DbSchema.geoFenceAlarm_table.NAME+" WHERE "+DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE+"=?";
+        Log.d(TAG,sql);
+        Cursor c = db.rawQuery(sql,new String[]{"1"});
+        return c;
+
+    }
     //============================================================================================
     public void saveCalendarAlarm(String alarmID, String reminderID,int month,int day, int year,int hour,int min,int isActive){
         //UPDATE FIRST

@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.imaginat.androidtodolist.data.DbSchema;
 import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
+import com.imaginat.androidtodolist.google.FenceData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,32 +22,32 @@ public class ToDoListItemManager {
     private ArrayList<ToDoListItem> mReminders;
 
 
-
-    private ToDoListItemManager(Context context){
+    private ToDoListItemManager(Context context) {
         mSqlHelper = ToDoListSQLHelper.getInstance(context);
         mReminders = new ArrayList<ToDoListItem>();
 
-        for(int i=0;i<10;i++){
+        for (int i = 0; i < 10; i++) {
             ToDoListItem r = new ToDoListItem();
-            r.setText("To do list item "+i);
+            r.setText("To do list item " + i);
             mReminders.add(r);
         }
         mReminders.add(null);
 
     }
 
-    public static ToDoListItemManager  getInstance(Context context){
-        if(instance==null){
+    public static ToDoListItemManager getInstance(Context context) {
+        if (instance == null) {
             instance = new ToDoListItemManager(context);
         }
 
         return instance;
     }
 
-    public ArrayList<ToDoListItem> getReminders(){
+    public ArrayList<ToDoListItem> getReminders() {
         return mReminders;
     }
-    public void createNewReminder(String listId,String text){
+
+    public void createNewReminder(String listId, String text) {
 
 
         //add it
@@ -56,45 +57,48 @@ public class ToDoListItemManager {
 
     }
 
-    public void deleteReminder(String listId,String reminderId){
-        mSqlHelper.deleteReminder(listId,reminderId);
+    public void deleteReminder(String listId, String reminderId) {
+        mSqlHelper.deleteReminder(listId, reminderId);
         loadAllRemindersForList(listId);
     }
-    public void updateReminder(String listId,String reminderID,String text){
-        mSqlHelper.updateReminder(listId,reminderID,text);
+
+    public void updateReminder(String listId, String reminderID, String text) {
+        mSqlHelper.updateReminder(listId, reminderID, text);
         loadAllRemindersForList(listId);
     }
-    public void loadAllRemindersForList(String listID){
+
+    public void loadAllRemindersForList(String listID) {
         Cursor c = mSqlHelper.getAllReminderForThisList(listID);
         mReminders.clear();
         c.moveToFirst();
-        while(c.isAfterLast()==false) {
+        while (c.isAfterLast() == false) {
             int colIndex = c.getColumnIndex(DbSchema.reminders_table.cols.REMINDER_ID);
             String reminder_id = c.getString(colIndex);
             colIndex = c.getColumnIndex(DbSchema.reminders_table.cols.REMINDER_TEXT);
             String text = c.getString(colIndex);
-            ToDoListItem listItem = new ToDoListItem(text,reminder_id);
+            ToDoListItem listItem = new ToDoListItem(text, reminder_id);
             listItem.setListId(listID);
             mReminders.add(listItem);
             c.moveToNext();
         }
         mReminders.add(null);
     }
-    public ToDoListItem getSingleListItem(String listID,String reminderID){
-        Cursor c = mSqlHelper.getReminderByIDs(listID,reminderID);
-        if(c.getCount()==0){
+
+    public ToDoListItem getSingleListItem(String listID, String reminderID) {
+        Cursor c = mSqlHelper.getReminderByIDs(listID, reminderID);
+        if (c.getCount() == 0) {
             return null;
         }
         c.moveToFirst();
         //the text
         int colIndex = c.getColumnIndex(DbSchema.reminders_table.cols.REMINDER_TEXT);
-        ToDoListItem listItem = new ToDoListItem(c.getString(colIndex),reminderID);
+        ToDoListItem listItem = new ToDoListItem(c.getString(colIndex), reminderID);
         //the calendar alarm
         colIndex = c.getColumnIndex(DbSchema.calendarAlarm_table.cols.CALENDAR_ALARM_ID);
         String calendarAlarmID = c.getString(colIndex);
-        if(calendarAlarmID==null){
+        if (calendarAlarmID == null) {
             listItem.setIsCalendarAlarm(false);
-        }else {
+        } else {
             listItem.setIsCalendarAlarm(true);
             String substring = listItem.getText().substring(0, 5);
             String id = substring + "_L" + listID + "I" + reminderID;
@@ -111,14 +115,14 @@ public class ToDoListItemManager {
             colIndex = c.getColumnIndex(DbSchema.calendarAlarm_table.cols.IS_ACTIVE);
             int isActive = c.getInt(colIndex);
 
-            listItem.setCalendarAlarmInfo(id,Integer.parseInt(reminderID),day,month,year,hour24,minutes,isActive);
+            listItem.setCalendarAlarmInfo(id, Integer.parseInt(reminderID), day, month, year, hour24, minutes, isActive);
         }
         //the geolocation alarm
         colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.GEOFENCE_ALARM_ID);
         String geoFenceAlarmID = c.getString(colIndex);
-        if(geoFenceAlarmID==null){
+        if (geoFenceAlarmID == null) {
             listItem.setIsGeoFenceAlarm(false);
-        } else{
+        } else {
             listItem.setIsGeoFenceAlarm(true);
             //geoFenceAlarm_id,
             colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.GEOFENCE_ALARM_ID);
@@ -158,7 +162,8 @@ public class ToDoListItemManager {
             listItem.setMeterRadius(radius);
             //isAlarmActive
             colIndex = c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE);
-            boolean isActive = c.getInt(c.getInt(colIndex))==1?true:false;
+            int tempValue = c.getInt(colIndex);
+            boolean isActive = tempValue == 1 ? true : false;
             listItem.setGeoAlarmActive(isActive);
         }
         return listItem;
@@ -166,25 +171,56 @@ public class ToDoListItemManager {
     }
 
 
-    public void saveCalendarAlarm(String alarmID,String reminderID,
-                                       int month, int day,int year,
-                                       int hour,int min,boolean isActive){
-        int active = isActive?1:0;
-        Log.d(TAG,"Sending the following info to be saved: "+alarmID+" DATE: "+month+"."+day+"."+year+" TIME "+hour+":"+min);
-        mSqlHelper.saveCalendarAlarm(alarmID,reminderID,month,day,year,hour,min,active);
+    public void saveCalendarAlarm(String alarmID, String reminderID,
+                                  int month, int day, int year,
+                                  int hour, int min, boolean isActive) {
+        int active = isActive ? 1 : 0;
+        Log.d(TAG, "Sending the following info to be saved: " + alarmID + " DATE: " + month + "." + day + "." + year + " TIME " + hour + ":" + min);
+        mSqlHelper.saveCalendarAlarm(alarmID, reminderID, month, day, year, hour, min, active);
 
     }
 
 
-    public void toggleCalendarAlarm(String alarmID,int onOff){
-        mSqlHelper.toggleCalendarAlarm(alarmID,onOff);
+    public void toggleCalendarAlarm(String alarmID, int onOff) {
+        mSqlHelper.toggleCalendarAlarm(alarmID, onOff);
     }
+
     //=============================================================================
-    public void saveGeoFenceAlarm(String alarmID, String reminderID, HashMap<String,String>data){
-        mSqlHelper.saveGeoFenceAlarm(alarmID,reminderID,data);
+    public void saveGeoFenceAlarm(String alarmID, String reminderID, HashMap<String, String> data) {
+        mSqlHelper.saveGeoFenceAlarm(alarmID, reminderID, data);
     }
 
-    public void toggleGEOAlarm(String alarmID,int onOff){
-        mSqlHelper.toggleGeoFenceAlarm(alarmID,onOff);
+    public int getTotalActiveGeoAlarms() {
+        return mSqlHelper.getActiveGeoAlarmCount();
+    }
+
+    public void toggleGEOAlarm(String alarmID, int onOff) {
+        mSqlHelper.toggleGeoFenceAlarm(alarmID, onOff);
+    }
+
+    public ArrayList<FenceData> getActiveFenceData() {
+        Cursor c = mSqlHelper.getAllActiveAlarmFenceInfo();
+        c.moveToFirst();
+        //int nofOfResults = c.getCount();
+        ArrayList<FenceData>fencedDatas = new ArrayList<>();
+        int count=-1;
+        int spike=0;
+        int colIndex=0;
+        while (c.isAfterLast() == false){
+            FenceData fd = new FenceData();
+
+            colIndex=c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.LATITUDE);
+            fd.latitude=c.getDouble(colIndex);
+            
+            colIndex=c.getColumnIndex(DbSchema.geoFenceAlarm_table.cols.LONGITUDE);
+            fd.longitude=c.getDouble(colIndex);
+
+            colIndex=c.getColumnIndex(DbSchema.);
+            fd.longitude=c.getDouble(colIndex);
+
+            c.moveToNext();
+        }
+
+        return fencedDatas;
     }
 }

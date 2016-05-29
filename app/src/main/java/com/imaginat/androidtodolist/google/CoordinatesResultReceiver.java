@@ -15,7 +15,7 @@ public class CoordinatesResultReceiver extends ResultReceiver {
 
 
     public interface ICoordinateReceiver {
-        public void onReceiveResult(int resultCode, Bundle resultData);
+        public void onReceiveCoordinatesResult(int resultCode, Bundle resultData);
 
     }
     /**
@@ -54,7 +54,7 @@ public class CoordinatesResultReceiver extends ResultReceiver {
         } else {
             Log.d(TAG, "onReceiveResult, but is not success");
         }
-        mIReceiver.onReceiveResult(resultCode,resultData);
+        mIReceiver.onReceiveCoordinatesResult(resultCode,resultData);
 
 
 

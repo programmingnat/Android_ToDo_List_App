@@ -45,8 +45,9 @@
             </intent-filter>
         </activity>
 
+        <!--android:process=":com.imaginat.androidtodolist.PrivateProcess"-->
         <service android:name=".google.LocationUpdateService"
-                 android:process=":com.imaginat.androidtodolist.PrivateProcess">
+                 >
         </service>
         <service
             android:name="com.imaginat.androidtodolist.google.FetchAddressIntentService"

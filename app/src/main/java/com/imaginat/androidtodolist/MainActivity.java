@@ -1,15 +1,17 @@
 package com.imaginat.androidtodolist;
 
+import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.app.SearchManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
@@ -24,48 +26,35 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
-import com.imaginat.androidtodolist.businessModels.AlarmReceiver;
-import com.imaginat.androidtodolist.businessModels.ToDoListItem;
 import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
 import com.imaginat.androidtodolist.customlayouts.AddListFragment;
 import com.imaginat.androidtodolist.customlayouts.MainListFragment;
 import com.imaginat.androidtodolist.customlayouts.ToDoListOptionsFragment;
-import com.imaginat.androidtodolist.data.DbSchema;
-import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
 import com.imaginat.androidtodolist.google.Constants;
-import com.imaginat.androidtodolist.google.CoordinatesResultReceiver;
-import com.imaginat.androidtodolist.google.GeoCoder;
-import com.imaginat.androidtodolist.google.GeofenceErrorMessages;
-import com.imaginat.androidtodolist.google.GoogleAPIClientManager;
 import com.imaginat.androidtodolist.google.LocationUpdateService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+//import com.imaginat.androidtodolist.google.GoogleAPIClientManager;
 
 public class MainActivity extends AppCompatActivity
-        implements ActionListFragment.IChangeActionBarTitle, GoogleAPIClientManager.IUseGoogleApiClient,
-        com.imaginat.androidtodolist.google.LocationServices.ILocationServiceClient, ToDoListOptionsFragment.IGeoOptions,
-        ResultCallback<Status>, CoordinatesResultReceiver.ICoordinateReceiver {
+        implements ActionListFragment.IChangeActionBarTitle,
+        com.imaginat.androidtodolist.google.LocationServices.ILocationServiceClient,
+        ToDoListOptionsFragment.IGeoOptions,
+        ResultCallback<Status> {
 
     private static final String TAG = MainActivity.class.getName();
-    private GoogleApiClient mGoogleApiClient;
-    private static final int REQUEST_FINE_LOCATION = 0;
-    protected Location mLastLocation;
-    final static int REQUEST_LOCATION = 199;
-    //private LocationServices mLocationServices;
-    protected Boolean mRequestingLocationUpdates=true;
-    //private AddressResultReceiver mAddressResultReceiver;
-    private CoordinatesResultReceiver mCoordinatesResultReceiver;
 
-    /**
-     * Used when requesting to add or remove geofences.
-     */
-    private PendingIntent mGeofencePendingIntent;
-    private boolean mGeofencesAdded;
+    private static final int REQUEST_FINE_LOCATION = 0;
+    private static final int REQUEST_LOCATION = 12;
+
+
+    //for reference to service
+    LocationUpdateService mLocationUpdateService;
+    boolean mLocationUpdateServiceBound;
+    MyServiceConnection mServiceConnection;
+
     private SharedPreferences mSharedPreferences;
 
     @Override
@@ -96,14 +85,17 @@ public class MainActivity extends AppCompatActivity
                 ft.commit();
                 return true;
             case R.id.testStartService:
-                Log.d(TAG,"startService selected");
+                Log.d(TAG, "startService selected");
                 Intent startServiceIntent = new Intent(MainActivity.this, LocationUpdateService.class);
                 startService(startServiceIntent);
                 return true;
             case R.id.testStopService:
-                Log.d(TAG,"stopService selected");
-                Intent stopServiceIntent = new Intent(MainActivity.this,LocationUpdateService.class);
+                Log.d(TAG, "stopService selected");
+                Intent stopServiceIntent = new Intent(MainActivity.this, LocationUpdateService.class);
                 stopService(stopServiceIntent);
+                return true;
+            case R.id.testIsServiceRunning:
+                isServiceRunning();
                 return true;
             case 100:
                 android.support.v4.app.Fragment f = getSupportFragmentManager().findFragmentById(R.id.my_frame);
@@ -121,27 +113,13 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
-        //mSharedPreferences = getSharedPreferences(Constants.SHARED_PREFERENCES_NAME,
-        //        0);
-        //mGeofencesAdded = mSharedPreferences.getBoolean(Constants.GEOFENCES_ADDED_KEY, false);
-
-        //GoogleAPIClientManager googleAPIClientManager = GoogleAPIClientManager.getInstance(this, this);
-        //mGoogleApiClient = googleAPIClientManager.getGoogleApiClient();
-
-        //mLocationServices = new LocationServices(mGoogleApiClient, this);
-
-
-        //mAddressResultReceiver = new AddressResultReceiver(new Handler());
-        mCoordinatesResultReceiver = new CoordinatesResultReceiver(new Handler());
-
-        ToDoListSQLHelper sqlHelper = ToDoListSQLHelper.getInstance(this);
-        sqlHelper.getWritableDatabase();
-
+        //shared preferences
+        mSharedPreferences = getSharedPreferences(Constants.PREFERENCES, Context.MODE_PRIVATE);
+        //UI Stuff
         getSupportActionBar().setTitle("Main");
 
 
+        //Settinig up the initial fragment
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
@@ -150,10 +128,64 @@ public class MainActivity extends AppCompatActivity
         fragmentTransaction.add(R.id.my_frame, fragment);
         fragmentTransaction.commit();
 
+        //For Search Bar
         handleIntent(getIntent());
 
+        //Permissions for Location services
         loadPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_FINE_LOCATION);
 
+
+
+        //Bind to service (if service is running)
+        if (isServiceRunning() == false) {
+            //look in shared preference to see if anybody needs it, if it does start it up
+            int totalNoOfSharedPreferences = mSharedPreferences.getInt(Constants.GEO_ALARM_COUNT, -1);
+            ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(this);
+            int totalNoInDatabase = listItemManager.getTotalActiveGeoAlarms();
+            Log.d(TAG,"totalInShared: "+totalNoOfSharedPreferences+" totalDatabase"+totalNoInDatabase);
+            if (totalNoInDatabase != totalNoOfSharedPreferences) {
+                //reset shared preferences
+                SharedPreferences.Editor ed = mSharedPreferences.edit();
+                ed.putInt(Constants.GEO_ALARM_COUNT, totalNoInDatabase);
+                ed.commit();
+            }
+            int totalNoOfActiveGeoAlarms = totalNoInDatabase;
+            if (totalNoOfActiveGeoAlarms > 0) {
+                //start up the service
+                Intent startUpServiceIntent = new Intent(this, LocationUpdateService.class);
+                startService(startUpServiceIntent);
+                mServiceConnection=new MyServiceConnection();
+                bindService(startUpServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+
+            }
+        } else {
+            //service is already up and running, now bind if not already bound
+            if (mLocationUpdateServiceBound == false) {
+                Intent boundIntent = new Intent(this, LocationUpdateService.class);
+                mServiceConnection=new MyServiceConnection();
+                bindService(boundIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+            }
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (isServiceRunning()) {
+            //look in shared preference to see if anybody needs it, if not, stop iti
+            int totalNoOfActiveGeoAlarms = mSharedPreferences.getInt(Constants.GEO_ALARM_COUNT, -1);
+            Log.d(TAG,"onDestroy totaNoOfActiveAlarms: "+totalNoOfActiveGeoAlarms);
+            if (totalNoOfActiveGeoAlarms < 1) {
+                //start up the service
+                Intent stopServiceIntent = new Intent(this, LocationUpdateService.class);
+                stopService(stopServiceIntent);
+
+            }
+            if (mLocationUpdateServiceBound) {
+                unbindService(mServiceConnection);
+            }
+            super.onDestroy();
+        }
     }
 
     @Override
@@ -165,22 +197,23 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-      //  if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
-            //mLocationServices.startLocationUpdates();
-       // }
+        //  if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
+        //mLocationServices.startLocationUpdates();
+        // }
     }
 
     @Override
     protected void onStart() {
 
-       // mGoogleApiClient.connect();
+        // mGoogleApiClient.connect();
+
         super.onStart();
     }
 
     @Override
     protected void onStop() {
 
-       // mGoogleApiClient.disconnect();
+        // mGoogleApiClient.disconnect();
         super.onStop();
     }
 
@@ -208,23 +241,23 @@ public class MainActivity extends AppCompatActivity
         //actionBar.setDisplayShowTitleEnabled(true);
     }
 
-    @Override
+
     public void onConnectedToGoogleAPIClient() {
-        Log.d(TAG, "MainActivity onConnectedtoGoogleAPIClient");
-
-        loadPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_FINE_LOCATION);
-        //mLocationServices.createLocationRequest();
-        mRequestingLocationUpdates = true;
-
-        if (mRequestingLocationUpdates) {
-            try {
-                //mLocationServices.startLocationUpdates();
-            } catch (SecurityException ex) {
-                ex.printStackTrace();
-            }
-        } else {
-
-        }
+//        Log.d(TAG, "MainActivity onConnectedtoGoogleAPIClient");
+//
+//        loadPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_FINE_LOCATION);
+//        //mLocationServices.createLocationRequest();
+//        mRequestingLocationUpdates = true;
+//
+//        if (mRequestingLocationUpdates) {
+//            try {
+//                //mLocationServices.startLocationUpdates();
+//            } catch (SecurityException ex) {
+//                ex.printStackTrace();
+//            }
+//        } else {
+//
+//        }
 
 
     }
@@ -251,60 +284,30 @@ public class MainActivity extends AppCompatActivity
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    public void getAddressFromLocation() {
-        //Log.d(TAG, "inside getAddressFromLocatin");
-        //Location lastLocation = mLocationServices.getLocation();
-        //GeoCoder.startIntentService(this,lastLocation,mAddressResultReceiver);
-
-    }
-
-    @Override
-    public void setGeoFenceAddress(String street, String city, String state, String zipCode,String alarmTag,String reminderID,String listID) {
-        Log.d(TAG, "Inside setGeoFenceAddress "+street+" "+city+" "+state+" "+zipCode);
-        HashMap<String,String>data = new HashMap<>();
-        data.put(DbSchema.geoFenceAlarm_table.cols.STREET,street);
-        data.put(DbSchema.geoFenceAlarm_table.cols.CITY,city);
-        data.put(DbSchema.geoFenceAlarm_table.cols.STATE,state);
-        data.put(DbSchema.geoFenceAlarm_table.cols.ZIPCODE,zipCode);
-        data.put(DbSchema.geoFenceAlarm_table.cols.REMINDER_ID,reminderID);
-        data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG,alarmTag);
-        ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(this);
-        listItemManager.saveGeoFenceAlarm(alarmTag,reminderID,data);
-
-        GeoCoder.getLocationFromAddress(this, street + " " + city + "," + state + " " + zipCode,alarmTag,reminderID,listID, mCoordinatesResultReceiver);
-        //ToDoListOptionsFragment currentFragment =(ToDoListOptionsFragment) MainActivity.this.getSupportFragmentManager().findFragmentById(R.id.my_frame);
-        mCoordinatesResultReceiver.setResult(this);
-
-
-    }
-
-    @Override
-    public void removeGeoFence(String alarmID) {
-        removeGeofence(alarmID);
-    }
-
-    @Override
-    public void testButton(PendingIntent pi) {
-        //mLocationServices.populateGeofenceList();
-        addGeofences("THIS IS A TEST","1","1",getGeofencePendingIntent("test","1","1"));
-
-    }
+//    @Override
+//    public void getAddressFromLocation() {
+//        //Log.d(TAG, "inside getAddressFromLocatin");
+//        //Location lastLocation = mLocationServices.getLocation();
+//        //GeoCoder.startIntentService(this,lastLocation,mAddressResultReceiver);
+//
+//    }
+//
+//
+//    @Override
+//    public void removeGeoFence(String alarmID) {
+//        removeGeofence(alarmID);
+//    }
+//
+//    @Override
+//    public void testButton(PendingIntent pi) {
+//        //mLocationServices.populateGeofenceList();
+//        addGeofences("THIS IS A TEST","1","1",getGeofencePendingIntent("test","1","1"));
+//
+//    }
 
 
     public void removeGeofence(String alarmID) {
-        Log.d(TAG, "Remove geofence");
-        ArrayList<String>removeList = new ArrayList<>();
-        removeList.add(alarmID);
-        com.google.android.gms.location.LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient,removeList).setResultCallback(this);
 
-        ToDoListItemManager itemManager = ToDoListItemManager.getInstance(this);
-        itemManager.toggleGEOAlarm(alarmID,0);
-        /*com.google.android.gms.location.LocationServices.GeofencingApi.removeGeofences(
-                mGoogleApiClient,
-                // This is the same pending intent that was used in addGeofences().
-                getGeofencePendingIntent()
-        ).setResultCallback(this); // Result processed in onResult().*/
     }
 
     /**
@@ -314,11 +317,11 @@ public class MainActivity extends AppCompatActivity
      *
      * @return A PendingIntent for the IntentService that handles geofence transitions.
      */
-    private PendingIntent getGeofencePendingIntent(String theText,String listID,String reminderID) {
+    private PendingIntent getGeofencePendingIntent(String theText, String listID, String reminderID) {
         // Reuse the PendingIntent if we already have it.
-        if (mGeofencePendingIntent != null) {
-            return mGeofencePendingIntent;
-        }
+//        if (mGeofencePendingIntent != null) {
+//            return mGeofencePendingIntent;
+//        }
 
 /*
         Intent intent = new Intent(getApplicationContext(), GeofenceTransitionsIntentService.class);
@@ -329,50 +332,33 @@ public class MainActivity extends AppCompatActivity
         return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 */
 
-        Intent intent = new Intent(this, AlarmReceiver.class);//GeofenceReceiver.class);
-        intent.setAction("com.imaginat.androidtodolist.LOCATiON_RECEIVED");
-        intent.putExtra(Constants.THE_TEXT,theText);
+//        Intent intent = new Intent(this, AlarmReceiver.class);//GeofenceReceiver.class);
+//        intent.setAction("com.imaginat.androidtodolist.LOCATiON_RECEIVED");
+//        intent.putExtra(Constants.THE_TEXT,theText);
+//
+//        int maxSize=5;
+//        if(theText.length()<maxSize){
+//            maxSize = theText.length()-1;
+//        }
+//        String substring = theText.substring(0, maxSize);
+//        String flag= substring + "_L" + listID + "I" + reminderID+"GEO";
+//        int strlen = flag.length();
+//        int hash = 7;
+//        for (int i = 0; i < strlen; i++) {
+//            hash = hash * 31 + flag.charAt(i);
+//        }
 
-        int maxSize=5;
-        if(theText.length()<maxSize){
-            maxSize = theText.length()-1;
-        }
-        String substring = theText.substring(0, maxSize);
-        String flag= substring + "_L" + listID + "I" + reminderID+"GEO";
-        int strlen = flag.length();
-        int hash = 7;
-        for (int i = 0; i < strlen; i++) {
-            hash = hash * 31 + flag.charAt(i);
-        }
 
-
-        return PendingIntent.getBroadcast(getApplicationContext(),hash,intent,0);
+//        return PendingIntent.getBroadcast(getApplicationContext(),hash,intent,0);
 
         //Intent myIntent = new Intent(getContext(), AlarmReceiver.class);
         //pendingIntent = PendingIntent.getBroadcast(getContext(), ToDoListOptionsFragment.this.createAlarmTag(CALENDAR),
         //        myIntent, 0);
+        return null;
     }
 
-    public void addGeofences(String theText,String listID,String reminderID,PendingIntent pi) {
-        if (!mGoogleApiClient.isConnected()) {
-            Toast.makeText(this, "NOT CONNECTED", Toast.LENGTH_SHORT).show();
-            return;
-        }
+    public void addGeofences(String theText, String listID, String reminderID, PendingIntent pi) {
 
-        try {
-            //com.google.android.gms.location.LocationServices.GeofencingApi.addGeofences(
-             //       mGoogleApiClient,
-                    // The GeofenceRequest object.
-                    //mLocationServices.getGeofencingRequest(),
-                    // A pending intent that that is reused when calling removeGeofences(). This
-                    // pending intent is used to generate an intent when a matched geofence
-                    // transition is observed.
-             //       pi
-          //  );//.setResultCallback(this); // Result processed in onResult().
-        } catch (SecurityException securityException) {
-            // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
-            logSecurityException(securityException);
-        }
     }
 
 
@@ -383,7 +369,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onResult(@NonNull Status status) {
-        if (status.isSuccess()) {
+     /*   if (status.isSuccess()) {
             //Update state and save in shared preferences.
             mGeofencesAdded = !mGeofencesAdded;
             SharedPreferences.Editor editor = mSharedPreferences.edit();
@@ -409,51 +395,89 @@ public class MainActivity extends AppCompatActivity
             String errorMessage = GeofenceErrorMessages.getErrorString(this,
                     status.getStatusCode());
             Log.e(TAG, errorMessage);
-        }
+        }*/
     }
 
+    //===================CODE TO LINK TO SERVICE============================
+
+
+    private boolean isServiceRunning() {
+        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            //Log.d(TAG, "CHECKING " + service.service.getClassName());
+            if ("com.imaginat.androidtodolist.google.LocationUpdateService".equalsIgnoreCase(service.service.getClassName())) {
+                Toast.makeText(this, "LocationUpdateService is RUNNING", Toast.LENGTH_LONG).show();
+                Log.d(TAG, "LocationUpdateService is currently running");
+                return true;
+            }
+        }
+        Toast.makeText(this, "LocationUpdateService is NOT RUNNING", Toast.LENGTH_LONG).show();
+        Log.d(TAG, "LocationUpdateService is NOT currently running");
+        return false;
+    }
+
+    //Methods for binding to service
+    //these methods let you start the service if it wasn't started onCreate of Main Activity of app
+    //it will end the service on destroy if required, but not while app is in use
 
     @Override
-    public void onReceiveResult(int resultCode, Bundle resultData) {
-/*
-        MY_LANDMARKS.put("CRESTWOOD TRAIN STATION", new LatLng(40.958997,-73.820564));
-
-        // WARREN.
-        MY_LANDMARKS.put("WARREN AVENUE", new LatLng(40.9618839,-73.8154516));
-
-        //EASTCHESTER HIGH SCHOOL
-        MY_LANDMARKS.put("WARREN AVENUE", new LatLng(40.961959, -73.817088));
-
-        //LORD & TAYLORS
-        MY_LANDMARKS.put("LORD&TAYLORS", new LatLng(40.972252, -73.803934));
-
-        //KENSICO DAM
-        MY_LANDMARKS.put("KENSICO DAM",new LatLng(41.073794, -73.766287));
-        */
-        if(Constants.SUCCESS_RESULT==resultCode) {
-            //NOW ADD FENCE
-            Location lastLocation = resultData.getParcelable(Constants.RESULT_DATA_KEY);
-            String requestID=resultData.getString(Constants.ALARM_TAG);
-            String reminderID = resultData.getString(Constants.REMINDER_ID);
-            String listID = resultData.getString(Constants.LIST_ID);
-            //mLocationServices.addToGeoFenceList(requestID, lastLocation.getLatitude(), lastLocation.getLongitude());
-            Log.d(TAG,"ABOUT TO SAVE SOME INFO");
-
-            //save info to local databasae
-            HashMap<String,String>data = new HashMap<>();
-            data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG,requestID);
-            data.put(DbSchema.geoFenceAlarm_table.cols.LATITUDE,Double.toString(lastLocation.getLatitude()));
-            data.put(DbSchema.geoFenceAlarm_table.cols.LONGITUDE,Double.toString(lastLocation.getLongitude()));
-            data.put(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE,"1");
-
-            ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(this);
-            listItemManager.saveGeoFenceAlarm(requestID,reminderID,data);
-            ToDoListItem toDoItem = listItemManager.getSingleListItem(listID,reminderID);
-            addGeofences(toDoItem.getText(),listID,reminderID,getGeofencePendingIntent(toDoItem.getText(),listID,reminderID));
+    public LocationUpdateService getServiceReference() {
+        if (mLocationUpdateServiceBound) {
+            return mLocationUpdateService;
         }
+        //check if number of geoFenceAlarms warrants system to start
+        int totalNoOfActiveGeoAlarms = mSharedPreferences.getInt(Constants.GEO_ALARM_COUNT, -1);
+        if (totalNoOfActiveGeoAlarms > 0 && mLocationUpdateServiceBound == false) {
+            //bind it here
+            Intent bindingIntent = new Intent(this, LocationUpdateService.class);
+            mServiceConnection=new MyServiceConnection();
+            bindService(bindingIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+            mLocationUpdateServiceBound = true;
+            return mLocationUpdateService;
+        }
+        return null;
+    }
 
+    @Override
+    public void requestStartOfLocationUpdateService() {
+        //add to count of alarm using it
+        int currentTotal = mSharedPreferences.getInt(Constants.GEO_ALARM_COUNT, 0);
+        currentTotal++;
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putInt(Constants.GEO_ALARM_COUNT, currentTotal);
+        editor.commit();
+        if (isServiceRunning() == false) {
+            //start the service
+            Intent startServiceIntent = new Intent(this, LocationUpdateService.class);
+            startService(startServiceIntent);
+        }
 
     }
 
+    @Override
+    public void requestStopOfLocationUpdateService() {
+        //reduce the number of geoFence kept in shared preferences
+        //onDestroy will stop service if count is less than 1
+        int currentTotal = mSharedPreferences.getInt(Constants.GEO_ALARM_COUNT, 0);
+        currentTotal--;
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putInt(Constants.GEO_ALARM_COUNT, currentTotal);
+    }
+
+
+    private class MyServiceConnection implements ServiceConnection {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            LocationUpdateService.MyLocationUpdateServiceBinder myBinder = (LocationUpdateService.MyLocationUpdateServiceBinder) service;
+            mLocationUpdateService = myBinder.getService();
+            mLocationUpdateServiceBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mLocationUpdateServiceBound = false;
+        }
+    }
 
 }

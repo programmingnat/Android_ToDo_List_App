@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,17 +24,23 @@ import com.imaginat.androidtodolist.R;
 import com.imaginat.androidtodolist.businessModels.AlarmReceiver;
 import com.imaginat.androidtodolist.businessModels.ToDoListItem;
 import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
-import com.imaginat.androidtodolist.google.GeofenceTransitionsIntentService;
+import com.imaginat.androidtodolist.data.DbSchema;
+import com.imaginat.androidtodolist.google.Constants;
+import com.imaginat.androidtodolist.google.CoordinatesResultReceiver;
+import com.imaginat.androidtodolist.google.GeoCoder;
+import com.imaginat.androidtodolist.google.LocationUpdateService;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Created by nat on 5/1/16.
  */
-public class ToDoListOptionsFragment extends Fragment {
+public class ToDoListOptionsFragment extends Fragment
+    implements CoordinatesResultReceiver.ICoordinateReceiver{
 
 
     private ToDoListItem mToDoListItem;
@@ -40,17 +48,17 @@ public class ToDoListOptionsFragment extends Fragment {
     private static final String CALENDAR = "CAL";
     private static final String GEOFENCE = "GEO";
 
+    private CoordinatesResultReceiver mCoordinatesResultReceiver;
+
+
+    //===================INTERFACE USED TO COMMNICATE TO HOSTING ACTIVITY ===========================================
     public interface IGeoOptions {
-        public void getAddressFromLocation();
 
-        public void setGeoFenceAddress(String street, String city, String state, String zipCode, String alarmTag,String reminderID,String listID);
-
-        public void removeGeoFence(String alarmTag);
-
-        public void testButton(PendingIntent pendingIntent);
-
-
+        public LocationUpdateService getServiceReference();
+        public void requestStartOfLocationUpdateService();
+        public void requestStopOfLocationUpdateService();
     }
+
 
     private static final String TAG = ToDoListOptionsFragment.class.getSimpleName();
     private static final String DIALOG_DATE = "DialogDate";
@@ -60,21 +68,7 @@ public class ToDoListOptionsFragment extends Fragment {
 
     private String mListID, mItemID;
 
-    public String getListID() {
-        return mListID;
-    }
 
-    public void setListID(String listID) {
-        mListID = listID;
-    }
-
-    public String getItemID() {
-        return mItemID;
-    }
-
-    public void setItemID(String itemID) {
-        mItemID = itemID;
-    }
 
     AlarmManager alarmManager;
     private PendingIntent pendingIntent;
@@ -88,6 +82,8 @@ public class ToDoListOptionsFragment extends Fragment {
     private Button mRemoveFenceButton;
     private IGeoOptions mIGeoOptions;
     private EditText mStreetAddress_EditText, mCity_EditText, mState_EditText, mZip_EditText;
+
+
 
 
     @Nullable
@@ -161,11 +157,9 @@ public class ToDoListOptionsFragment extends Fragment {
             mState_EditText.setText(state);
             mZip_EditText.setText(zip);
 
-            if(isActive){
-                Switch alarmGEOToggle = (Switch) view.findViewById(R.id.alarmGEOToggle);
-                alarmGEOToggle.setChecked(true);
+            Switch alarmGEOToggle = (Switch) view.findViewById(R.id.alarmGEOToggle);
+            alarmGEOToggle.setChecked(isActive);
 
-            }
             //setGeoFenceAlarm(isActive);
 
 
@@ -221,23 +215,16 @@ public class ToDoListOptionsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG,"PRessing testbutton");
-                Intent myIntent = new Intent(getContext(), GeofenceTransitionsIntentService.class);
-                myIntent.setAction("com.imaginat.androidtodolist.LOCATiON_RECEIVED");
-                pendingIntent = PendingIntent.getBroadcast(getContext(), ToDoListOptionsFragment.this.createAlarmTag(GEOFENCE),
-                        myIntent, 0);
-                mIGeoOptions.testButton(pendingIntent);
+//                Intent myIntent = new Intent(getContext(), GeofenceTransitionsIntentService.class);
+//                myIntent.setAction("com.imaginat.androidtodolist.LOCATiON_RECEIVED");
+//                pendingIntent = PendingIntent.getBroadcast(getContext(), ToDoListOptionsFragment.this.createAlarmTag(GEOFENCE),
+//                        myIntent, 0);
+//                mIGeoOptions.testButton(pendingIntent);
             }
         });
         return view;
     }
 
-    public void setIGeoOptions(IGeoOptions IGeoOptions) {
-        mIGeoOptions = IGeoOptions;
-    }
-
-    public void setAlarmText(String alarmText) {
-        alarmTextView.setText(alarmText);
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -257,7 +244,29 @@ public class ToDoListOptionsFragment extends Fragment {
 
 
     }
+    public void setIGeoOptions(IGeoOptions IGeoOptions) {
+        mIGeoOptions = IGeoOptions;
+    }
 
+    public void setAlarmText(String alarmText) {
+        alarmTextView.setText(alarmText);
+    }
+
+    public String getListID() {
+        return mListID;
+    }
+
+    public void setListID(String listID) {
+        mListID = listID;
+    }
+
+    public String getItemID() {
+        return mItemID;
+    }
+
+    public void setItemID(String itemID) {
+        mItemID = itemID;
+    }
     //=====================CALENDAR ALARM RELATED HELPERS========================================
     private void setAlarmDate(Date date) {
         Calendar result = Calendar.getInstance();
@@ -280,18 +289,13 @@ public class ToDoListOptionsFragment extends Fragment {
         mAlarmCalendar.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
     }
 
-    private String getCalendarAlarmID(String type) {
-        String text = mToDoListItem.getText();
-        int maxSize=5;
-        if(text.length()<5){
-            maxSize=text.length()-1;
-        }
-        String substring = text.substring(0, maxSize);
-        return substring + "_L" + mListID + "I" + mItemID + type;
+    private String getAlarmID(String type) {
+
+        return "_L" + mListID + "I" + mItemID + type;
     }
 
     private int createAlarmTag(String type) {
-        String result = getCalendarAlarmID(type);
+        String result = getAlarmID(type);
         int strlen = result.length();
         int hash = 7;
         for (int i = 0; i < strlen; i++) {
@@ -316,13 +320,13 @@ public class ToDoListOptionsFragment extends Fragment {
             //now save current setting in database
             DateFormat df = new SimpleDateFormat("MM.dd:yy:HH:mm:ss");
             ToDoListItemManager itemManager = ToDoListItemManager.getInstance(getContext());
-            itemManager.saveCalendarAlarm(getCalendarAlarmID(CALENDAR), mItemID, 1 + mAlarmCalendar.get(Calendar.MONTH), mAlarmCalendar.get(Calendar.DATE), mAlarmCalendar.get(Calendar.YEAR),
+            itemManager.saveCalendarAlarm(getAlarmID(CALENDAR), mItemID, 1 + mAlarmCalendar.get(Calendar.MONTH), mAlarmCalendar.get(Calendar.DATE), mAlarmCalendar.get(Calendar.YEAR),
                     mAlarmCalendar.get(Calendar.HOUR_OF_DAY), mAlarmCalendar.get(Calendar.MINUTE), true);
         } else {
             //cancel the pending intent here  (with alarmManager and in database)
             alarmManager.cancel(pendingIntent);
             ToDoListItemManager itemManager = ToDoListItemManager.getInstance(getContext());
-            itemManager.toggleCalendarAlarm(getCalendarAlarmID(CALENDAR), 0);
+            itemManager.toggleCalendarAlarm(getAlarmID(CALENDAR), 0);
         }
     }
 
@@ -334,10 +338,125 @@ public class ToDoListOptionsFragment extends Fragment {
             String cityAddress = mCity_EditText.getText().toString();
             String stateAddress = mState_EditText.getText().toString();
             String zipAddress = mZip_EditText.getText().toString();
+            setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress,ToDoListOptionsFragment.this.getAlarmID(GEOFENCE),mItemID,mListID);
+
             //mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress);
-            mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress, ToDoListOptionsFragment.this.getCalendarAlarmID(GEOFENCE),mItemID,mListID);
+            //mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress, ToDoListOptionsFragment.this.getCalendarAlarmID(GEOFENCE),mItemID,mListID);
         } else {
-            mIGeoOptions.removeGeoFence(getCalendarAlarmID(GEOFENCE));
+            //mIGeoOptions.removeGeoFence(getCalendarAlarmID(GEOFENCE));
+            removeGeoFence();
+
+
         }
+    }
+    public void setGeoFenceAddress(String street, String city, String state, String zipCode,String alarmTag,String reminderID,String listID) {
+        Log.d(TAG, "Inside setGeoFenceAddress "+street+" "+city+" "+state+" "+zipCode);
+        if(mCoordinatesResultReceiver==null){
+            mCoordinatesResultReceiver=new CoordinatesResultReceiver(new Handler());
+        }
+        HashMap<String,String> data = new HashMap<>();
+        data.put(DbSchema.geoFenceAlarm_table.cols.STREET,street);
+        data.put(DbSchema.geoFenceAlarm_table.cols.CITY,city);
+        data.put(DbSchema.geoFenceAlarm_table.cols.STATE,state);
+        data.put(DbSchema.geoFenceAlarm_table.cols.ZIPCODE,zipCode);
+        data.put(DbSchema.geoFenceAlarm_table.cols.REMINDER_ID,reminderID);
+        data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG,alarmTag);
+        ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(getContext());
+        listItemManager.saveGeoFenceAlarm(alarmTag,reminderID,data);
+
+        GeoCoder.getLocationFromAddress(getContext(), street + " " + city + "," + state + " " + zipCode,alarmTag,reminderID,listID, mCoordinatesResultReceiver);
+        //ToDoListOptionsFragment currentFragment =(ToDoListOptionsFragment) MainActivity.this.getSupportFragmentManager().findFragmentById(R.id.my_frame);
+        mCoordinatesResultReceiver.setResult(this);
+
+
+    }
+
+    private void removeGeoFence(){
+        ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(getContext());
+        HashMap<String,String> data = new HashMap<>();
+        data.put(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE,"0");
+        listItemManager.saveGeoFenceAlarm(getAlarmID(GEOFENCE),mItemID,data);
+        mIGeoOptions.requestStopOfLocationUpdateService();
+
+        //now get refence
+        mIGeoOptions.requestStartOfLocationUpdateService();
+        mIGeoOptions.getServiceReference();
+        LocationUpdateService locationUpdateService=mIGeoOptions.getServiceReference();
+
+        //Get reference to the item (in order to get the text & any other info)
+        ToDoListItem toDoItem = listItemManager.getSingleListItem(mListID,mItemID);
+
+        String theText = toDoItem.getText();
+        int theTextLength=theText.length();
+        int end = theTextLength>5?5:theTextLength;
+
+
+        int tag=createAlarmTag(GEOFENCE);
+        locationUpdateService.removeGeofencesByPendingIntent(tag);
+
+    }
+    /**
+     *
+     * @param resultCode
+     * @param resultData
+     */
+
+    @Override
+    public void onReceiveCoordinatesResult(int resultCode, Bundle resultData) {
+        /*
+        MY_LANDMARKS.put("CRESTWOOD TRAIN STATION", new LatLng(40.958997,-73.820564));
+
+        // WARREN.
+        MY_LANDMARKS.put("WARREN AVENUE", new LatLng(40.9618839,-73.8154516));
+
+        //EASTCHESTER HIGH SCHOOL
+        MY_LANDMARKS.put("WARREN AVENUE", new LatLng(40.961959, -73.817088));
+
+        //LORD & TAYLORS
+        MY_LANDMARKS.put("LORD&TAYLORS", new LatLng(40.972252, -73.803934));
+
+        //KENSICO DAM
+        MY_LANDMARKS.put("KENSICO DAM",new LatLng(41.073794, -73.766287));
+        */
+        if(Constants.SUCCESS_RESULT==resultCode) {
+            //NOW ADD FENCE
+            Location lastLocation = resultData.getParcelable(Constants.RESULT_DATA_KEY);
+            String requestID=resultData.getString(Constants.ALARM_TAG);
+            String reminderID = resultData.getString(Constants.REMINDER_ID);
+            String listID = resultData.getString(Constants.LIST_ID);
+            //mLocationServices.addToGeoFenceList(requestID, lastLocation.getLatitude(), lastLocation.getLongitude());
+            Log.d(TAG,"ABOUT TO SAVE SOME INFO");
+
+            //save info to local databasae
+            HashMap<String,String>data = new HashMap<>();
+            data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG,requestID);
+            data.put(DbSchema.geoFenceAlarm_table.cols.LATITUDE,Double.toString(lastLocation.getLatitude()));
+            data.put(DbSchema.geoFenceAlarm_table.cols.LONGITUDE,Double.toString(lastLocation.getLongitude()));
+            data.put(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE,"1");
+
+            ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(getContext());
+            listItemManager.saveGeoFenceAlarm(requestID,reminderID,data);
+
+            //Get reference to the item (in order to get the text & any other info)
+            ToDoListItem toDoItem = listItemManager.getSingleListItem(listID,reminderID);
+
+            //now get refence
+            mIGeoOptions.requestStartOfLocationUpdateService();
+            mIGeoOptions.getServiceReference();
+            LocationUpdateService locationUpdateService=mIGeoOptions.getServiceReference();
+
+            String theText = toDoItem.getText();
+            int theTextLength=theText.length();
+           if(theTextLength>99){
+               theText=theText.substring(0,98);
+           }
+
+
+            //locationUpdateService.addToGeoFenceList(theText,lastLocation.getLatitude(),lastLocation.getLongitude());
+            locationUpdateService.populateGeofenceList();
+            locationUpdateService.addGeofences(createAlarmTag(GEOFENCE));
+        }
+
+
     }
 }

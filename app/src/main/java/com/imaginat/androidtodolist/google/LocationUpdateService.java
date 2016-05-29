@@ -5,6 +5,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -22,10 +23,8 @@ import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * Created by nat on 5/27/16.
@@ -34,8 +33,11 @@ public class LocationUpdateService extends Service
         implements GoogleApiClient.OnConnectionFailedListener,
         GoogleApiClient.ConnectionCallbacks,ResultCallback<Status>,LocationListener {
 
+
+
     private static final int REQUEST_FINE_LOCATION =100;
     private static final String TAG= LocationUpdateService.class.getSimpleName();
+
 
     //Entry point to Google Play Services
     protected GoogleApiClient mGoogleApiClient;
@@ -48,6 +50,10 @@ public class LocationUpdateService extends Service
 
     //flag, keep track if client started or not
     private boolean isGoogleApiClientCreated=false;
+
+    //for binding
+    private IBinder mBinder = new MyLocationUpdateServiceBinder();
+
 
     /**
      * Stores parameters for requests to the FusedLocationProviderApi.
@@ -67,7 +73,7 @@ public class LocationUpdateService extends Service
         isGoogleApiClientCreated=false;
         mGeofencePendingIntent=null;
         mGeofenceList = new ArrayList<>();
-        populateGeofenceList();
+
 
         buildGoogleApiClient();
 
@@ -109,17 +115,46 @@ public class LocationUpdateService extends Service
     }
 
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopLocationUpdates();
+        mGoogleApiClient.disconnect();
+        mGoogleApiClient=null;
+    }
+    //===========================BINDING SERVICE RELATED======================
+    public class MyLocationUpdateServiceBinder extends Binder {
+        public LocationUpdateService getService(){
+            return LocationUpdateService.this;
+        }
+    }
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        Log.v(TAG,"in on bind");
+        return mBinder;
     }
 
+    @Override
+    public void onRebind(Intent intent) {
+        Log.v(TAG,"onRebind");
+        super.onRebind(intent);
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.v(TAG,"onUnbind");
+        return true;
+    }
+
+    //=============CONNECTING TO GOogle API CLIENT=======================================
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         loadPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_FINE_LOCATION);
         Log.d(TAG,"connected to google play services");
-        addGeofences();
+        //addGeofences();
+        //populateGeofenceList();
+        //removeGeofences();
         isGoogleApiClientCreated=true;
 
 
@@ -138,13 +173,6 @@ public class LocationUpdateService extends Service
         Log.d(TAG,"connection to google play services suspended");
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        stopLocationUpdates();
-        mGoogleApiClient.disconnect();
-        mGoogleApiClient=null;
-    }
 
     //================HELPER=======================================
     private void loadPermissions(String perm, int requestCode) {
@@ -221,7 +249,7 @@ public class LocationUpdateService extends Service
      * Adds geofences, which sets alerts to be notified when the device enters or exits one of the
      * specified geofences. Handles the success or failure results returned by addGeofences().
      */
-    public void addGeofences() {
+    public void addGeofences(int pendingIntentID) {
         if (!mGoogleApiClient.isConnected()) {
             Toast.makeText(this, "google api client not connected", Toast.LENGTH_SHORT).show();
             return;
@@ -235,7 +263,25 @@ public class LocationUpdateService extends Service
                     // A pending intent that that is reused when calling removeGeofences(). This
                     // pending intent is used to generate an intent when a matched geofence
                     // transition is observed.
-                    getGeofencePendingIntent()
+                    getGeofencePendingIntent(pendingIntentID)
+            ).setResultCallback(this); // Result processed in onResult().
+        } catch (SecurityException securityException) {
+            // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
+            logSecurityException(securityException);
+        }
+    }
+    public void removeGeofencesByPendingIntent(int pendingIntentID){
+        if (!mGoogleApiClient.isConnected()) {
+            Toast.makeText(this, "google api client not connected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        try {
+            // Remove geofences.
+            com.google.android.gms.location.LocationServices.GeofencingApi.removeGeofences(
+                    mGoogleApiClient,
+                    getGeofencePendingIntent(pendingIntentID)
             ).setResultCallback(this); // Result processed in onResult().
         } catch (SecurityException securityException) {
             // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
@@ -246,7 +292,7 @@ public class LocationUpdateService extends Service
      * Removes geofences, which stops further notifications when the device enters or exits
      * previously registered geofences.
      */
-    public void removeGeofences() {
+    public void removeGeofences(int pendingIntentID) {
         if (!mGoogleApiClient.isConnected()) {
             Toast.makeText(this, "google api client not connected", Toast.LENGTH_SHORT).show();
             return;
@@ -256,7 +302,7 @@ public class LocationUpdateService extends Service
             com.google.android.gms.location.LocationServices.GeofencingApi.removeGeofences(
                     mGoogleApiClient,
                     // This is the same pending intent that was used in addGeofences().
-                    getGeofencePendingIntent()
+                    getGeofencePendingIntent(pendingIntentID)
             ).setResultCallback(this); // Result processed in onResult().
         } catch (SecurityException securityException) {
             // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
@@ -268,22 +314,51 @@ public class LocationUpdateService extends Service
         Log.e(TAG, "Invalid location permission. " +
                 "You need to use ACCESS_FINE_LOCATION with geofences", securityException);
     }
-    /**
-     * This sample hard codes geofence data. A real app might dynamically create geofences based on
-     * the user's location.
-     */
-    public void populateGeofenceList() {
-        for (Map.Entry<String, LatLng> entry : Constants.MY_LANDMARKS.entrySet()) {
+
+
+
+    public void addToGeoFenceList(String requestID,double latitude,double longitude) {
+
+
+        mGeofenceList.clear();
+        mGeofenceList.add(new Geofence.Builder()
+                // Set the request ID of the geofence. This is a string to identify this
+                // geofence.
+                .setRequestId(requestID)
+
+                // Set the circular region of this geofence.
+                .setCircularRegion(
+                        latitude,
+                        longitude,
+                        Constants.GEOFENCE_RADIUS_IN_METERS
+                )
+
+                // Set the expiration duration of the geofence. This geofence gets automatically
+                // removed after this period of time.
+                .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+
+                // Set the transition types of interest. Alerts are only generated for these
+                // transition. We track entry and exit transitions in this sample.
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER )// Geofence.GEOFENCE_TRANSITION_EXIT
+
+                // Create the geofence.
+                .build());
+
+    }
+
+    public void populateGeofenceList(ArrayList<FenceData>fenceData) {
+
+        for ( FenceData f:fenceData) {
 
             mGeofenceList.add(new Geofence.Builder()
                     // Set the request ID of the geofence. This is a string to identify this
                     // geofence.
-                    .setRequestId(entry.getKey())
+                    .setRequestId(f.ninetynineChars)
 
                     // Set the circular region of this geofence.
                     .setCircularRegion(
-                            entry.getValue().latitude,
-                            entry.getValue().longitude,
+                            f.latitude,
+                            f.longitude,
                             Constants.GEOFENCE_RADIUS_IN_METERS
                     )
 
@@ -293,8 +368,7 @@ public class LocationUpdateService extends Service
 
                     // Set the transition types of interest. Alerts are only generated for these
                     // transition. We track entry and exit transitions in this sample.
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
-                            Geofence.GEOFENCE_TRANSITION_EXIT)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
 
                     // Create the geofence.
                     .build());
@@ -308,44 +382,17 @@ public class LocationUpdateService extends Service
      *
      * @return A PendingIntent for the IntentService that handles geofence transitions.
      */
-    private PendingIntent getGeofencePendingIntent() {
+    private PendingIntent getGeofencePendingIntent(int intentID) {
         // Reuse the PendingIntent if we already have it.
         if (mGeofencePendingIntent != null) {
             return mGeofencePendingIntent;
         }
-       /* Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
+        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
         // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
         // addGeofences() and removeGeofences().
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);*/
+        mGeofencePendingIntent= PendingIntent.getService(this, intentID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return mGeofencePendingIntent;
 
-        String theText = "HELLO FROM THE TEXT";
-        String listID="1", reminderID="1";
-        Intent intent = new Intent(this, GeofenceReceiver.class);
-        intent.setAction("com.imaginat.androidtodolist.LOCATiON_RECEIVED");
-        intent.putExtra(Constants.THE_TEXT,theText);
-
-        int maxSize=5;
-        if(theText.length()<maxSize){
-            maxSize = theText.length()-1;
-        }
-        String substring = theText.substring(0, maxSize);
-        String flag= substring + "_L" + listID + "I" + reminderID+"GEO";
-        int strlen = flag.length();
-        int hash = 7;
-        for (int i = 0; i < strlen; i++) {
-            hash = hash * 31 + flag.charAt(i);
-        }
-
-
-
-         intent = new Intent(getApplicationContext(), GeofenceTransitionsIntentService.class);
-        intent.putExtra(Constants.THE_TEXT,theText);
-        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
-        // addGeofences() and removeGeofences().
-
-        return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        //return PendingIntent.getBroadcast(getApplicationContext(),hash,intent,0);
     }
 
     public void onResult(Status status) {
