@@ -63,6 +63,7 @@ public class ToDoListItemManager {
     }
 
     public void updateReminder(String listId, String reminderID, String text) {
+        Log.d(TAG,"UPDATE todolistManager update manager with "+listId+" "+reminderID+" "+text);
         mSqlHelper.updateReminder(listId, reminderID, text);
         loadAllRemindersForList(listId);
     }
@@ -233,5 +234,25 @@ public class ToDoListItemManager {
         }
 
         return fencedDatas;
+    }
+
+
+    public ArrayList<ToDoListItem>getGeoFencedTriggeredItems(ArrayList<String>tags){
+        Cursor c= mSqlHelper.getRemindersTriggeredUsingTags(tags);
+        c.moveToFirst();
+        ArrayList<ToDoListItem>results = new ArrayList<>();
+        while(c.isAfterLast()==false){
+            int colIndex = c.getColumnIndex(DbSchema.reminders_table.cols.REMINDER_ID);
+            String reminder_id = c.getString(colIndex);
+            colIndex = c.getColumnIndex(DbSchema.reminders_table.cols.REMINDER_TEXT);
+            String text = c.getString(colIndex);
+            colIndex=c.getColumnIndex(DbSchema.reminders_table.cols.LIST_ID);
+            String listID= c.getString(colIndex);
+            ToDoListItem listItem = new ToDoListItem(text, reminder_id);
+            listItem.setListId(listID);
+            results.add(listItem);
+            c.moveToNext();
+        }
+        return results;
     }
 }

@@ -85,7 +85,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
             );
 
             // Send notification and log the transition details.
-            sendNotification(geofenceTransitionDetails);
+            sendNotification("A friendly reminder from the to do list (click here)",triggeringGeofences);
             Log.i(TAG, geofenceTransitionDetails);
         } else {
             // Log the error.
@@ -106,7 +106,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
             int geofenceTransition,
             List<Geofence> triggeringGeofences) {
 
-        String geofenceTransitionString = getTransitionString(geofenceTransition);
+        String geofenceTransitionString = "REMINDER:";//getTransitionString(geofenceTransition);
 
         // Get the Ids of each geofence that was triggered.
         ArrayList triggeringGeofencesIdsList = new ArrayList();
@@ -122,10 +122,16 @@ public class GeofenceTransitionsIntentService extends IntentService {
      * Posts a notification in the notification bar when a transition is detected.
      * If the user clicks the notification, control goes to the MainActivity.
      */
-    private void sendNotification(String notificationDetails) {
+    private void sendNotification(String notificationDetails,List<Geofence>triggeringGeofences) {
         // Create an explicit content Intent that starts the main Activity.
         Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
-
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        ArrayList<String>tagsOfTriggered = new ArrayList<>();
+        for (Geofence geofence : triggeringGeofences) {
+            tagsOfTriggered.add(geofence.getRequestId());
+        }
+        notificationIntent.putExtra(Constants.INTENT_SOURCE,"GeofenceTransitionsIntentService");
+        notificationIntent.putExtra(Constants.LIST_OF_TRIGGERED,tagsOfTriggered);
         // Construct a task stack.
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 

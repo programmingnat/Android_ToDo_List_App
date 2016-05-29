@@ -18,7 +18,6 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ViewSwitcher;
 
 import com.imaginat.androidtodolist.R;
 import com.imaginat.androidtodolist.businessModels.ToDoListItem;
@@ -162,8 +161,8 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
         ToDoListItem toDoListItem = (ToDoListItem) mToDoListItems.get(position);
         if (toDoListItem == null) {
 
-
-            holder.mEditText.setText("+ CLICK HERE TO ADD A REMINDER");
+            holder.mEditText.setText("");
+            holder.mEditText.setHint("ADD A REMINDER");
             holder.mRadioButton.setVisibility(View.GONE);
             return;
         }
@@ -173,6 +172,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
         holder.mReminderId = toDoListItem.getReminder_id();
         ((LinearLayout)holder.itemView.findViewById(R.id.lineItemOptionsButton)).setVisibility(View.GONE);
         holder.mMoreOpts.setVisibility(View.INVISIBLE);
+        holder.mDidIEdit=false;
 
 
 
@@ -199,6 +199,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
         public View mItemView;
         public ImageButton mMoreOpts;
         public String mListID;
+        public boolean mDidIEdit=false;
 
 
 
@@ -214,7 +215,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
             mOptionsButton=(Button)itemView.findViewById(R.id.editLineItemButton);
             mItemView.setOnClickListener(this);
             mMoreOpts = (ImageButton)itemView.findViewById(R.id.moreOptionsButton);
-            itemView.setOnKeyListener(this);
+            mEditText.setOnKeyListener(this);
             mEditText.setOnFocusChangeListener(this);
             //mEditText.setOnLongClickListener(this);
             mEditText.setOnEditorActionListener(this);
@@ -231,7 +232,27 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
             });
 
 
+            mItemView.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    Log.d(TAG,"mItemView onKey ");
+                    if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                            (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        Log.d(TAG,"mItemView onKey entered pressed");
+                        // Perform action on key press
+                        // Toast.makeText(mContext, "ADDING TO DATABASE", Toast.LENGTH_SHORT).show();
+                        if(mRadioButton.getVisibility()==View.GONE) {
+                            Log.d(TAG,"mItemView onKey bisiblity of radio button is GONE");
+                            mClickInterface.handleClickToCreateNewReminder(((EditText) v).getText().toString());
+                        }else{
+                            Log.d(TAG,"mItemView onKey visiblity of radio button is NOT gone");
+                        }
+                        //((ViewSwitcher) v.getParent()).showPrevious();
 
+                    }
+                    return false;
+                }
+            });
 
             mEditText.setOnTouchListener(new View.OnTouchListener() {
                 @Override
@@ -285,9 +306,9 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
         public void onClick(View v) {
 
 
-            Log.d(TAG,"onClick called");
+            //Log.d(TAG,"onClick called");
             mEditText.requestFocus();
-            if(mMoreOpts.getVisibility()!=View.VISIBLE){
+            if(mMoreOpts.getVisibility()!=View.VISIBLE && mRadioButton.getVisibility()==View.VISIBLE){
                 mMoreOpts.setVisibility(View.VISIBLE);
 
             }
@@ -313,14 +334,9 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
 
         @Override
         public boolean onKey(View v, int keyCode, KeyEvent event) {
-            if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                    (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                // Perform action on key press
-                Toast.makeText(mContext, "ADDING TO DATABASE", Toast.LENGTH_SHORT).show();
-                mClickInterface.handleClickToCreateNewReminder(((EditText) v).getText().toString());
-                ((ViewSwitcher) v.getParent()).showPrevious();
+            //Log.d(TAG,"onKey");
+            mDidIEdit=true;
 
-            }
             return false;
         }
 
@@ -331,8 +347,13 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
 
                 mMoreOpts.setVisibility(View.INVISIBLE);
                 mEditText.setTextColor(Color.BLACK);
-                //mClickInterface.handleClickToUpdateReminder(mReminderId,((EditText)v).getText().toString());
+
                 //((ViewSwitcher)v.getParent()).showPrevious();
+                if(mDidIEdit){
+                    mClickInterface.handleClickToUpdateReminder(mReminderId,((EditText)v).getText().toString());
+                    mDidIEdit=false;
+                    Log.d(TAG,"CALL UPDATE STUFF HERE");
+                }
 
             }else{
                 //mMoreOpts.setVisibility(View.VISIBLE);
@@ -346,11 +367,13 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
             Log.d(TAG,"Inside onEditorAction");
             if (actionId == EditorInfo.IME_ACTION_DONE || actionId==KeyEvent.KEYCODE_ENTER)
             {
-                Toast.makeText(mContext, "ADDING TO DATABASE", Toast.LENGTH_SHORT).show();
-                mClickInterface.handleClickToCreateNewReminder(((EditText) v).getText().toString());
-                //((ViewSwitcher) v.getParent()).showPrevious();
-                InputMethodManager imm = (InputMethodManager)v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                if(mRadioButton.getVisibility()==View.GONE) {
+                    Toast.makeText(mContext, "ADDING TO DATABASE", Toast.LENGTH_SHORT).show();
+                    mClickInterface.handleClickToCreateNewReminder(((EditText) v).getText().toString());
+                    //((ViewSwitcher) v.getParent()).showPrevious();
+                    InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
                 return true;
             }
             return false;

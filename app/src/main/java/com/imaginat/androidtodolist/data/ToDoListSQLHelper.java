@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -230,6 +231,36 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
                 " FROM "+DbSchema.geoFenceAlarm_table.NAME+" alarm INNER JOIN "+DbSchema.reminders_table.NAME+" r ON r.reminder_id=alarm.reminder_id  WHERE "+DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE+"=?";
         Log.d(TAG,sql);
         Cursor c = db.rawQuery(sql,new String[]{"1"});
+        return c;
+
+    }
+    public Cursor getRemindersTriggeredUsingTags(ArrayList<String> tags){
+
+        int totalTags  = tags.size();
+        if(totalTags==0){
+            return null;
+        }
+        String args[] = new String[totalTags];
+        String sqlTags="";
+        for(int i=0;i<totalTags;i++){
+            sqlTags+="?";
+            args[i]=tags.get(i);
+            if(i<totalTags-1){
+                sqlTags+=",";
+            }
+
+        }
+        String sql = "SELECT * FROM "+
+                DbSchema.reminders_table.NAME+" r INNER JOIN "+
+                DbSchema.geoFenceAlarm_table.NAME+" geo ON geo."+
+                DbSchema.geoFenceAlarm_table.cols.REMINDER_ID+"= r."+DbSchema.reminders_table.cols.REMINDER_ID+
+                " WHERE "+
+                DbSchema.geoFenceAlarm_table.cols.ALARM_TAG +" IN ("+
+                sqlTags
+                +")";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(sql,args);
         return c;
 
     }

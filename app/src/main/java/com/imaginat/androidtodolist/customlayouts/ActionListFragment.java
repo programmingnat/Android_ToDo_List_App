@@ -31,7 +31,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     }
 
 
-    private static String TAG = MainListFragment.class.getName();
+    private static String TAG = ActionListFragment.class.getName();
     private String mListId = null;
     ToDoListRecyclerAdapter mAdapter;
     RelativeLayout mTheAddingLayout;
@@ -196,14 +196,15 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     }
 
 
-    private class UpdateDatabaseTask extends AsyncTask<String, Void, Void> {
+    private class UpdateDatabaseTask extends AsyncTask<String, String, String> {
 
 
         @Override
-        protected Void doInBackground(String... params) {
+        protected String doInBackground(String... params) {
             if (params[0].equals("CREATE")) {
                 mToDoListItemManager.createNewReminder(mListId, params[1]);
             } else if (params[0].equals("UPDATE")) {
+                Log.d(TAG,"UPDATING doInBackground called with args "+params[1]+" "+params[2]);
                 mToDoListItemManager.updateReminder(mListId, params[1], params[2]);
             } else if (params[0].equals("DELETE")) {
                 mToDoListItemManager.deleteReminder(mListId, params[1]);
@@ -211,13 +212,17 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
             }
 
 
-            return null;
+            return params[0];
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            mAdapter.notifyDataSetChanged();
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            //don't have to call because the edit text is already changed to represent it
+            //if (s.equals("CREATE")) {
+                mAdapter.notifyDataSetChanged();
+            //}
+            //
         }
     }
 

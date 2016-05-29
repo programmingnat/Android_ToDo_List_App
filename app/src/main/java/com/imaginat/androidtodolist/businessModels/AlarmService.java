@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.imaginat.androidtodolist.MainActivity;
 import com.imaginat.androidtodolist.R;
+import com.imaginat.androidtodolist.google.Constants;
 
 /**
  * Created by nat on 5/2/16.
@@ -31,8 +32,11 @@ public class AlarmService extends IntentService {
         alarmNotificationManager = (NotificationManager) this
                 .getSystemService(Context.NOTIFICATION_SERVICE);
 
+        Intent alarmIntent = new Intent(this, MainActivity.class);
+        alarmIntent.putExtra(Constants.INTENT_SOURCE,"AlarmService");
+
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-                new Intent(this, MainActivity.class), 0);
+                alarmIntent, 0);
 
 
         NotificationCompat.Builder alarmNotficationBuilder =

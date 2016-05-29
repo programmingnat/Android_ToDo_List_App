@@ -44,6 +44,11 @@ public final class Constants {
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+
+    public static final String LIST_OF_TRIGGERED="triggeredGeoFences";
+    public static final String DISPLAY_GEO_TRIGGERED="displayTriggeredByGeoFence";
+    public static final String DISPLAY_CALENDAR_TRIGGERED="displayTriggeredByCalendar";
+    public static final String INTENT_SOURCE = "sourceOfThisIntent";
     /**
      * Map for storing information about airports in the San Francisco bay area.
      */

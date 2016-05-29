@@ -31,7 +31,7 @@
             android:paddingLeft="10dp"
             android:paddingRight="24dp"
             android:layout_toRightOf="@id/completedRadioButton"
-            android:text="hi there"
+            android:hint="Add Reminder"
             android:textSize="25sp"
             android:textColor="#000000"
             android:background="#00000000"
