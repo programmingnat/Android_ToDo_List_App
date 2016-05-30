@@ -113,6 +113,11 @@ public class AlarmsTriggeredListFragment extends Fragment implements ToDoListRec
     }
 
     @Override
+    public void handleClickToUpdateCheckStatus(String listId,String id, boolean isChecked) {
+
+    }
+
+    @Override
     public void handleDeleteButton(String id) {
 
     }

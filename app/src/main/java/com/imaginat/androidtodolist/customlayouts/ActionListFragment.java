@@ -166,10 +166,22 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     @Override
     public void handleClickToUpdateReminder(String id, String data) {
         Log.d(TAG, "Attempting to update reminder " + id + " with " + data);
-
+        if(id==null  || data==null){
+            return;
+        }
         UpdateDatabaseTask updateDatabaseTask = new UpdateDatabaseTask();
         updateDatabaseTask.execute("UPDATE", id, data);
 
+    }
+
+    @Override
+    public void handleClickToUpdateCheckStatus(String listID,String id, boolean isChecked) {
+        Log.d(TAG, "Attempting to update reminder " + id + " with " + isChecked);
+        if(id==null){
+            return;
+        }
+        UpdateDatabaseTask updateDatabaseTask = new UpdateDatabaseTask();
+        updateDatabaseTask.execute("UPDATE_CHECK", id, isChecked?"CHECKED":"UNCHECKED");
     }
 
     @Override
@@ -190,7 +202,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         final int MENU_ITEM_ITEM1 = 100;
-        MenuItem m = menu.add(Menu.NONE, MENU_ITEM_ITEM1, Menu.NONE, "Item name");
+        MenuItem m = menu.add(Menu.NONE, MENU_ITEM_ITEM1, Menu.NONE, "SHOW COMPLETED TASKS");
         m.setIcon(android.R.drawable.ic_menu_edit);
         m.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
     }
@@ -209,6 +221,8 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
             } else if (params[0].equals("DELETE")) {
                 mToDoListItemManager.deleteReminder(mListId, params[1]);
 
+            }else if(params[0].equals("UPDATE_CHECK")){
+                mToDoListItemManager.markAsCompleted(mListId,params[1],params[2]);
             }
 
 
@@ -219,9 +233,9 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             //don't have to call because the edit text is already changed to represent it
-            //if (s.equals("CREATE")) {
+            if (s.equals("UPDATE_CHECK")==false) {
                 mAdapter.notifyDataSetChanged();
-            //}
+            }
             //
         }
     }

@@ -12,6 +12,16 @@ public class ToDoListItem implements IListItem {
     private String mList_id;
     private boolean isCalendarAlarm=false;
     private boolean isGeoFenceAlarm=false;
+    private boolean isCompeted=false;
+
+    public boolean isCompeted() {
+        return isCompeted;
+    }
+
+    public void setCompeted(boolean competed) {
+        isCompeted = competed;
+    }
+
     private String mAlarmID;
     private int mReminderID,mAlarmDay,mAlarmMonth,mAlarmYear,mAlarmHour,mAlarmMin;
     private boolean isCalendarAlarmActive;

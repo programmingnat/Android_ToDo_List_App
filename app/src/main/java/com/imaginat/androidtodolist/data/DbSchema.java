@@ -23,7 +23,7 @@ public class DbSchema {
     //=========================================================================
     public static final class reminders_table{
         public static final String NAME = "reminders";
-        public static final String[] ALL_COLUMNS = new String[]{cols.REMINDER_ID,cols.LIST_ID,cols.REMINDER_TEXT};
+        public static final String[] ALL_COLUMNS = new String[]{cols.REMINDER_ID,cols.LIST_ID,cols.REMINDER_TEXT,cols.IS_COMPLETED};
         public static final String createCommand=
                 "CREATE TABLE "+NAME+"("+
                         cols.REMINDER_ID+" INTEGER PRIMARY KEY, "+

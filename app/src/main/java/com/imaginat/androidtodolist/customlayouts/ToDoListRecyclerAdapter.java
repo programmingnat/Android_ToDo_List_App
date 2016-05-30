@@ -12,10 +12,11 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +44,8 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
 
         public void handleClickToUpdateReminder(String id, String data);
 
+        public void handleClickToUpdateCheckStatus(String listId,String id,boolean isChecked);
+
         public void handleDeleteButton(String id);
     }
 
@@ -63,94 +66,6 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
         View view = layoutInflater.inflate(R.layout.to_do_list_line_item, parent, false);
 
 
-/*
-        Button deleteButton = (Button)view.findViewById(R.id.deleteLineItemButton);
-        Button moreButton=(Button)view.findViewById(R.id.editLineItemButton);
-        RadioButton mRadioButton;
-
-        mRadioButton = (RadioButton) view.findViewById(R.id.completedRadioButton);
-
-        mRadioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                RadioButton b = (RadioButton) v;
-                if (b.isChecked()) {
-                    // b.setChecked(false);
-                } else {
-                    // b.setChecked(true);
-                }
-
-
-            }
-        });
-        mRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    Log.d(TAG, "isChecked: onCheckedChanged called: CHECKED. SAVE IT");
-
-                } else {
-                    Log.d(TAG, "isChecked: onCheckedChanged called: NOT CHECKED. SAVE IT");
-
-                }
-            }
-        });
-
-        view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                RadioButton r = (RadioButton)v.findViewById(R.id.completedRadioButton);
-                if(r.getVisibility()==View.GONE){
-                    Toast.makeText(mContext,"ADDING SOMETHING",Toast.LENGTH_SHORT).show();
-                    ViewSwitcher switcher = (ViewSwitcher) v.findViewById(R.id.my_switcher);
-                    switcher.showNext(); //or switcher.showPrevious();
-                    EditText editText = (EditText) switcher.findViewById(R.id.listItemEdit);
-                    editText.setHint("ADD A NEW REMINDER HERE");
-
-                }else{
-                    ViewSwitcher switcher = (ViewSwitcher) v.findViewById(R.id.my_switcher);
-                    TextView textView = (TextView)v.findViewById(R.id.listItemTextView);
-                    switcher.showNext(); //or switcher.showPrevious();
-                    EditText editText = (EditText) switcher.findViewById(R.id.listItemEdit);
-                    editText.setText(textView.getText());
-                }
-            }
-        });
-
-        ViewSwitcher switcher = (ViewSwitcher) view.findViewById(R.id.my_switcher);
-        EditText editText = (EditText)switcher.findViewById(R.id.listItemEdit);
-        editText.setOnKeyListener(new View.OnKeyListener() {
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                // If the event is a key-down event on the "enter" button
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    // Perform action on key press
-                    Toast.makeText(mContext, "ADDING TO DATABASE", Toast.LENGTH_SHORT).show();
-                    mClickInterface.handleClickToCreateNewReminder(((EditText) v).getText().toString());
-                    ((ViewSwitcher)v.getParent()).showPrevious();
-
-                    return true;
-
-                }
-                return false;
-            }
-        });
-        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                Log.d(TAG,"onFocusChange called");
-                if(!hasFocus){
-                    
-                    mClickInterface.handleClickToUpdateReminder(,((EditText)v).getText().toString());
-                    ((ViewSwitcher)v.getParent()).showPrevious();
-
-                }
-            }
-        });
-
-
-
-*/
 
         return new ToDoListItemHolder(view);
     }
@@ -167,6 +82,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
             return;
         }
         holder.mRadioButton.setVisibility(View.VISIBLE);
+        holder.mRadioButton.setChecked(toDoListItem.isCompeted());
         holder.mEditText.setText(toDoListItem.getText());
         holder.mListID=toDoListItem.getListId();
         holder.mReminderId = toDoListItem.getReminder_id();
@@ -190,7 +106,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
             implements View.OnClickListener, View.OnKeyListener,
             TextView.OnEditorActionListener,View.OnFocusChangeListener{
 
-        public RadioButton mRadioButton;
+        public CheckBox mRadioButton;
         public Button mDeleteButton;
         public Button mOptionsButton;
         public TextView mTextView;
@@ -209,7 +125,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
            mItemView =itemView;
             //mViewSwitcher = (ViewSwitcher) itemView.findViewById(R.id.my_switcher);
             mEditText = (EditText)itemView.findViewById(R.id.listItemEdit);
-            mRadioButton = (RadioButton) itemView.findViewById(R.id.completedRadioButton);
+            mRadioButton = (CheckBox) itemView.findViewById(R.id.completedRadioButton);
             mTextView = (TextView) itemView.findViewById(R.id.listItemTextView);
             mDeleteButton = (Button)itemView.findViewById(R.id.deleteLineItemButton);
             mOptionsButton=(Button)itemView.findViewById(R.id.editLineItemButton);
@@ -228,6 +144,21 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
                     LinearLayout ll = (LinearLayout)mItemView.findViewById(R.id.lineItemOptionsButton);
                     ll.setVisibility(View.GONE);
                     mEditText.setTextColor(Color.BLACK);
+                }
+            });
+
+            mRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    //Log.d(TAG,"onCheckedChanged "+mListID+" "+mReminderId);
+
+                }
+            });
+
+            mRadioButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mClickInterface.handleClickToUpdateCheckStatus(mListID,mReminderId,((CheckBox)v).isChecked());
                 }
             });
 
@@ -349,7 +280,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
                 mEditText.setTextColor(Color.BLACK);
 
                 //((ViewSwitcher)v.getParent()).showPrevious();
-                if(mDidIEdit){
+                if(mDidIEdit && mRadioButton.getVisibility()==View.VISIBLE){
                     mClickInterface.handleClickToUpdateReminder(mReminderId,((EditText)v).getText().toString());
                     mDidIEdit=false;
                     Log.d(TAG,"CALL UPDATE STUFF HERE");

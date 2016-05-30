@@ -160,6 +160,15 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
                 new String[]{listID, reminderID});
     }
 
+    public void updateCheckMark(String listID,String reminderID,int checkValue){
+        ContentValues values = new ContentValues();
+        values.put(DbSchema.reminders_table.cols.IS_COMPLETED,checkValue);
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.update(DbSchema.reminders_table.NAME,
+                values,
+                DbSchema.reminders_table.cols.LIST_ID + "=? AND " + DbSchema.reminders_table.cols.REMINDER_ID + "=?",
+                new String[]{listID, reminderID});
+    }
     public void deleteReminder(String listID,String reminderID){
         SQLiteDatabase db= this.getWritableDatabase();
         db.delete(DbSchema.reminders_table.NAME,
