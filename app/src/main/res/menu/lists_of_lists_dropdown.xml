@@ -22,4 +22,8 @@
           android:icon="@android:drawable/ic_menu_add"
           android:title="SERVICE RUNNING?"
           app:showAsAction="ifRoom"/>
+    <item android:id="@+id/sendCurrentListNFC"
+          android:icon="@android:drawable/ic_menu_add"
+          android:title="SEND CURRENT LIST NFC"
+          app:showAsAction="ifRoom"/>
 </menu>

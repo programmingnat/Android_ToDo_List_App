@@ -9,8 +9,12 @@ import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -253,8 +257,37 @@ public class MainActivity extends AppCompatActivity
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         }
+        if (intent.getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
+            handleNfcIntent(getIntent());
+        }
     }
 
+    private ArrayList<String>messagesReceivedArray = new ArrayList<>();
+    private void handleNfcIntent(Intent NfcIntent) {
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(NfcIntent.getAction())) {
+            Parcelable[] receivedArray =
+                    NfcIntent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+
+            if(receivedArray != null) {
+                messagesReceivedArray.clear();
+                NdefMessage receivedMessage = (NdefMessage) receivedArray[0];
+                NdefRecord[] attachedRecords = receivedMessage.getRecords();
+
+                for (NdefRecord record:attachedRecords) {
+                    String string = new String(record.getPayload());
+                    //Make sure we don't pass along our AAR (Android Applicatoin Record)
+                    if (string.equals(getPackageName())) { continue; }
+                    messagesReceivedArray.add(string);
+                }
+                Toast.makeText(this, "Received " + messagesReceivedArray.size() +
+                        " Messages", Toast.LENGTH_LONG).show();
+
+            }
+            else {
+                Toast.makeText(this, "Received Blank Parcel", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
     @Override
     public void onUpdateTitle(String title) {
         ActionBar actionBar = getSupportActionBar();
