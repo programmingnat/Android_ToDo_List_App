@@ -121,4 +121,9 @@ public class AlarmsTriggeredListFragment extends Fragment implements ToDoListRec
     public void handleDeleteButton(String id) {
 
     }
+
+    @Override
+    public void handleShowMoreOptions() {
+
+    }
 }

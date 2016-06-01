@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
@@ -190,6 +191,13 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         updateDatabaseTask.execute("DELETE", id);
     }
 
+    @Override
+    public void handleShowMoreOptions() {
+        DialogFragment newFragment = new MoreOptionsDialogFragment();
+        newFragment.show(getActivity().getSupportFragmentManager(), "missiles");
+       
+    }
+
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
@@ -240,6 +248,8 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         }
     }
 
+    //========================================================================
+    //prevent error animating when updating list
     private class MyLinearLayoutManager extends LinearLayoutManager {
 
         @Override
@@ -255,4 +265,8 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
             super(context, orientation, reverseLayout);
         }
     }
+    //=========================================================================
+
+
+
 }

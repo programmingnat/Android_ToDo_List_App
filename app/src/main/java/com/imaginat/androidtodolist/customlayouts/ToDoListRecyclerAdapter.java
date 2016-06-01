@@ -47,6 +47,8 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
         public void handleClickToUpdateCheckStatus(String listId,String id,boolean isChecked);
 
         public void handleDeleteButton(String id);
+
+        public void handleShowMoreOptions();
     }
 
     public ToDoListRecyclerAdapter(Context context, ArrayList<ToDoListItem> arrayList, ToDoListRecyclerAdapter.IHandleListClicks ilistClicks) {
@@ -221,6 +223,9 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
                         mEditText.setTextColor(Color.BLACK);
 
                     }else{
+
+                        mClickInterface.handleShowMoreOptions();
+
                         ll.setVisibility(View.VISIBLE);
                         Log.d(TAG, "setting delButton to VISIBLE");
                         mEditText.setTextColor(Color.WHITE);
@@ -243,23 +248,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
                 mMoreOpts.setVisibility(View.VISIBLE);
 
             }
-//            if (mRadioButton.getVisibility() == View.GONE) {
-//                Toast.makeText(mContext, "ADDING SOMETHING", Toast.LENGTH_SHORT).show();
-//
-//                //mViewSwitcher.showNext(); //or switcher.showPrevious();
-//                EditText editText = (EditText) v.findViewById(R.id.listItemEdit);
-//                editText.setHint("ADD A NEW REMINDER HERE");
-//
-//            } else {
-//
-//                ImageButton imageButton = (ImageButton)v.findViewById(R.id.moreOptionsButton);
-//                imageButton.setVisibility(View.VISIBLE);
-                //mViewSwitcher.showNext(); //or switcher.showPrevious();
-//                EditText editText = (EditText) mViewSwitcher.findViewById(R.id.listItemEdit);
-//                CharSequence theText = mTextView.getText();
-//                editText.setText(theText);
-//                editText.setSelection(theText.length());
-//            }
+
 
         }
 
