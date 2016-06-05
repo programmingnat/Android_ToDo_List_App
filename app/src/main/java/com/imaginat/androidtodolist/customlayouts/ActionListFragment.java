@@ -1,7 +1,12 @@
 package com.imaginat.androidtodolist.customlayouts;
 
 import android.content.Context;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.NfcEvent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -21,10 +26,15 @@ import android.widget.Toast;
 import com.imaginat.androidtodolist.R;
 import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+
 /**
  * Created by nat on 4/26/16.
  */
+
 public class ActionListFragment extends Fragment implements ToDoListRecyclerAdapter.IHandleListClicks,MoreOptionsDialogFragment.MoreOptionsDialogListener {
+
 
 
 
@@ -32,6 +42,8 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         public void onUpdateTitle(String title);
     }
 
+    private ArrayList<String> messagesToSendArray;
+    private NfcAdapter mNfcAdapter;
 
     private static String TAG = ActionListFragment.class.getName();
     private String mListId = null;
@@ -55,6 +67,9 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.todos_list_fragment, container, false);
         setHasOptionsMenu(true);
+
+
+
 
         mToDoListItemManager = ToDoListItemManager.getInstance(getContext());
         mToDoListItemManager.loadAllRemindersForList(mListId);
@@ -98,10 +113,41 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
 
             }
         });
+        setHasOptionsMenu(true);
         return view;
+    }
+    public NdefRecord[] createRecords() {
+        NdefRecord[] records = new NdefRecord[messagesToSendArray.size() + 1];
+        //To Create Messages Manually if API is less than
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            for (int i = 0; i < messagesToSendArray.size(); i++){
+                byte[] payload = messagesToSendArray.get(i).
+                        getBytes(Charset.forName("UTF-8"));
+                NdefRecord record = new NdefRecord(
+                        NdefRecord.TNF_WELL_KNOWN,      //Our 3-bit Type name format
+                        NdefRecord.RTD_TEXT,            //Description of our payload
+                        new byte[0],                    //The optional id for our Record
+                        payload);                       //Our payload for the Record
+
+                records[i] = record;
+            }
+        }
+        //Api is high enough that we can use createMime, which is preferred.
+        else {
+            for (int i = 0; i < messagesToSendArray.size(); i++){
+                byte[] payload = messagesToSendArray.get(i).
+                        getBytes(Charset.forName("UTF-8"));
+
+                NdefRecord record = NdefRecord.createMime("text/plain",payload);
+                records[i] = record;
+            }
+        }
+        records[messagesToSendArray.size()] = NdefRecord.createApplicationRecord(getContext().getPackageName());
+        return records;
     }
 
 
+    //======
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);

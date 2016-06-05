@@ -14,6 +14,8 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
 import android.os.Build;
+
+
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
@@ -329,7 +331,12 @@ public class MainActivity extends AppCompatActivity
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         }
+        if (intent.getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
+            handleNfcIntent(getIntent());
+        }
     }
+
+
 
     @Override
     public void onUpdateTitle(String title) {
