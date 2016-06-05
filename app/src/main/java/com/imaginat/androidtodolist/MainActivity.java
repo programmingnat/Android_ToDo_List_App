@@ -9,8 +9,14 @@ import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.NfcEvent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -22,9 +28,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
+import com.imaginat.androidtodolist.businessModels.ListManager;
 import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
 import com.imaginat.androidtodolist.customlayouts.AddListFragment;
@@ -34,6 +42,7 @@ import com.imaginat.androidtodolist.customlayouts.ToDoListOptionsFragment;
 import com.imaginat.androidtodolist.google.Constants;
 import com.imaginat.androidtodolist.google.LocationUpdateService;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 //import com.imaginat.androidtodolist.google.GoogleAPIClientManager;
@@ -41,14 +50,19 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity
         implements ActionListFragment.IChangeActionBarTitle,
         com.imaginat.androidtodolist.google.LocationServices.ILocationServiceClient,
-        ToDoListOptionsFragment.IGeoOptions{
+        ToDoListOptionsFragment.IGeoOptions,
+        NfcAdapter.OnNdefPushCompleteCallback,
+        NfcAdapter.CreateNdefMessageCallback{
 
     private static final String TAG = MainActivity.class.getName();
 
     private static final int REQUEST_FINE_LOCATION = 0;
     private static final int REQUEST_LOCATION = 12;
 
-
+    private NfcAdapter mNfcAdapter;
+    //The array lists to hold our messages
+    private ArrayList<String> messagesToSendArray = new ArrayList<>();
+    private ArrayList<String> messagesReceivedArray = new ArrayList<>();
     //for reference to service
     LocationUpdateService mLocationUpdateService;
     boolean mLocationUpdateServiceBound;
@@ -71,6 +85,15 @@ public class MainActivity extends AppCompatActivity
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(getComponentName()));
 
+
+        //load with current lists
+        ToDoListItemManager toDoListItemManager = ToDoListItemManager.getInstance(this);
+        ArrayList<String>titles = toDoListItemManager.getListTitles();
+        MenuItem menuItem = menu.findItem(R.id.testPrepNFCTransfer);
+        SubMenu subMenu = menuItem.getSubMenu();
+        for(String title:titles) {
+            subMenu.addSubMenu(Menu.NONE, 5001, Menu.NONE, title);
+        }
         return true;
     }
 
@@ -101,6 +124,23 @@ public class MainActivity extends AppCompatActivity
                 ActionListFragment alf = (ActionListFragment) f;
                 alf.toggleEdit();
                 return true;
+            case R.id.testPrepNFCTransfer:
+
+                return true;
+            case 5001:
+                String s = item.getTitle().toString();
+                ToDoListItemManager itemManager = ToDoListItemManager.getInstance(this);
+                ArrayList<String>reminders = itemManager.getRemindersByListTitle(s);
+                messagesToSendArray.add(s);
+                messagesToSendArray.addAll(reminders);
+                messagesToSendArray.add(s);
+                for(String word:reminders){
+                    messagesToSendArray.add(word);
+                }
+                Log.d(TAG,"reminders size: "+reminders.size());
+
+                Log.d(TAG,"messagesToSendArray size: "+messagesToSendArray.size());
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -127,8 +167,14 @@ public class MainActivity extends AppCompatActivity
         fragmentTransaction.add(R.id.my_frame, fragment);
         fragmentTransaction.commit();
 
-        //For Search Bar
-        handleIntent(getIntent());
+        //For Search Bar and NFC
+        if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
+            Log.d(TAG,"INTENT nfc received");
+            handleNfcIntent(getIntent());
+        }else {
+            Log.d(TAG,"non nfc intent receiaved");
+            handleIntent(getIntent());
+        }
 
         //Permissions for Location services
         loadPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION, REQUEST_FINE_LOCATION);
@@ -166,6 +212,20 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
+        //Check if NFC is available on device
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        if(mNfcAdapter != null) {
+            //This will refer back to createNdefMessage for what it will send
+            mNfcAdapter.setNdefPushMessageCallback(this, this);
+
+            //This will be called if the message is sent successfully
+            mNfcAdapter.setOnNdefPushCompleteCallback(this, this);
+        }
+        else {
+            Toast.makeText(this, "NFC not available on this device",
+                    Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     @Override
@@ -188,6 +248,7 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
     }
 
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -197,6 +258,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        //For Search Bar and NFC
+        if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
+            Log.d(TAG,"INTENT nfc received");
+            handleNfcIntent(getIntent());
+        }else {
+            Log.d(TAG,"non nfc intent receiaved");
+            handleIntent(getIntent());
+        }
         //  if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
         //mLocationServices.startLocationUpdates();
         // }
@@ -220,7 +289,14 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onNewIntent(Intent intent) {
-        handleIntent(intent);
+        //For Search Bar and NFC
+        if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
+            Log.d(TAG,"INTENT nfc received");
+            handleNfcIntent(getIntent());
+        }else {
+            Log.d(TAG,"non nfc intent receiaved");
+            handleIntent(getIntent());
+        }
     }
 
     private void handleIntent(Intent intent) {
@@ -360,7 +436,101 @@ public class MainActivity extends AppCompatActivity
         editor.putInt(Constants.GEO_ALARM_COUNT, currentTotal);
     }
 
+    //==================NFC STUFF==================================
+    @Override
+    public NdefMessage createNdefMessage(NfcEvent event) {
+        //if list has nothing in it, return null
+        Log.d(TAG,"createNdefMessage");
 
+        //This will be called when another NFC capable device is detected.
+        if (messagesToSendArray.size() == 0) {
+            Log.d(TAG,"createNdefMessage: leaving early");
+            return null;
+        }
+        //We'll write the createRecords() method in just a moment
+        NdefRecord[] recordsToAttach = createRecords();
+        //When creating an NdefMessage we need to provide an NdefRecord[]
+        return new NdefMessage(recordsToAttach);
+    }
+
+    @Override
+    public void onNdefPushComplete(NfcEvent event) {
+        messagesToSendArray.clear();
+    }
+
+    public NdefRecord[] createRecords() {
+        Log.d(TAG,"inside createRecords");
+        NdefRecord[] records = new NdefRecord[messagesToSendArray.size() + 1];
+        //To Create Messages Manually if API is less than
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            for (int i = 0; i < messagesToSendArray.size(); i++){
+                byte[] payload = messagesToSendArray.get(i).
+                        getBytes(Charset.forName("UTF-8"));
+                NdefRecord record = new NdefRecord(
+                        NdefRecord.TNF_WELL_KNOWN,      //Our 3-bit Type name format
+                        NdefRecord.RTD_TEXT,            //Description of our payload
+                        new byte[0],                    //The optional id for our Record
+                        payload);                       //Our payload for the Record
+
+                records[i] = record;
+            }
+        }
+        //Api is high enough that we can use createMime, which is preferred.
+        else {
+            for (int i = 0; i < messagesToSendArray.size(); i++){
+                byte[] payload = messagesToSendArray.get(i).
+                        getBytes(Charset.forName("UTF-8"));
+
+                NdefRecord record = NdefRecord.createMime("text/plain",payload);
+                records[i] = record;
+            }
+        }
+        records[messagesToSendArray.size()] = NdefRecord.createApplicationRecord(getPackageName());
+        return records;
+    }
+
+    private void handleNfcIntent(Intent NfcIntent) {
+        Log.d(TAG,"handleNFcIntent");
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(NfcIntent.getAction())) {
+            Parcelable[] receivedArray =
+                    NfcIntent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+
+            if(receivedArray != null) {
+                messagesReceivedArray.clear();
+                NdefMessage receivedMessage = (NdefMessage) receivedArray[0];
+                NdefRecord[] attachedRecords = receivedMessage.getRecords();
+
+                for (NdefRecord record:attachedRecords) {
+                    String string = new String(record.getPayload());
+                    //Make sure we don't pass along our AAR (Android Applicatoin Record)
+                    if (string.equals(getPackageName())) { continue; }
+                    messagesReceivedArray.add(string);
+
+                }
+                Toast.makeText(this, "Received " + messagesReceivedArray.size() +
+                        " Messages", Toast.LENGTH_LONG).show();
+
+                //updateTextViews();
+                ListManager listManager = ListManager.getInstance(MainActivity.this);
+                ToDoListItemManager toDoListItemManager = ToDoListItemManager.getInstance(MainActivity.this);
+                int total=messagesReceivedArray.size();
+                String listID=null;
+                for(int i=0;i<total;i++){
+                    String s = messagesReceivedArray.get(i);
+                    Log.d(TAG,s);
+                    if(i==0){
+                        listID=listManager.createNewList(s);
+                        continue;
+                    }
+                    toDoListItemManager.createNewReminder(listID,s);
+
+                }
+            }
+            else {
+                Toast.makeText(this, "Received Blank Parcel", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
     private class MyServiceConnection implements ServiceConnection {
 
         @Override

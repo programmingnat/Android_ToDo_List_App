@@ -56,14 +56,32 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
 
 
     //=====================RELATED TO LIST STUFF================================================
-    public void insertIntoListTable(String listName){
+    public String getListName(String listID){
+        SQLiteDatabase db= this.getReadableDatabase();
+        Cursor c = db.query(DbSchema.lists_table.NAME, //table
+                new String[]{DbSchema.lists_table.cols.LIST_TITLE}, //columns
+                DbSchema.lists_table.cols.LIST_ID+"=?",//select
+                new String[]{listID},//selection args
+                null,//group
+                null,//having
+                null,//order
+                null);//limit
+
+        if(c==null || c.getCount()==0){
+            return null;
+        }
+        c.moveToFirst();
+        return c.getString(0);
+    }
+    public String insertIntoListTable(String listName){
         ContentValues values = new ContentValues();
         values.put(DbSchema.lists_table.cols.LIST_TITLE,listName);
         SQLiteDatabase db= this.getWritableDatabase();
 
-        db.insert(DbSchema.lists_table.NAME,
+        long id=db.insert(DbSchema.lists_table.NAME,
                 null,
                 values);
+        return Long.toString(id);
     }
 
     public int doesListNameExist(String listName){
@@ -102,6 +120,24 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
                 null,//order
                 null);//limit
 
+        return c;
+    }
+
+    public Cursor getListIDByTitle(String s){
+        Log.d(TAG,"inside getListIDByTitle: "+s);
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.query(DbSchema.lists_table.NAME, //table
+                DbSchema.lists_table.ALL_COLUMNS, //columns
+                DbSchema.lists_table.cols.LIST_TITLE+"=?",//select
+                new String[]{s},//selection args
+                null,//group
+                null,//having
+                null,//order
+                null);//limit
+        //Cursor c=db.rawQuery("SELECT * FROM "+DbSchema.lists_table.NAME+" WHERE list_title='test please '",null);
+        int total=c.getCount();
+        /*int col=c.getColumnIndex(DbSchema.lists_table.cols.LIST_ID);
+        return c.getString(col);*/
         return c;
     }
 //    public void updateEntry(Business b){

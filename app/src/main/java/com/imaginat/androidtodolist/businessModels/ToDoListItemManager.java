@@ -30,6 +30,7 @@ public class ToDoListItemManager {
             ToDoListItem r = new ToDoListItem();
             r.setText("To do list item " + i);
             mReminders.add(r);
+
         }
         mReminders.add(null);
 
@@ -41,6 +42,45 @@ public class ToDoListItemManager {
         }
 
         return instance;
+    }
+
+    public String getListName(String id){
+       return mSqlHelper.getListName(id);
+    }
+
+    public ArrayList<String>getRemindersByListTitle(String s){
+        Cursor c = mSqlHelper.getListIDByTitle(s);
+        c.moveToFirst();
+        String listID=null;
+        while(c.isAfterLast()==false){
+           listID= c.getString(0);
+            c.moveToNext();
+        }
+        //String listID=c.getString(0);
+        c.close();
+        ArrayList<String>listItems = new ArrayList<>();
+        c = mSqlHelper.getAllReminderForThisList(listID);
+
+        c.moveToFirst();
+        while (c.isAfterLast() == false) {
+            int colIndex = c.getColumnIndex(DbSchema.reminders_table.cols.REMINDER_TEXT);
+            String text = c.getString(colIndex);
+
+            Log.d(TAG,"Adding "+text);
+            listItems.add(text);
+            c.moveToNext();
+        }
+        return listItems;
+    }
+    public ArrayList<String> getListTitles(){
+        Cursor c =mSqlHelper.getAllListNames();
+        c.moveToFirst();
+        ArrayList<String>al = new ArrayList<>();
+        while(c.isAfterLast()==false){
+            al.add(c.getString(c.getColumnIndex(DbSchema.lists_table.cols.LIST_TITLE)));
+            c.moveToNext();
+        }
+        return al;
     }
 
     public ArrayList<ToDoListItem> getReminders() {

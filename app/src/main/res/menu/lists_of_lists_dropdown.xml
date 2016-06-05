@@ -22,4 +22,12 @@
           android:icon="@android:drawable/ic_menu_add"
           android:title="SERVICE RUNNING?"
           app:showAsAction="ifRoom"/>
+    <item android:id="@+id/testPrepNFCTransfer"
+          android:icon="@android:drawable/ic_menu_add"
+          android:title="Transfer"
+          app:showAsAction="ifRoom">
+            <menu>
+
+            </menu>
+        </item>
 </menu>

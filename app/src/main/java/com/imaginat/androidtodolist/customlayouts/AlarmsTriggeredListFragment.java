@@ -123,7 +123,7 @@ public class AlarmsTriggeredListFragment extends Fragment implements ToDoListRec
     }
 
     @Override
-    public void handleShowMoreOptions() {
+    public void handleShowMoreOptions(String listID,String reminderID) {
 
     }
 }

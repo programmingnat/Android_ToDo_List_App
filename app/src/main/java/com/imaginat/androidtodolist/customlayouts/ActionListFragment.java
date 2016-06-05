@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,7 +24,9 @@ import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 /**
  * Created by nat on 4/26/16.
  */
-public class ActionListFragment extends Fragment implements ToDoListRecyclerAdapter.IHandleListClicks {
+public class ActionListFragment extends Fragment implements ToDoListRecyclerAdapter.IHandleListClicks,MoreOptionsDialogFragment.MoreOptionsDialogListener {
+
+
 
     public interface IChangeActionBarTitle {
         public void onUpdateTitle(String title);
@@ -57,6 +58,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
 
         mToDoListItemManager = ToDoListItemManager.getInstance(getContext());
         mToDoListItemManager.loadAllRemindersForList(mListId);
+        String listName = mToDoListItemManager.getListName(mListId);
         mTheAddingLayout = (RelativeLayout) view.findViewById(R.id.addItemOverlayView);
         //mAddListOverlayView = (TextView) mTheAddingLayout.findViewById(R.id.addListEditText);
         mAdapter = new ToDoListRecyclerAdapter((Context) getActivity(), mToDoListItemManager.getReminders(), this);
@@ -70,7 +72,11 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         mAdapter.notifyDataSetChanged();
 
         if (mIChangeActionBarTitle != null) {
-            mIChangeActionBarTitle.onUpdateTitle("TEST LIST");
+            if(listName==null) {
+                mIChangeActionBarTitle.onUpdateTitle("REMINDERS");
+            }else{
+                mIChangeActionBarTitle.onUpdateTitle(listName);
+            }
         }
 
 
@@ -192,10 +198,31 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     }
 
     @Override
-    public void handleShowMoreOptions() {
-        DialogFragment newFragment = new MoreOptionsDialogFragment();
-        newFragment.show(getActivity().getSupportFragmentManager(), "missiles");
+    public void handleShowMoreOptions(String listID,String reminderID) {
+        MoreOptionsDialogFragment newFragment = new MoreOptionsDialogFragment();
+        newFragment.setMoreOptionsDialogListener(this);
+        newFragment.setListID(listID);
+        newFragment.setReminderID(reminderID);
+        newFragment.show(getActivity().getSupportFragmentManager(), "options");
        
+    }
+    @Override
+    public void onDeleteButton(String listID,String reminderID) {
+        UpdateDatabaseTask updateDatabaseTask = new UpdateDatabaseTask();
+        updateDatabaseTask.execute("DELETE", reminderID);
+    }
+
+    @Override
+    public void onMoreOptionsButton(String listID,String reminderID) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ToDoListOptionsFragment toDoListOptionsFragment = new ToDoListOptionsFragment();
+        toDoListOptionsFragment.setItemID(reminderID);
+        toDoListOptionsFragment.setListID(listID);
+        toDoListOptionsFragment.setIGeoOptions(mIGeoOptions);
+        ft.replace(R.id.my_frame, toDoListOptionsFragment);
+        ft.setTransition(FragmentTransaction.TRANSIT_NONE);
+        ft.addToBackStack(null);
+        ft.commit();
     }
 
 

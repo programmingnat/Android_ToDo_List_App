@@ -37,7 +37,13 @@ public class ListManager {
     public ArrayList<ListTitle> getListTitles(){
         return mListTitles;
     }
-    public void createNewList(String listName){
+
+    /**
+     *
+     * @param listName
+     * @return - row id as string
+     */
+    public String createNewList(String listName){
         //check if list name already exists
         int countFound  = mSqlHelper.doesListNameExist(listName);
 
@@ -50,7 +56,7 @@ public class ListManager {
         }
 
         //add it
-        mSqlHelper.insertIntoListTable(listName);
+        return mSqlHelper.insertIntoListTable(listName);
 
     }
 

@@ -48,7 +48,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
 
         public void handleDeleteButton(String id);
 
-        public void handleShowMoreOptions();
+        public void handleShowMoreOptions(String listId,String reminderID);
     }
 
     public ToDoListRecyclerAdapter(Context context, ArrayList<ToDoListItem> arrayList, ToDoListRecyclerAdapter.IHandleListClicks ilistClicks) {
@@ -215,21 +215,21 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
             mMoreOpts.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    LinearLayout ll = (LinearLayout)mItemView.findViewById(R.id.lineItemOptionsButton);
+                   /* LinearLayout ll = (LinearLayout)mItemView.findViewById(R.id.lineItemOptionsButton);
 
                     if (ll.getVisibility()==View.VISIBLE){
                         Log.d(TAG, "setting delButton to GONE");
                         ll.setVisibility(View.GONE);
                         mEditText.setTextColor(Color.BLACK);
 
-                    }else{
+                    }else{*/
 
-                        mClickInterface.handleShowMoreOptions();
-
+                        mClickInterface.handleShowMoreOptions(mListID,mReminderId);
+/*
                         ll.setVisibility(View.VISIBLE);
                         Log.d(TAG, "setting delButton to VISIBLE");
                         mEditText.setTextColor(Color.WHITE);
-                    }
+                    }*/
 
                 }
             });
