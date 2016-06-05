@@ -14,8 +14,6 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
 import android.os.Build;
-
-
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
@@ -35,11 +33,13 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
 import com.imaginat.androidtodolist.businessModels.ListManager;
+import com.imaginat.androidtodolist.businessModels.ToDoListItem;
 import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
 import com.imaginat.androidtodolist.customlayouts.AddListFragment;
 import com.imaginat.androidtodolist.customlayouts.AlarmsTriggeredListFragment;
 import com.imaginat.androidtodolist.customlayouts.MainListFragment;
+import com.imaginat.androidtodolist.customlayouts.SearchResultsFragment;
 import com.imaginat.androidtodolist.customlayouts.ToDoListOptionsFragment;
 import com.imaginat.androidtodolist.google.Constants;
 import com.imaginat.androidtodolist.google.LocationUpdateService;
@@ -170,11 +170,12 @@ public class MainActivity extends AppCompatActivity
         fragmentTransaction.commit();
 
         //For Search Bar and NFC
+
         if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
-            Log.d(TAG,"INTENT nfc received");
+            Log.d(TAG,"onCreate INTENT nfc received");
             handleNfcIntent(getIntent());
         }else {
-            Log.d(TAG,"non nfc intent receiaved");
+            Log.d(TAG,"onCreate non nfc intent receiaved");
             handleIntent(getIntent());
         }
 
@@ -262,10 +263,10 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         //For Search Bar and NFC
         if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
-            Log.d(TAG,"INTENT nfc received");
+            Log.d(TAG,"onResume INTENT nfc received");
             handleNfcIntent(getIntent());
         }else {
-            Log.d(TAG,"non nfc intent receiaved");
+            Log.d(TAG,"onResume non nfc intent receiaved");
             handleIntent(getIntent());
         }
         //  if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
@@ -291,21 +292,40 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+       // handleIntent(intent);
+
         //For Search Bar and NFC
-        if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
-            Log.d(TAG,"INTENT nfc received");
+  /*      if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
+            Log.d(TAG,"onNewIntent INTENT nfc received");
             handleNfcIntent(getIntent());
         }else {
-            Log.d(TAG,"non nfc intent receiaved");
+            Log.d(TAG,"onNewIntent non nfc intent receiaved");
             handleIntent(getIntent());
-        }
+        }*/
     }
 
     private void handleIntent(Intent intent) {
 
+        Log.d(TAG,"Entered handleIntent with "+intent.getAction());
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            Toast.makeText(MainActivity.this, "Searching for " + query, Toast.LENGTH_SHORT).show();
+            //Toast.makeText(MainActivity.this, "Searching for " + query, Toast.LENGTH_SHORT).show();
+            ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(MainActivity.this);
+            ArrayList<ToDoListItem>result = listItemManager.findRemindersBasedOnQuery(query);
+
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+            SearchResultsFragment fragment = new SearchResultsFragment();
+            ArrayList<String> selectedTags = intent.getStringArrayListExtra(Constants.LIST_OF_TRIGGERED);
+
+
+            fragmentTransaction.replace(R.id.my_frame, fragment);
+            fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_NONE);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
         }
 
         String possibleSource=intent.getStringExtra(Constants.INTENT_SOURCE);
@@ -333,8 +353,13 @@ public class MainActivity extends AppCompatActivity
         }
         if (intent.getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
             handleNfcIntent(getIntent());
+
+            Intent i = new Intent();
+            i.setAction("do nothing");
+            setIntent(i);
         }
     }
+
 
 
 

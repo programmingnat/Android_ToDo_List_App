@@ -48,6 +48,7 @@ public class ToDoListItemManager {
        return mSqlHelper.getListName(id);
     }
 
+
     public ArrayList<String>getRemindersByListTitle(String s){
         Cursor c = mSqlHelper.getListIDByTitle(s);
         c.moveToFirst();
@@ -87,6 +88,31 @@ public class ToDoListItemManager {
         return mReminders;
     }
 
+    public ArrayList<ToDoListItem>findRemindersBasedOnQuery(String searchQuery){
+       Cursor c= mSqlHelper.searchReminders(searchQuery);
+        ArrayList<ToDoListItem>results = new ArrayList<>();
+        c.moveToFirst();
+
+        Log.d(TAG,"Result of findRemindersBasedOnQuery is "+c.getCount());
+        while(c.isAfterLast()==false){
+
+            int colIndex = c.getColumnIndex(DbSchema.reminders_table.cols.REMINDER_ID);
+            String reminder_id = c.getString(colIndex);
+            colIndex = c.getColumnIndex(DbSchema.reminders_table.cols.REMINDER_TEXT);
+            String text = c.getString(colIndex);
+            Log.d(TAG,"found"+text);
+            colIndex=c.getColumnIndex(DbSchema.reminders_table.cols.LIST_ID);
+            String listID = c.getString(colIndex);
+            ToDoListItem listItem = new ToDoListItem(text, reminder_id);
+            listItem.setListId(listID);
+            colIndex=c.getColumnIndex(DbSchema.reminders_table.cols.IS_COMPLETED);
+            int isCompleted = c.getInt(colIndex);
+            listItem.setCompeted(isCompleted==1?true:false);
+            mReminders.add(listItem);
+            c.moveToNext();
+        }
+        return results;
+    }
     public void createNewReminder(String listId, String text) {
 
 

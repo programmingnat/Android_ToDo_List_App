@@ -152,6 +152,18 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
 //    }
 
     //=============================================================================
+    public Cursor searchReminders(String searchQuery){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.query(DbSchema.reminders_table.NAME, //table
+                DbSchema.reminders_table.ALL_COLUMNS, //columns
+                DbSchema.reminders_table.cols.REMINDER_TEXT+" LIKE ?",//select
+                new String[]{"%"+searchQuery+"%"},//selection args
+                null,//group
+                null,//having
+                null,//order
+                null);//limit
+        return c;
+    }
     public void insertReminderIntoList(String listID,String text){
         ContentValues values = new ContentValues();
         values.put(DbSchema.reminders_table.cols.LIST_ID,listID);
