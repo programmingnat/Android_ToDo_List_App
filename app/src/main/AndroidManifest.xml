@@ -11,67 +11,71 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.NFC" />
-    <uses-feature android:name="android.hardware.nfc" android:required="true"/>
+    <uses-permission android:name="android.permission.NFC"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
-
+    <uses-feature
+        android:name="android.hardware.nfc"
+        android:required="true"/>
+    <!-- AIzaSyDFf_CA8vnWALll9I106fCQhMYMVkWSpY4 -->
     <application
         android:allowBackup="true"
+        android:enabled="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:enabled="true">
+        android:theme="@style/AppTheme">
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDFf_CA8vnWALll9I106fCQhMYMVkWSpY4"
-            />
+            android:value="AIzaSyDFf_CA8vnWALll9I106fCQhMYMVkWSpY4"/>
 
+        <meta-data android:name="com.google.android.apps.drive.APP_ID" android:value="id=1234567890" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTask"
-            android:label="@string/app_name">
-
-
+            android:label="@string/app_name"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH"/>
             </intent-filter>
+
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable"/>
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
             <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <action android:name="android.nfc.action.NDEF_DISCOVERED"/>
+
                 <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="text/plain" />
+
+                <data android:mimeType="text/plain"/>
             </intent-filter>
         </activity>
 
-        <!--android:process=":com.imaginat.androidtodolist.PrivateProcess"-->
-        <service android:name=".google.LocationUpdateService"
-                 >
+        <!-- android:process=":com.imaginat.androidtodolist.PrivateProcess" -->
+        <service android:name=".google.LocationUpdateService">
         </service>
         <service
-            android:name="com.imaginat.androidtodolist.google.FetchAddressIntentService"
+            android:name=".google.FetchAddressIntentService"
             android:exported="true"/>
         <service
-            android:name="com.imaginat.androidtodolist.google.FetchCoordinatesIntentService"
+            android:name=".google.FetchCoordinatesIntentService"
             android:exported="true"/>
         <service
-            android:name="com.imaginat.androidtodolist.businessModels.AlarmService"
+            android:name=".businessModels.AlarmService"
             android:enabled="true"/>
 
-        <receiver android:name="com.imaginat.androidtodolist.businessModels.AlarmReceiver"/>
+        <receiver android:name=".businessModels.AlarmReceiver"/>
         <receiver
-            android:name="com.imaginat.androidtodolist.google.GeofenceReceiver"
+            android:name=".google.GeofenceReceiver"
             android:enabled="true"
             android:exported="true"
             android:process=":remote">
@@ -81,8 +85,14 @@
         </receiver>
 
         <service
-            android:name="com.imaginat.androidtodolist.google.GeofenceTransitionsIntentService"
+            android:name=".google.GeofenceTransitionsIntentService"
             android:exported="true"/>
+
+        <activity android:name=".BackupToDrive">
+            <intent-filter>
+                <action android:name="com.google.android.apps.drive.DRIVE_OPEN" />
+            </intent-filter>
+        </activity>
     </application>
-    <!--AIzaSyDFf_CA8vnWALll9I106fCQhMYMVkWSpY4-->
+
 </manifest>

@@ -30,10 +30,6 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
 
 
 
-    public interface IChangeActionBarTitle {
-        public void onUpdateTitle(String title);
-    }
-
 
 
     private static String TAG = ActionListFragment.class.getName();
@@ -41,7 +37,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     ToDoListRecyclerAdapter mAdapter;
     RelativeLayout mTheAddingLayout;
     RecyclerView mRecyclerView;
-    IChangeActionBarTitle mIChangeActionBarTitle;
+    IChangeToolbar mIChangeActionBarTitle;
     ToDoListOptionsFragment.IGeoOptions mIGeoOptions;
     ToDoListItemManager mToDoListItemManager;
 
@@ -115,7 +111,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            mIChangeActionBarTitle = (IChangeActionBarTitle) context;
+            mIChangeActionBarTitle = (IChangeToolbar) context;
         } catch (Exception ex) {
             ex.printStackTrace();
         }

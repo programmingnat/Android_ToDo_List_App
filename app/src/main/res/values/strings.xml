@@ -2,4 +2,5 @@
     <string name="app_name">AndroidToDoList</string>
     <string name="search_hint">Enter search term</string>
     <string name="google_app_id">AIzaSyDFf_CA8vnWALll9I106fCQhMYMVkWSpY4</string>
+    <string name="appID">181204134899-5i4elp4p5rht64c5ov7bk27890lb4le5.apps.googleusercontent.com</string>
 </resources>

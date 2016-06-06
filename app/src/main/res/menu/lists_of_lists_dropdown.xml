@@ -31,5 +31,7 @@
 
             </menu>
         </item>
-
+    <item android:id="@+id/goTo_DrivePage"
+          android:icon="@android:drawable/ic_menu_add"
+          android:title="DRIVE"/>
 </menu>

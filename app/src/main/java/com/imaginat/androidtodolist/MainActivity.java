@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -38,6 +39,7 @@ import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
 import com.imaginat.androidtodolist.customlayouts.AddListFragment;
 import com.imaginat.androidtodolist.customlayouts.AlarmsTriggeredListFragment;
+import com.imaginat.androidtodolist.customlayouts.IChangeToolbar;
 import com.imaginat.androidtodolist.customlayouts.MainListFragment;
 import com.imaginat.androidtodolist.customlayouts.SearchResultsFragment;
 import com.imaginat.androidtodolist.customlayouts.ToDoListOptionsFragment;
@@ -50,7 +52,7 @@ import java.util.ArrayList;
 //import com.imaginat.androidtodolist.google.GoogleAPIClientManager;
 
 public class MainActivity extends AppCompatActivity
-        implements ActionListFragment.IChangeActionBarTitle,
+        implements IChangeToolbar,
         com.imaginat.androidtodolist.google.LocationServices.ILocationServiceClient,
         ToDoListOptionsFragment.IGeoOptions,
         NfcAdapter.OnNdefPushCompleteCallback,
@@ -129,12 +131,17 @@ public class MainActivity extends AppCompatActivity
             case R.id.testPrepNFCTransfer:
 
                 return true;
+            case R.id.goTo_DrivePage:
+                Intent n = new Intent(this,BackupToDrive.class);
+                startActivity(n);
+                return true;
             case 5001:
                 String s = item.getTitle().toString();
                 ToDoListItemManager itemManager = ToDoListItemManager.getInstance(this);
                 ArrayList<String>reminders = itemManager.getRemindersByListTitle(s);
-                messagesToSendArray.add(s);
-                messagesToSendArray.addAll(reminders);
+               // messagesToSendArray.add(s);
+                //messagesToSendArray.addAll(reminders);
+                messagesToSendArray.clear();
                 messagesToSendArray.add(s);
                 for(String word:reminders){
                     messagesToSendArray.add(word);
@@ -153,7 +160,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Log.d(TAG,"inside onCreate");
         //shared preferences
         mSharedPreferences = getSharedPreferences(Constants.PREFERENCES, Context.MODE_PRIVATE);
         //UI Stuff
@@ -177,6 +184,9 @@ public class MainActivity extends AppCompatActivity
         }else {
             Log.d(TAG,"onCreate non nfc intent receiaved");
             handleIntent(getIntent());
+            Intent dummyIntent = new Intent();
+            dummyIntent.setAction("do nothing");
+            setIntent(dummyIntent);
         }
 
         //Permissions for Location services
@@ -229,8 +239,31 @@ public class MainActivity extends AppCompatActivity
                     Toast.LENGTH_SHORT).show();
         }
 
+
+        getSupportFragmentManager().addOnBackStackChangedListener(getListener());
+
     }
 
+    private FragmentManager.OnBackStackChangedListener getListener()
+    {
+        FragmentManager.OnBackStackChangedListener result = new FragmentManager.OnBackStackChangedListener()
+        {
+            public void onBackStackChanged()
+            {
+                FragmentManager manager = getSupportFragmentManager();
+
+                if (manager != null)
+                {
+                    Fragment currFrag = (Fragment)manager.
+                            findFragmentById(R.id.my_frame);
+                    Toast.makeText(MainActivity.this,"Calling this,this is paapening",Toast.LENGTH_SHORT).show();
+                    currFrag.onResume();
+                }
+            }
+        };
+
+        return result;
+    }
     @Override
     protected void onDestroy() {
         if (isServiceRunning()) {
@@ -268,7 +301,9 @@ public class MainActivity extends AppCompatActivity
         }else {
             Log.d(TAG,"onResume non nfc intent receiaved");
             handleIntent(getIntent());
+
         }
+
         //  if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
         //mLocationServices.startLocationUpdates();
         // }
@@ -310,6 +345,8 @@ public class MainActivity extends AppCompatActivity
 
         Log.d(TAG,"Entered handleIntent with "+intent.getAction());
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+
+
             String query = intent.getStringExtra(SearchManager.QUERY);
             //Toast.makeText(MainActivity.this, "Searching for " + query, Toast.LENGTH_SHORT).show();
             ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(MainActivity.this);
@@ -319,13 +356,15 @@ public class MainActivity extends AppCompatActivity
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
             SearchResultsFragment fragment = new SearchResultsFragment();
-            ArrayList<String> selectedTags = intent.getStringArrayListExtra(Constants.LIST_OF_TRIGGERED);
+
 
 
             fragmentTransaction.replace(R.id.my_frame, fragment);
             fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_NONE);
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
+
+
         }
 
         String possibleSource=intent.getStringExtra(Constants.INTENT_SOURCE);
@@ -469,6 +508,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     //==================NFC STUFF==================================
+    public void addToNFCSendList(String data){
+        messagesToSendArray.add(data);
+    }
+    public int getMessageCount(){
+        return messagesToSendArray.size();
+    }
+    public void clearMessageQueue(){
+        messagesToSendArray.clear();
+    }
     @Override
     public NdefMessage createNdefMessage(NfcEvent event) {
         //if list has nothing in it, return null
@@ -479,6 +527,7 @@ public class MainActivity extends AppCompatActivity
             Log.d(TAG,"createNdefMessage: leaving early");
             return null;
         }
+        Log.d(TAG,"About to send messages, there are "+messagesToSendArray.size()+" in the queue");
         //We'll write the createRecords() method in just a moment
         NdefRecord[] recordsToAttach = createRecords();
         //When creating an NdefMessage we need to provide an NdefRecord[]
@@ -561,7 +610,11 @@ public class MainActivity extends AppCompatActivity
             else {
                 Toast.makeText(this, "Received Blank Parcel", Toast.LENGTH_LONG).show();
             }
+
         }
+        Intent dummyIntent = new Intent();
+        dummyIntent.setAction("stand in intent");
+        setIntent(dummyIntent);
     }
     private class MyServiceConnection implements ServiceConnection {
 

@@ -17,17 +17,20 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.imaginat.androidtodolist.MainActivity;
 import com.imaginat.androidtodolist.R;
 import com.imaginat.androidtodolist.businessModels.IListItem;
 import com.imaginat.androidtodolist.businessModels.ListManager;
 import com.imaginat.androidtodolist.businessModels.ListTitle;
+import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 
 import java.util.ArrayList;
 
 /**
  * Created by nat on 4/26/16.
  */
-public class MainListFragment extends Fragment implements ReminderListRecycleAdapter.IHandleListClicks {
+public class MainListFragment extends Fragment implements ReminderListRecycleAdapter.IHandleListClicks,
+        MainListDialogOptions.IUseMainListDialogOptions {
 
     private TextView anchorTextView;
     private static String TAG= MainListFragment.class.getName();
@@ -35,6 +38,7 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
     ArrayList<ListTitle> mReminders;
     private int lastFirstIndex;
 
+    private IChangeToolbar mIChangeToolbar;
     public void setIGeoOptions(ToDoListOptionsFragment.IGeoOptions IGeoOptions) {
         mIGeoOptions = IGeoOptions;
     }
@@ -61,6 +65,11 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
         }
 
 
+        if (mIChangeToolbar != null) {
+
+                mIChangeToolbar.onUpdateTitle("MAIN");
+
+        }
 
         mAdapter.notifyDataSetChanged();
 
@@ -191,6 +200,8 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
     @Override
     public void onStart() {
         super.onStart();
+        mIChangeToolbar.onUpdateTitle("MAIN");
+
     }
 
     @Override
@@ -201,7 +212,22 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
         ArrayList<ListTitle>titles =listManager.getListTitles();
         mAdapter.setToRemindersArray(titles);
         mAdapter.notifyDataSetChanged();
+        mIChangeToolbar.onUpdateTitle("MAIN");
 
+
+    }
+
+
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            mIChangeToolbar = (IChangeToolbar) context;
+            mIChangeToolbar.onUpdateTitle("MAIN");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override
@@ -216,5 +242,52 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
             ft.setTransition(FragmentTransaction.TRANSIT_NONE);
             ft.addToBackStack(null);
         ft.commit();
+    }
+
+    @Override
+    public void handleLongClick(String data) {
+        MainListDialogOptions newFragment = new MainListDialogOptions();
+        newFragment.setListID(data);
+        newFragment.setIUseMainListDialogOptions(this);
+        newFragment.show(getActivity().getSupportFragmentManager(), "options");
+
+    }
+
+    @Override
+    public void deleteList(String id) {
+        //stop alarm calendar
+        //stop alarm geofences
+
+        //delete from all sub tables
+        //then delete from list table
+
+        ToDoListItemManager manager = ToDoListItemManager.getInstance(getContext());
+        manager.deleteAll(id);
+
+
+        ListManager listManager = ListManager.getInstance(getContext());
+        listManager.updateAllListTitles();
+        ArrayList<ListTitle>titles =listManager.getListTitles();
+        mAdapter.setToRemindersArray(titles);
+        mAdapter.notifyDataSetChanged();
+    }
+
+
+
+    @Override
+    public void transferListViaNFC(String id) {
+        ToDoListItemManager itemManager = ToDoListItemManager.getInstance(getContext());
+        ArrayList<String>reminders = itemManager.getRemindersByListID(id);
+        String listName=itemManager.getListName(id);
+
+        MainActivity mainActivity = (MainActivity)getActivity();
+        Log.d(TAG,"current count to send over "+mainActivity.getMessageCount());
+        mainActivity.clearMessageQueue();
+        mainActivity.addToNFCSendList(listName);
+        for(String s:reminders) {
+            mainActivity.addToNFCSendList(s);
+        }
+        Log.d(TAG,"current count to send over is now "+mainActivity.getMessageCount());
+
     }
 }

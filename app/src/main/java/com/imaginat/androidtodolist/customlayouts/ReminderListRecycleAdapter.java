@@ -26,6 +26,7 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
 
     public interface IHandleListClicks {
         public void handleClick(String data);
+        public void handleLongClick(String data);
     }
 
     private final static String TAG = ReminderListRecycleAdapter.class.getName();
@@ -58,7 +59,7 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
 
                 @Override
                 public boolean onLongClick(View v) {
-
+                    mIHandleListClicks.handleLongClick(mList_id);
                     return false;
                 }
             });

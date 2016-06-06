@@ -371,4 +371,21 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
                 DbSchema.calendarAlarm_table.cols.CALENDAR_ALARM_ID+ "=?",
                 new String[]{calendarAlarmID});
     }
+
+    //----------DELETION--------------------------------------------------
+    //delete all calendar alarms associated with a list
+    public void deleteAll(String listID){
+        SQLiteDatabase db= this.getWritableDatabase();
+        //delete calendar alarms
+       db.execSQL("DELETE FROM calendarAlarms WHERE reminder_id IN (SELECT reminder_id FROM reminders WHERE list_id=?)",new String[]{listID});
+        //delete geo alarms
+        db.execSQL("DELETE FROM geoFenceAlarm WHERE reminder_id IN (SELECT reminder_id FROM reminders WHERE list_id=?)",new String[]{listID});
+
+        db.execSQL("DELETE FROM reminders WHERE list_id=?",new String[]{listID});
+        //Log.d(TAG,"attempting to delete where listID is "+listID);
+       //db.rawQuery("DELETE FROM listOfLists WHERE list_id=?",new String[]{listID});
+        db.delete(DbSchema.lists_table.NAME,
+                DbSchema.lists_table.cols.LIST_ID+ "=?",
+                new String[]{listID});
+    }
 }

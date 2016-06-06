@@ -58,9 +58,12 @@ public class ToDoListItemManager {
             c.moveToNext();
         }
         //String listID=c.getString(0);
-        c.close();
+       return getRemindersByListID(listID);
+    }
+    public ArrayList<String>getRemindersByListID(String listID){
+
         ArrayList<String>listItems = new ArrayList<>();
-        c = mSqlHelper.getAllReminderForThisList(listID);
+        Cursor c = mSqlHelper.getAllReminderForThisList(listID);
 
         c.moveToFirst();
         while (c.isAfterLast() == false) {
@@ -330,5 +333,9 @@ public class ToDoListItemManager {
             c.moveToNext();
         }
         return results;
+    }
+
+    public void deleteAll(String listID){
+        mSqlHelper.deleteAll(listID);
     }
 }
