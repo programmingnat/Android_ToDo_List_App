@@ -29,12 +29,21 @@ import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
+import com.imaginat.androidtodolist.businessModels.ListManager;
+import com.imaginat.androidtodolist.businessModels.ListTitle;
+import com.imaginat.androidtodolist.businessModels.ToDoListItem;
+import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 import com.imaginat.androidtodolist.google.ApiClientAsyncTask;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
@@ -262,9 +271,49 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
                 if (!driveContentsResult.getStatus().isSuccess()) {
                     return false;
                 }
+
+                ListManager listManager = ListManager.getInstance(BackupToDrive.this);
+                ToDoListItemManager todoListItemManager = ToDoListItemManager.getInstance(BackupToDrive.this);
+
+                ArrayList<ListTitle>allListTitles = listManager.getListTitles();
+
+
+                JSONArray listTitlesJsonArray = new JSONArray();
+                JSONObject todoListBackUpJSON = new JSONObject();
+
+                JSONArray allListReminders = new JSONArray();
+
+                try{
+                    //Save all the titles to the drive
+                    for(ListTitle title:allListTitles){
+                        listTitlesJsonArray.put(title.toJSON());
+
+                        ArrayList<ToDoListItem>reminders =
+                                todoListItemManager.getAllRemindersForList(title.getList_id());
+                        Log.d(TAG,title.getList_id()+"is the list_id");
+                        for(ToDoListItem reminder:reminders){
+                            if(reminder!=null) {
+                                allListReminders.put(reminder.toJSON());
+                            }
+                        }
+                    }
+                    todoListBackUpJSON.put("allTitles",listTitlesJsonArray);
+                    todoListBackUpJSON.put("allItems", allListReminders);
+
+                    //Save all the reminders
+
+
+
+
+
+                }catch(JSONException jex){
+                    jex.printStackTrace();
+                }
+
+
                 DriveContents driveContents = driveContentsResult.getDriveContents();
                 OutputStream outputStream = driveContents.getOutputStream();
-                outputStream.write("Hello world. quick brown fox jumped over the lazy dog".getBytes());
+                outputStream.write(todoListBackUpJSON.toString().getBytes());
                 com.google.android.gms.common.api.Status status =
                         driveContents.commit(getGoogleApiClient(), null).await();
                 return status.getStatus().isSuccess();
@@ -329,6 +378,14 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
                 return;
             }
             showMessage("File contents: " + result);
+            try {
+                JSONObject rootJSON = new JSONObject(result);
+                JSONArray allTitlesJSON = rootJSON.getJSONArray("allTitles");
+                JSONArray allItemsJSON=rootJSON.getJSONArray("allItems");
+            }catch(JSONException jse){
+
+            }
+
         }
 
 

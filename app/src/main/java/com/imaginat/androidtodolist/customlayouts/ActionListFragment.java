@@ -234,8 +234,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        MenuItem item = menu.findItem(R.id.menu_item_new_list);
-        item.setVisible(false);
+
     }
 
     @Override

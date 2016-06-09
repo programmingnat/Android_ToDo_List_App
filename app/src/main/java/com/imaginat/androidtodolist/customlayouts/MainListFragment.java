@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.res.ResourcesCompat;
@@ -177,6 +178,18 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
                 }
 
 */
+            }
+        });
+
+        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.my_frame, new AddListFragment());
+                ft.setTransition(FragmentTransaction.TRANSIT_NONE);
+                ft.addToBackStack(null);
+                ft.commit();
             }
         });
         return view;

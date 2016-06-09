@@ -37,7 +37,6 @@ import com.imaginat.androidtodolist.businessModels.ListManager;
 import com.imaginat.androidtodolist.businessModels.ToDoListItem;
 import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
-import com.imaginat.androidtodolist.customlayouts.AddListFragment;
 import com.imaginat.androidtodolist.customlayouts.AlarmsTriggeredListFragment;
 import com.imaginat.androidtodolist.customlayouts.IChangeToolbar;
 import com.imaginat.androidtodolist.customlayouts.MainListFragment;
@@ -103,13 +102,6 @@ public class MainActivity extends AppCompatActivity
 
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_item_new_list:
-                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                ft.replace(R.id.my_frame, new AddListFragment());
-                ft.setTransition(FragmentTransaction.TRANSIT_NONE);
-                ft.addToBackStack(null);
-                ft.commit();
-                return true;
             case R.id.testStartService:
                 Log.d(TAG, "startService selected");
                 Intent startServiceIntent = new Intent(MainActivity.this, LocationUpdateService.class);

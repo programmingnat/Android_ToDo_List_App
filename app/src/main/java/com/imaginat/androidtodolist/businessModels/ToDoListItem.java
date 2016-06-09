@@ -2,6 +2,9 @@ package com.imaginat.androidtodolist.businessModels;
 
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by nat on 5/1/16.
  */
@@ -12,14 +15,14 @@ public class ToDoListItem implements IListItem {
     private String mList_id;
     private boolean isCalendarAlarm=false;
     private boolean isGeoFenceAlarm=false;
-    private boolean isCompeted=false;
+    private boolean isCompleted =false;
 
-    public boolean isCompeted() {
-        return isCompeted;
+    public boolean isCompleted() {
+        return isCompleted;
     }
 
-    public void setCompeted(boolean competed) {
-        isCompeted = competed;
+    public void setCompleted(boolean completed) {
+        isCompleted = completed;
     }
 
     private String mAlarmID;
@@ -200,4 +203,38 @@ public class ToDoListItem implements IListItem {
     }
 
 
+    public JSONObject toJSON() throws JSONException{
+
+        JSONObject todoListItem_json = new JSONObject();
+        todoListItem_json.put("text",mText);
+        //todoListItem_json.put("reminderID",mReminder_id);
+        //todoListItem_json.put("listID",mList_id);
+        //todoListItem_json.put("isCompleted", isCompleted);
+/*
+        if(isCalendarAlarm()) {
+            todoListItem_json.put("isCalendarAlarm", isCalendarAlarm);
+            todoListItem_json.put("isGeoFenceAlarm", isGeoFenceAlarm);
+            todoListItem_json.put("alarmReminderID", mReminderID);
+            todoListItem_json.put("alarmDay", mAlarmDay);
+            todoListItem_json.put("alarmMonth", mAlarmMonth);
+            todoListItem_json.put("alarmYear", mAlarmYear);
+            todoListItem_json.put("alarmHour", mAlarmHour);
+            todoListItem_json.put("alarmMin", mAlarmMin);
+            todoListItem_json.put("isCalendarAlarmActive", isCalendarAlarmActive);
+        }
+        if(isGeoFenceAlarm) {
+            todoListItem_json.put("geoFenceAlarm", mGeoFenceAlarm_id);
+            todoListItem_json.put("street", mStreet);
+            todoListItem_json.put("city", mCity);
+            todoListItem_json.put("state", mState);
+            todoListItem_json.put("zip", mZip);
+            todoListItem_json.put("latitude", mLatitude);
+            todoListItem_json.put("longitude", mLongitude);
+            todoListItem_json.put("geoAlarmTag", mAlarmTag);
+            todoListItem_json.put("radius", mMeterRadius);
+        }
+
+*/
+        return todoListItem_json;
+    }
 }

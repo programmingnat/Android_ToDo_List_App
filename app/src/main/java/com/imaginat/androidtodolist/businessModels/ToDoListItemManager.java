@@ -110,7 +110,7 @@ public class ToDoListItemManager {
             listItem.setListId(listID);
             colIndex=c.getColumnIndex(DbSchema.reminders_table.cols.IS_COMPLETED);
             int isCompleted = c.getInt(colIndex);
-            listItem.setCompeted(isCompleted==1?true:false);
+            listItem.setCompleted(isCompleted==1?true:false);
             mReminders.add(listItem);
             c.moveToNext();
         }
@@ -140,9 +140,18 @@ public class ToDoListItemManager {
     public void markAsCompleted(String listId,String reminderID,String value){
         mSqlHelper.updateCheckMark(listId,reminderID,value.equals("CHECKED")?1:0);
     }
+    public ArrayList<ToDoListItem>getAllRemindersForList(String listID){
+        ArrayList<ToDoListItem>todoList = new ArrayList<>();
+        fillArrayListWithRemindersForList(listID,todoList);
+        return todoList;
+    }
     public void loadAllRemindersForList(String listID) {
+        fillArrayListWithRemindersForList(listID,mReminders);
+    }
+
+    private void fillArrayListWithRemindersForList(String listID, ArrayList<ToDoListItem> toDoListToFill){
         Cursor c = mSqlHelper.getAllReminderForThisList(listID);
-        mReminders.clear();
+        toDoListToFill.clear();
         c.moveToFirst();
         while (c.isAfterLast() == false) {
             int colIndex = c.getColumnIndex(DbSchema.reminders_table.cols.REMINDER_ID);
@@ -153,13 +162,12 @@ public class ToDoListItemManager {
             listItem.setListId(listID);
             colIndex=c.getColumnIndex(DbSchema.reminders_table.cols.IS_COMPLETED);
             int isCompleted = c.getInt(colIndex);
-            listItem.setCompeted(isCompleted==1?true:false);
-            mReminders.add(listItem);
+            listItem.setCompleted(isCompleted==1?true:false);
+            toDoListToFill.add(listItem);
             c.moveToNext();
         }
-        mReminders.add(null);
+        toDoListToFill.add(null);
     }
-
     public ToDoListItem getSingleListItem(String listID, String reminderID) {
         Cursor c = mSqlHelper.getReminderByIDs(listID, reminderID);
         if (c.getCount() == 0) {
@@ -172,7 +180,7 @@ public class ToDoListItemManager {
 
         colIndex=c.getColumnIndex(DbSchema.reminders_table.cols.IS_COMPLETED);
         int isCompleted = c.getInt(colIndex);
-        listItem.setCompeted(isCompleted==1?true:false);
+        listItem.setCompleted(isCompleted==1?true:false);
         //the calendar alarm
         colIndex = c.getColumnIndex(DbSchema.calendarAlarm_table.cols.CALENDAR_ALARM_ID);
         String calendarAlarmID = c.getString(colIndex);

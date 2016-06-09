@@ -6,27 +6,19 @@
           android:icon="@android:drawable/ic_menu_search"
           app:showAsAction="collapseActionView|ifRoom"
           app:actionViewClass="android.support.v7.widget.SearchView" />
-    <item android:id="@+id/menu_item_new_list"
-          android:icon="@android:drawable/ic_menu_add"
-          android:title="ADD LIST"
-        app:showAsAction="ifRoom"/>
     <item android:id="@+id/testStartService"
-          android:icon="@android:drawable/ic_menu_add"
           android:title="START SERVICE"
-          app:showAsAction="ifRoom"/>
+          app:showAsAction="never"/>
     <item android:id="@+id/testStopService"
-          android:icon="@android:drawable/ic_menu_add"
           android:title="STOP SERVICE"
-          app:showAsAction="ifRoom"/>
+          app:showAsAction="never"/>
     <item android:id="@+id/testIsServiceRunning"
-          android:icon="@android:drawable/ic_menu_add"
           android:title="SERVICE RUNNING?"
-          app:showAsAction="ifRoom"/>
+          app:showAsAction="never"/>
 
     <item android:id="@+id/testPrepNFCTransfer"
-          android:icon="@android:drawable/ic_menu_add"
           android:title="Transfer"
-          app:showAsAction="ifRoom">
+          app:showAsAction="never">
             <menu>
 
             </menu>

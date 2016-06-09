@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -52,8 +51,7 @@ public class AddListFragment extends Fragment {
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        MenuItem item = menu.findItem(R.id.menu_item_new_list);
-        item.setEnabled(false);
+
         //Toast.makeText(getContext(),"Attempted to disable", Toast.LENGTH_SHORT).show();
     }
 }

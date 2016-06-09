@@ -84,7 +84,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
             return;
         }
         holder.mRadioButton.setVisibility(View.VISIBLE);
-        holder.mRadioButton.setChecked(toDoListItem.isCompeted());
+        holder.mRadioButton.setChecked(toDoListItem.isCompleted());
         holder.mEditText.setText(toDoListItem.getText());
         holder.mListID=toDoListItem.getListId();
         holder.mReminderId = toDoListItem.getReminder_id();
