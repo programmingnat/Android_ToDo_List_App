@@ -53,6 +53,8 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
                     Log.d(TAG, "onClickon the main View item");
                     mIHandleListClicks.handleClick(mList_id);
 
+                    v.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.textlines, null));
+
                 }
             });
 
@@ -60,7 +62,9 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
 
                 @Override
                 public boolean onLongClick(View v) {
+                    //v.setSelected(true);
                     mIHandleListClicks.handleLongClick(mList_id);
+                    v.setBackgroundColor(Color.rgb(200,200,200));
                     return true;
                 }
             });

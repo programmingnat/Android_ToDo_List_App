@@ -4,6 +4,8 @@
               android:layout_height="wrap_content"
               android:background="@drawable/textlines"
               android:orientation="horizontal">
+>
+    <!--android:background="@drawable/textlines"-->
 
     <!--<ImageView-->
         <!--android:id="@+id/deleteThisButton"-->
