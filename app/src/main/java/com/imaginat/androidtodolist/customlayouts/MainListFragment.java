@@ -1,6 +1,7 @@
 package com.imaginat.androidtodolist.customlayouts;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,6 +12,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,11 +35,15 @@ import java.util.ArrayList;
 public class MainListFragment extends Fragment implements ReminderListRecycleAdapter.IHandleListClicks,
         MainListDialogOptions.IUseMainListDialogOptions {
 
-    private TextView anchorTextView;
     private static String TAG= MainListFragment.class.getName();
+    private boolean isLongClickOn=false;
+
+    private TextView anchorTextView;
+
     ReminderListRecycleAdapter mAdapter;
     ArrayList<ListTitle> mReminders;
-    private int lastFirstIndex;
+
+    private int mColorPrimary;
 
     private IChangeToolbar mIChangeToolbar;
     public void setIGeoOptions(ToDoListOptionsFragment.IGeoOptions IGeoOptions) {
@@ -58,6 +64,12 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
         recyclerView.setAdapter(mAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+
+        //save color for later
+        MainActivity mainActivity = (MainActivity)getActivity();
+        int[] attrs = {android.R.attr.colorPrimary,android.R.attr.colorPrimaryDark,android.R.attr.colorAccent};
+        TypedArray ta = mainActivity.obtainStyledAttributes(R.style.AppTheme,attrs);
+        mColorPrimary= ta.getColor(0,Color.BLACK);
 
         for(int i=0;i<20;i++){
             ListTitle r = new ListTitle();
@@ -246,6 +258,13 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
     @Override
     public void handleClick(String data) {
 
+        if(isLongClickOn){
+            isLongClickOn=false;
+            Toolbar toolbar = (Toolbar)getActivity().findViewById(R.id.my_toolbar);
+            toolbar.setBackgroundColor(mColorPrimary);
+            mIChangeToolbar.swapIcons(200);
+            return;
+        }
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ActionListFragment alf = new ActionListFragment();
         alf.setIGeoOptions(mIGeoOptions);
@@ -259,10 +278,24 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
 
     @Override
     public void handleLongClick(String data) {
-        MainListDialogOptions newFragment = new MainListDialogOptions();
+        /*MainListDialogOptions newFragment = new MainListDialogOptions();
         newFragment.setListID(data);
         newFragment.setIUseMainListDialogOptions(this);
-        newFragment.show(getActivity().getSupportFragmentManager(), "options");
+        newFragment.show(getActivity().getSupportFragmentManager(), "options");*/
+
+
+        Toolbar toolbar = (Toolbar)getActivity().findViewById(R.id.my_toolbar);
+        toolbar.setBackgroundColor(Color.rgb(100,100,100));
+        mIChangeToolbar.swapIcons(100);
+
+
+
+        isLongClickOn=true;
+        //ActionBar actionBar = mainActivity.getSupportActionBar();
+        //actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#95CDBA")));
+        //actionBar.setTitle(Html.fromHtml("<font color='#000099'>Hello World</font>"));
+        //isActionBarChanged=true;
+        //mainActivity.invalidateOptionsMenu();
 
     }
 

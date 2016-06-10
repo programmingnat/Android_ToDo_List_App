@@ -25,6 +25,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity
     private static final int REQUEST_FINE_LOCATION = 0;
     private static final int REQUEST_LOCATION = 12;
 
+    private int TOOLBAR_ICON_INSTRUCTIONS=-1;
     private NfcAdapter mNfcAdapter;
     //The array lists to hold our messages
     private ArrayList<String> messagesToSendArray = new ArrayList<>();
@@ -149,9 +151,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        updateIcons(menu);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar)findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
         Log.d(TAG,"inside onCreate");
         //shared preferences
         mSharedPreferences = getSharedPreferences(Constants.PREFERENCES, Context.MODE_PRIVATE);
@@ -388,23 +398,47 @@ public class MainActivity extends AppCompatActivity
             Intent i = new Intent();
             i.setAction("do nothing");
             setIntent(i);
+
         }
     }
 
 
 
+    public void updateIcons(Menu menu){
+        Log.d(TAG,"Inside updateIcons");
+        if(TOOLBAR_ICON_INSTRUCTIONS==100) {
+            MenuItem menuItem = menu.findItem(R.id.search);
+            menuItem.setVisible(false);
+            menuItem=menu.findItem(R.id.deleteList);
+            menuItem.setVisible(true);
+            menuItem=menu.findItem(R.id.shareListNFC);
+            menuItem.setVisible(true);
+
+        }else if(TOOLBAR_ICON_INSTRUCTIONS==200){
+            MenuItem menuItem = menu.findItem(R.id.search);
+            menuItem.setVisible(true);
+            menuItem=menu.findItem(R.id.deleteList);
+            menuItem.setVisible(false);
+            menuItem=menu.findItem(R.id.shareListNFC);
+            menuItem.setVisible(false);
+        }
+    }
 
     @Override
     public void onUpdateTitle(String title) {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setTitle(title);
 
-        //actionBar.setBackgroundDrawable(new ColorDrawable(0xff00DDED));
-        //actionBar.setDisplayShowTitleEnabled(false);
-        //actionBar.setDisplayShowTitleEnabled(true);
     }
 
 
+
+    public void swapIcons(int instructions){
+        Log.d(TAG,"inside swapIcons");
+
+        TOOLBAR_ICON_INSTRUCTIONS=instructions;
+        invalidateOptionsMenu();
+    }
 
 
 

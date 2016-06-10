@@ -26,4 +26,16 @@
     <item android:id="@+id/goTo_DrivePage"
           android:icon="@android:drawable/ic_menu_add"
           android:title="DRIVE"/>
+    <item android:id="@+id/deleteList"
+          android:icon="@android:drawable/ic_delete"
+          android:title="Delete list"
+          app:showAsAction="always"
+          android:visible="false"/>
+
+    <item android:id="@+id/shareListNFC"
+          android:icon="@android:drawable/ic_menu_share"
+          android:title="Delete list"
+          app:showAsAction="always"
+          android:visible="false"/>
+
 </menu>
