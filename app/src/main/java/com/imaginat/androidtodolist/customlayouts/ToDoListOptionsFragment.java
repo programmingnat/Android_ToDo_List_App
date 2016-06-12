@@ -42,7 +42,7 @@ import java.util.HashMap;
  * Created by nat on 5/1/16.
  */
 public class ToDoListOptionsFragment extends Fragment
-    implements CoordinatesResultReceiver.ICoordinateReceiver{
+        implements CoordinatesResultReceiver.ICoordinateReceiver {
 
 
     private ToDoListItem mToDoListItem;
@@ -51,13 +51,15 @@ public class ToDoListOptionsFragment extends Fragment
     private static final String GEOFENCE = "GEO";
 
     private CoordinatesResultReceiver mCoordinatesResultReceiver;
-
+    Location mLocation;
 
     //===================INTERFACE USED TO COMMNICATE TO HOSTING ACTIVITY ===========================================
     public interface IGeoOptions {
 
         public LocationUpdateService getServiceReference();
+
         public void requestStartOfLocationUpdateService();
+
         public void requestStopOfLocationUpdateService();
     }
 
@@ -69,7 +71,6 @@ public class ToDoListOptionsFragment extends Fragment
     private static final int REQUEST_TIME = 1;
 
     private String mListID, mItemID;
-
 
 
     AlarmManager alarmManager;
@@ -84,8 +85,6 @@ public class ToDoListOptionsFragment extends Fragment
     private Button mRemoveFenceButton;
     private IGeoOptions mIGeoOptions;
     private EditText mStreetAddress_EditText, mCity_EditText, mState_EditText, mZip_EditText;
-
-
 
 
     @Nullable
@@ -136,7 +135,7 @@ public class ToDoListOptionsFragment extends Fragment
             }
             setAlarmDate(date);
             setAlarmCalendarTime(date);
-            boolean isActive=mToDoListItem.isCalendarAlarmActive();
+            boolean isActive = mToDoListItem.isCalendarAlarmActive();
             if (isActive) {
                 alarmToggle.setChecked(true);
 
@@ -146,12 +145,12 @@ public class ToDoListOptionsFragment extends Fragment
 
         }
         //3. set geofence alarm if set
-        if(mToDoListItem.isGeoFenceAlarm()){
+        if (mToDoListItem.isGeoFenceAlarm()) {
 
             String streetAddress = mToDoListItem.getStreet();
-            String city=mToDoListItem.getCity();
+            String city = mToDoListItem.getCity();
             String state = mToDoListItem.getState();
-            String zip=mToDoListItem.getZip();
+            String zip = mToDoListItem.getZip();
             boolean isActive = mToDoListItem.isGeoAlarmActive();
 
             mStreetAddress_EditText.setText(streetAddress);
@@ -165,7 +164,7 @@ public class ToDoListOptionsFragment extends Fragment
             //setGeoFenceAlarm(isActive);
 
 
-         }
+        }
 
 
         Button selectDateButton = (Button) view.findViewById(R.id.selectDate_button);
@@ -212,11 +211,32 @@ public class ToDoListOptionsFragment extends Fragment
         });
 
 
-        Button testButton = (Button)view.findViewById(R.id.test_button);
+        Button testButton = (Button) view.findViewById(R.id.test_button);
         testButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG,"PRessing testbutton");
+                Log.d(TAG, "DialogMa testbutton");
+                DialogMapFragment newFragment = new DialogMapFragment();
+                newFragment.setCurrentLocation(mLocation);
+                newFragment.show(getActivity().getSupportFragmentManager(), "options");
+
+//                SupportMapFragment supportMapFragment = newFragment.getFragment();
+//
+//
+//                supportMapFragment.getMapAsync(new OnMapReadyCallback() {
+//                    @Override
+//                    public void onMapReady(GoogleMap googleMap) {
+//                        Log.d(TAG,"onMapReady");
+//                        Toast.makeText(getContext(), "onMapReady", Toast.LENGTH_SHORT).show();
+//                        googleMap.addMarker(new MarkerOptions().position(new LatLng(mLocation.getLatitude(), mLocation.getLongitude())).title("marker title").icon(BitmapDescriptorFactory.fromResource(R.drawable.alarm_clock_white)));
+//                        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+//                            @Override
+//                            public void onMapClick(LatLng latLng) {
+//                                Toast.makeText(getContext(), "onMapClick", Toast.LENGTH_SHORT).show();
+//                            }
+//                        });
+//                    }
+//                });
 //                Intent myIntent = new Intent(getContext(), GeofenceTransitionsIntentService.class);
 //                myIntent.setAction("com.imaginat.androidtodolist.LOCATiON_RECEIVED");
 //                pendingIntent = PendingIntent.getBroadcast(getContext(), ToDoListOptionsFragment.this.createAlarmTag(GEOFENCE),
@@ -246,6 +266,7 @@ public class ToDoListOptionsFragment extends Fragment
 
 
     }
+
     public void setIGeoOptions(IGeoOptions IGeoOptions) {
         mIGeoOptions = IGeoOptions;
     }
@@ -269,6 +290,7 @@ public class ToDoListOptionsFragment extends Fragment
     public void setItemID(String itemID) {
         mItemID = itemID;
     }
+
     //=====================CALENDAR ALARM RELATED HELPERS========================================
     private void setAlarmDate(Date date) {
         Calendar result = Calendar.getInstance();
@@ -307,7 +329,7 @@ public class ToDoListOptionsFragment extends Fragment
     }
 
 
-    private void setCalendarAlarm(boolean onOff){
+    private void setCalendarAlarm(boolean onOff) {
         //SETTING THE CALENDAR ALARM
         ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(getContext());
 
@@ -333,14 +355,14 @@ public class ToDoListOptionsFragment extends Fragment
     }
 
     //=========================GEO FENCE RELATED====================================================
-    private void setGeoFenceAlarm(boolean onOff){
-        Log.d(TAG,"alarmGEOToggle set");
+    private void setGeoFenceAlarm(boolean onOff) {
+        Log.d(TAG, "alarmGEOToggle set");
         if (onOff) {
             String streetAddress = mStreetAddress_EditText.getText().toString();
             String cityAddress = mCity_EditText.getText().toString();
             String stateAddress = mState_EditText.getText().toString();
             String zipAddress = mZip_EditText.getText().toString();
-            setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress,ToDoListOptionsFragment.this.getAlarmID(GEOFENCE),mItemID,mListID);
+            setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress, ToDoListOptionsFragment.this.getAlarmID(GEOFENCE), mItemID, mListID);
 
             //mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress);
             //mIGeoOptions.setGeoFenceAddress(streetAddress, cityAddress, stateAddress, zipAddress, ToDoListOptionsFragment.this.getCalendarAlarmID(GEOFENCE),mItemID,mListID);
@@ -351,52 +373,50 @@ public class ToDoListOptionsFragment extends Fragment
 
         }
     }
-    public void setGeoFenceAddress(String street, String city, String state, String zipCode,String alarmTag,String reminderID,String listID) {
-        Log.d(TAG, "Inside setGeoFenceAddress "+street+" "+city+" "+state+" "+zipCode);
-        if(mCoordinatesResultReceiver==null){
-            mCoordinatesResultReceiver=new CoordinatesResultReceiver(new Handler());
-        }
-        HashMap<String,String> data = new HashMap<>();
-        data.put(DbSchema.geoFenceAlarm_table.cols.STREET,street);
-        data.put(DbSchema.geoFenceAlarm_table.cols.CITY,city);
-        data.put(DbSchema.geoFenceAlarm_table.cols.STATE,state);
-        data.put(DbSchema.geoFenceAlarm_table.cols.ZIPCODE,zipCode);
-        data.put(DbSchema.geoFenceAlarm_table.cols.REMINDER_ID,reminderID);
-        data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG,alarmTag);
-        ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(getContext());
-        listItemManager.saveGeoFenceAlarm(alarmTag,reminderID,data);
 
-        GeoCoder.getLocationFromAddress(getContext(), street + " " + city + "," + state + " " + zipCode,alarmTag,reminderID,listID, mCoordinatesResultReceiver);
+    public void setGeoFenceAddress(String street, String city, String state, String zipCode, String alarmTag, String reminderID, String listID) {
+        Log.d(TAG, "Inside setGeoFenceAddress " + street + " " + city + " " + state + " " + zipCode);
+        if (mCoordinatesResultReceiver == null) {
+            mCoordinatesResultReceiver = new CoordinatesResultReceiver(new Handler());
+        }
+        HashMap<String, String> data = new HashMap<>();
+        data.put(DbSchema.geoFenceAlarm_table.cols.STREET, street);
+        data.put(DbSchema.geoFenceAlarm_table.cols.CITY, city);
+        data.put(DbSchema.geoFenceAlarm_table.cols.STATE, state);
+        data.put(DbSchema.geoFenceAlarm_table.cols.ZIPCODE, zipCode);
+        data.put(DbSchema.geoFenceAlarm_table.cols.REMINDER_ID, reminderID);
+        data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG, alarmTag);
+        ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(getContext());
+        listItemManager.saveGeoFenceAlarm(alarmTag, reminderID, data);
+
+        GeoCoder.getLocationFromAddress(getContext(), street + " " + city + "," + state + " " + zipCode, alarmTag, reminderID, listID, mCoordinatesResultReceiver);
         //ToDoListOptionsFragment currentFragment =(ToDoListOptionsFragment) MainActivity.this.getSupportFragmentManager().findFragmentById(R.id.my_frame);
         mCoordinatesResultReceiver.setResult(this);
 
 
     }
 
-    private void removeGeoFence(){
+    private void removeGeoFence() {
         ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(getContext());
-        HashMap<String,String> data = new HashMap<>();
-        data.put(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE,"0");
-        listItemManager.saveGeoFenceAlarm(getAlarmID(GEOFENCE),mItemID,data);
+        HashMap<String, String> data = new HashMap<>();
+        data.put(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE, "0");
+        listItemManager.saveGeoFenceAlarm(getAlarmID(GEOFENCE), mItemID, data);
         mIGeoOptions.requestStopOfLocationUpdateService();
 
         //now get refence
         mIGeoOptions.requestStartOfLocationUpdateService();
         mIGeoOptions.getServiceReference();
-        LocationUpdateService locationUpdateService=mIGeoOptions.getServiceReference();
+        LocationUpdateService locationUpdateService = mIGeoOptions.getServiceReference();
 
         //Get reference to the item (in order to get the text & any other info)
         //ToDoListItem toDoItem = listItemManager.getSingleListItem(mListID,mItemID);
 
 
-
-
-
         locationUpdateService.removeGeofencesByTag(mToDoListItem.getAlarmTag());
 
     }
+
     /**
-     *
      * @param resultCode
      * @param resultData
      */
@@ -404,38 +424,37 @@ public class ToDoListOptionsFragment extends Fragment
     @Override
     public void onReceiveCoordinatesResult(int resultCode, Bundle resultData) {
 
-        if(Constants.SUCCESS_RESULT==resultCode) {
+        if (Constants.SUCCESS_RESULT == resultCode) {
             //NOW ADD FENCE
             Location lastLocation = resultData.getParcelable(Constants.RESULT_DATA_KEY);
-            String requestID=resultData.getString(Constants.ALARM_TAG);
+            String requestID = resultData.getString(Constants.ALARM_TAG);
             String reminderID = resultData.getString(Constants.REMINDER_ID);
             String listID = resultData.getString(Constants.LIST_ID);
             //mLocationServices.addToGeoFenceList(requestID, lastLocation.getLatitude(), lastLocation.getLongitude());
-            Log.d(TAG,"ABOUT TO SAVE SOME INFO");
+            Log.d(TAG, "ABOUT TO SAVE SOME INFO");
 
             //save info to local databasae
-            HashMap<String,String>data = new HashMap<>();
-            data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG,requestID);
-            data.put(DbSchema.geoFenceAlarm_table.cols.LATITUDE,Double.toString(lastLocation.getLatitude()));
-            data.put(DbSchema.geoFenceAlarm_table.cols.LONGITUDE,Double.toString(lastLocation.getLongitude()));
-            data.put(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE,"1");
+            HashMap<String, String> data = new HashMap<>();
+            data.put(DbSchema.geoFenceAlarm_table.cols.ALARM_TAG, requestID);
+            data.put(DbSchema.geoFenceAlarm_table.cols.LATITUDE, Double.toString(lastLocation.getLatitude()));
+            data.put(DbSchema.geoFenceAlarm_table.cols.LONGITUDE, Double.toString(lastLocation.getLongitude()));
+            data.put(DbSchema.geoFenceAlarm_table.cols.IS_ACTIVE, "1");
 
+            mLocation = lastLocation;
             ToDoListItemManager listItemManager = ToDoListItemManager.getInstance(getContext());
-            listItemManager.saveGeoFenceAlarm(requestID,reminderID,data);
+            listItemManager.saveGeoFenceAlarm(requestID, reminderID, data);
 
             //Get reference to the item (in order to get the text & any other info)
-            ToDoListItem toDoItem = listItemManager.getSingleListItem(listID,reminderID);
+            ToDoListItem toDoItem = listItemManager.getSingleListItem(listID, reminderID);
 
             //now get refence
             mIGeoOptions.requestStartOfLocationUpdateService();
             mIGeoOptions.getServiceReference();
-            LocationUpdateService locationUpdateService=mIGeoOptions.getServiceReference();
-
-
+            LocationUpdateService locationUpdateService = mIGeoOptions.getServiceReference();
 
 
             //locationUpdateService.addToGeoFenceList(theText,lastLocation.getLatitude(),lastLocation.getLongitude());
-            ArrayList<FenceData> datas=listItemManager.getActiveFenceData();
+            ArrayList<FenceData> datas = listItemManager.getActiveFenceData();
             locationUpdateService.populateGeofenceList(datas);
             locationUpdateService.addGeofences(createAlarmTag(GEOFENCE));
         }

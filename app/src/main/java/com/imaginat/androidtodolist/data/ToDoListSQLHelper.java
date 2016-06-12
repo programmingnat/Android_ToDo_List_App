@@ -175,13 +175,21 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
                 values);
     }
 
-    public Cursor getAllReminderForThisList(String listID){
+    public Cursor getAllReminderForThisList(String listID,boolean hideCompleted){
         Log.d(TAG, "inside getAllListNames()");
+        String[] argsList = null;
+        String additionalSQL="";
+        if(hideCompleted){
+            additionalSQL=" AND "+DbSchema.reminders_table.cols.IS_COMPLETED+"=?";
+            argsList=new String[]{listID,"0"};
+        }else{
+            argsList=new String[]{listID};
+        }
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.query(DbSchema.reminders_table.NAME, //table
                 DbSchema.reminders_table.ALL_COLUMNS, //columns
-                DbSchema.reminders_table.cols.LIST_ID+"=?",//select
-                new String[]{listID},//selection args
+                DbSchema.reminders_table.cols.LIST_ID+"=? "+additionalSQL,//select
+                argsList,//selection args
                 null,//group
                 null,//having
                 null,//order
@@ -388,4 +396,7 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
                 DbSchema.lists_table.cols.LIST_ID+ "=?",
                 new String[]{listID});
     }
+
+    //---------------------------CLEAR AND RESTORE----------------------------------------
+
 }

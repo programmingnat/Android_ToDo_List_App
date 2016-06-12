@@ -289,7 +289,7 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
                         listTitlesJsonArray.put(title.toJSON());
 
                         ArrayList<ToDoListItem>reminders =
-                                todoListItemManager.getAllRemindersForList(title.getList_id());
+                                todoListItemManager.getAllRemindersForList(title.getList_id(),false);
                         Log.d(TAG,title.getList_id()+"is the list_id");
                         for(ToDoListItem reminder:reminders){
                             if(reminder!=null) {

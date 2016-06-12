@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.imaginat.androidtodolist.MainActivity;
 import com.imaginat.androidtodolist.R;
@@ -45,12 +46,18 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
 
     private int mColorPrimary;
 
+    private String mCurrentlySelectedListID=null;
+
+
     private IChangeToolbar mIChangeToolbar;
+    ToDoListOptionsFragment.IGeoOptions mIGeoOptions;
+
+    //=====================GETTERS AND SETTERS============================
     public void setIGeoOptions(ToDoListOptionsFragment.IGeoOptions IGeoOptions) {
         mIGeoOptions = IGeoOptions;
     }
 
-    ToDoListOptionsFragment.IGeoOptions mIGeoOptions;
+
 
     @Nullable
     @Override
@@ -283,7 +290,7 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
         newFragment.setIUseMainListDialogOptions(this);
         newFragment.show(getActivity().getSupportFragmentManager(), "options");*/
 
-
+        mCurrentlySelectedListID=data;
         Toolbar toolbar = (Toolbar)getActivity().findViewById(R.id.my_toolbar);
         toolbar.setBackgroundColor(Color.rgb(100,100,100));
         mIChangeToolbar.swapIcons(100);
@@ -299,6 +306,21 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
 
     }
 
+    public void deleteList(){
+        if(mCurrentlySelectedListID==null){
+            Toast.makeText(getActivity(),"Unable to delete the list",Toast.LENGTH_SHORT).show();
+            return;
+        }else {
+            deleteList(mCurrentlySelectedListID);
+
+            //move this to its own method later
+            isLongClickOn=false;
+            Toolbar toolbar = (Toolbar)getActivity().findViewById(R.id.my_toolbar);
+            toolbar.setBackgroundColor(mColorPrimary);
+            mIChangeToolbar.swapIcons(200);
+
+        }
+    }
     @Override
     public void deleteList(String id) {
         //stop alarm calendar

@@ -34,7 +34,7 @@
 
     <item android:id="@+id/shareListNFC"
           android:icon="@android:drawable/ic_menu_share"
-          android:title="Delete list"
+          android:title="share list via NFC"
           app:showAsAction="always"
           android:visible="false"/>
 

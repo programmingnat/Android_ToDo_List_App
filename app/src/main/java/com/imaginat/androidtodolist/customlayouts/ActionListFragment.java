@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.imaginat.androidtodolist.GlobalConstants;
 import com.imaginat.androidtodolist.R;
 import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 
@@ -26,10 +27,6 @@ import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
  */
 
 public class ActionListFragment extends Fragment implements ToDoListRecyclerAdapter.IHandleListClicks,MoreOptionsDialogFragment.MoreOptionsDialogListener {
-
-
-
-
 
 
     private static String TAG = ActionListFragment.class.getName();
@@ -49,6 +46,9 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         mListId = id;
     }
 
+    public void callNotifyDataChange(){
+        mAdapter.notifyDataSetChanged();
+    }
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -134,6 +134,10 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         //set height and width
     }
 
+    public void reloadPage(){
+        LoadRemindersTask loadRemindersTask = new LoadRemindersTask();
+        loadRemindersTask.execute();
+    }
     public void toggleEdit() {
         Toast.makeText(getContext(), "toggleEdit called", Toast.LENGTH_SHORT).show();
     }
@@ -240,13 +244,30 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        final int MENU_ITEM_ITEM1 = 100;
-        MenuItem m = menu.add(Menu.NONE, MENU_ITEM_ITEM1, Menu.NONE, "SHOW COMPLETED TASKS");
-        m.setIcon(android.R.drawable.ic_menu_edit);
-        m.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+
+        MenuItem m = menu.add(Menu.NONE, GlobalConstants.HIDE_COMPLETED_ITEMS, Menu.NONE, "HIDE COMPLETED TASKS");
+        //m.setIcon(android.R.drawable.ic_menu_edit);
+        m.setCheckable(true);
+        m.setChecked(ToDoListItemManager.getInstance(getContext()).getHideCompleted());
+        m.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
     }
 
 
+    private class LoadRemindersTask extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            mToDoListItemManager = ToDoListItemManager.getInstance(getContext());
+            mToDoListItemManager.loadAllRemindersForList(mListId);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            mAdapter.notifyDataSetChanged();
+        }
+    }
     private class UpdateDatabaseTask extends AsyncTask<String, String, String> {
 
 

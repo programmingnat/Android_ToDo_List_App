@@ -20,7 +20,7 @@ public class ToDoListItemManager {
     public static ToDoListItemManager instance;
     private ToDoListSQLHelper mSqlHelper;
     private ArrayList<ToDoListItem> mReminders;
-
+    private boolean mHideCompleted=true;
 
     private ToDoListItemManager(Context context) {
         mSqlHelper = ToDoListSQLHelper.getInstance(context);
@@ -49,6 +49,12 @@ public class ToDoListItemManager {
     }
 
 
+    public void setHideCompleted(boolean v){
+        mHideCompleted=v;
+    }
+    public boolean getHideCompleted(){
+        return mHideCompleted;
+    }
     public ArrayList<String>getRemindersByListTitle(String s){
         Cursor c = mSqlHelper.getListIDByTitle(s);
         c.moveToFirst();
@@ -63,7 +69,7 @@ public class ToDoListItemManager {
     public ArrayList<String>getRemindersByListID(String listID){
 
         ArrayList<String>listItems = new ArrayList<>();
-        Cursor c = mSqlHelper.getAllReminderForThisList(listID);
+        Cursor c = mSqlHelper.getAllReminderForThisList(listID,mHideCompleted);
 
         c.moveToFirst();
         while (c.isAfterLast() == false) {
@@ -140,17 +146,17 @@ public class ToDoListItemManager {
     public void markAsCompleted(String listId,String reminderID,String value){
         mSqlHelper.updateCheckMark(listId,reminderID,value.equals("CHECKED")?1:0);
     }
-    public ArrayList<ToDoListItem>getAllRemindersForList(String listID){
+    public ArrayList<ToDoListItem>getAllRemindersForList(String listID,boolean hideCompleted){
         ArrayList<ToDoListItem>todoList = new ArrayList<>();
-        fillArrayListWithRemindersForList(listID,todoList);
+        fillArrayListWithRemindersForList(listID,hideCompleted,todoList);
         return todoList;
     }
     public void loadAllRemindersForList(String listID) {
-        fillArrayListWithRemindersForList(listID,mReminders);
+        fillArrayListWithRemindersForList(listID,mHideCompleted,mReminders);
     }
 
-    private void fillArrayListWithRemindersForList(String listID, ArrayList<ToDoListItem> toDoListToFill){
-        Cursor c = mSqlHelper.getAllReminderForThisList(listID);
+    private void fillArrayListWithRemindersForList(String listID,boolean hideCompleted, ArrayList<ToDoListItem> toDoListToFill){
+        Cursor c = mSqlHelper.getAllReminderForThisList(listID,hideCompleted);
         toDoListToFill.clear();
         c.moveToFirst();
         while (c.isAfterLast() == false) {

@@ -122,12 +122,46 @@ public class MainActivity extends AppCompatActivity
                 ActionListFragment alf = (ActionListFragment) f;
                 alf.toggleEdit();
                 return true;
+            case R.id.deleteList:
+
+                Fragment foundFragment = getSupportFragmentManager().findFragmentById(R.id.my_frame);
+                if (foundFragment instanceof MainListFragment){
+                    Toast.makeText(MainActivity.this,"ATTEMPTING TO DELETE LIST",Toast.LENGTH_SHORT).show();
+                    MainListFragment mainListFragment=(MainListFragment)foundFragment;
+                    mainListFragment.deleteList();
+                }else{
+                    Toast.makeText(MainActivity.this,"COULD NOT FIND LIST",Toast.LENGTH_SHORT).show();
+                }
+
+                return true;
+            case R.id.shareListNFC:
+                Toast.makeText(MainActivity.this,"SHARE VIA NFC",Toast.LENGTH_SHORT).show();
+                return true;
             case R.id.testPrepNFCTransfer:
 
                 return true;
             case R.id.goTo_DrivePage:
                 Intent n = new Intent(this,BackupToDrive.class);
                 startActivity(n);
+                return true;
+            case GlobalConstants.HIDE_COMPLETED_ITEMS:
+                Toast.makeText(MainActivity.this,"HIDE COMPLETED ITEMS",Toast.LENGTH_SHORT).show();
+                ToDoListItemManager itemManagerToSetHide = ToDoListItemManager.getInstance(MainActivity.this);
+                if(item.isChecked()){
+                    itemManagerToSetHide.setHideCompleted(false);
+                    item.setChecked(false);
+                }else{
+                    itemManagerToSetHide.setHideCompleted(true);
+                    item.setChecked(true);
+                }
+                Fragment theFragment = getSupportFragmentManager().findFragmentById(R.id.my_frame);
+                if (theFragment instanceof ActionListFragment){
+                    Toast.makeText(MainActivity.this,"ATTEMPTING Updatepage",Toast.LENGTH_SHORT).show();
+                    ActionListFragment actionListFragment=(ActionListFragment)theFragment;
+                    actionListFragment.reloadPage();
+                }else{
+                    Toast.makeText(MainActivity.this,"COULD NOT FIND Fragment",Toast.LENGTH_SHORT).show();
+                }
                 return true;
             case 5001:
                 String s = item.getTitle().toString();
