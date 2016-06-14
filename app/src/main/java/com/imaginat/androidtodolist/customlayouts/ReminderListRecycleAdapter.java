@@ -10,6 +10,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.imaginat.androidtodolist.R;
@@ -40,12 +41,19 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
         public TextView mTextView;
         //public RadioButton mRadioButton;
         public View mLineItemView;
+        public ImageView mImageView;
         public String mList_id = "someListID";
 
         public ReminderHolder(View itemView) {
             super(itemView);
             mLineItemView = itemView;
             mTextView = (TextView) itemView.findViewById(R.id.listItemTextView);
+            mImageView = (ImageView)itemView.findViewById(R.id.listImage);
+
+
+
+
+
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -128,7 +136,7 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
             holder.mTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
             holder.mTextView.setText("Add List Here");
         } else {
-            holder.mList_id=reminder.getList_id();
+            holder.mList_id = reminder.getList_id();
             holder.itemView.setBackground(ResourcesCompat.getDrawable(mContext.getResources(), R.drawable.textlines, null));
 
 //            holder.mLineItemView.setBackgroundColor(Color.argb(255, 255, 255, 255));
@@ -137,7 +145,31 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
 
             holder.mTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 25);
             holder.mTextView.setText(reminder.getText());
+
+            //randomly assign image (temp)
+            int imageIndex = (int) (Math.random() * 6);
+            switch (imageIndex) {
+                case 0:
+                    holder.mImageView.setBackgroundResource(R.drawable.generic_reminder);
+                    break;
+                case 1:
+                    holder.mImageView.setBackgroundResource(R.drawable.workout);
+                    break;
+                case 2:
+                    holder.mImageView.setBackgroundResource(R.drawable.shopping_cart);
+                    break;
+                case 3:
+                    holder.mImageView.setBackgroundResource(R.drawable.laptop);
+                    break;
+                case 4:
+                    holder.mImageView.setBackgroundResource(R.drawable.kids_logo);
+                    break;
+                case 5:
+                    holder.mImageView.setBackgroundResource(R.drawable.beach_logo);
+                    break;
+            }
         }
+
     }
 
     @Override

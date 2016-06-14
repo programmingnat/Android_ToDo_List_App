@@ -12,6 +12,45 @@
         android:layout_weight="90"
         android:hint="ADD TITLE OF NEW LIST HERE"
         android:textColorHint="#555555"/>
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <RadioButton
+            android:id="@+id/genericReminderRB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableRight="@drawable/generic_reminder"
+            android:checked="true">
+        </RadioButton>
+        <RadioButton
+            android:id="@+id/shoppingReminderRB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableRight="@drawable/shopping_cart"
+            android:checked="true">
+        </RadioButton>
+        <RadioButton
+            android:id="@+id/workOutReminderRB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableRight="@drawable/workout"
+            android:checked="true">
+        </RadioButton>
+        <RadioButton
+        android:id="@+id/workReminderRB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableRight="@drawable/laptop"
+        android:checked="true">
+    </RadioButton>
+        <RadioButton
+            android:id="@+id/kidReminderRB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableRight="@drawable/kids_logo"
+            android:checked="true">
+        </RadioButton>
+    </RadioGroup>
 
     <Button
         android:id="@+id/doneButton"

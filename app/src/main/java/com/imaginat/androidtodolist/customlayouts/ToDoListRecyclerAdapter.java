@@ -16,7 +16,6 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -88,7 +87,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
         holder.mEditText.setText(toDoListItem.getText());
         holder.mListID=toDoListItem.getListId();
         holder.mReminderId = toDoListItem.getReminder_id();
-        ((LinearLayout)holder.itemView.findViewById(R.id.lineItemOptionsButton)).setVisibility(View.GONE);
+        //((LinearLayout)holder.itemView.findViewById(R.id.lineItemOptionsButton)).setVisibility(View.GONE);
         holder.mMoreOpts.setVisibility(View.INVISIBLE);
         holder.mDidIEdit=false;
 
@@ -129,8 +128,8 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
             mEditText = (EditText)itemView.findViewById(R.id.listItemEdit);
             mRadioButton = (CheckBox) itemView.findViewById(R.id.completedRadioButton);
             mTextView = (TextView) itemView.findViewById(R.id.listItemTextView);
-            mDeleteButton = (Button)itemView.findViewById(R.id.deleteLineItemButton);
-            mOptionsButton=(Button)itemView.findViewById(R.id.editLineItemButton);
+           // mDeleteButton = (Button)itemView.findViewById(R.id.deleteLineItemButton);
+           // mOptionsButton=(Button)itemView.findViewById(R.id.editLineItemButton);
             mItemView.setOnClickListener(this);
             mMoreOpts = (ImageButton)itemView.findViewById(R.id.moreOptionsButton);
             mEditText.setOnKeyListener(this);
@@ -138,7 +137,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
             //mEditText.setOnLongClickListener(this);
             mEditText.setOnEditorActionListener(this);
 
-            Button hideOptionsButton = (Button)itemView.findViewById(R.id.hideOptions);
+            /*Button hideOptionsButton = (Button)itemView.findViewById(R.id.hideOptions);
             hideOptionsButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -147,7 +146,7 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
                     ll.setVisibility(View.GONE);
                     mEditText.setTextColor(Color.BLACK);
                 }
-            });
+            });*/
 
             mRadioButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -196,20 +195,20 @@ public class ToDoListRecyclerAdapter extends RecyclerView.Adapter<ToDoListRecycl
                     return false;
                 }
             });
-            mDeleteButton.setOnClickListener(new View.OnClickListener() {
+            /*mDeleteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     mClickInterface.handleDeleteButton(mReminderId);
                 }
-            });
+            });*/
 
-            mOptionsButton.setOnClickListener(new View.OnClickListener() {
+            /*mOptionsButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     //mClickInterface.handleClick("MORE_OPTIONS");
                     mClickInterface.handleMoreOptions(mListID,mReminderId);
                 }
-            });
+            });*/
 
 
             mMoreOpts.setOnClickListener(new View.OnClickListener() {
