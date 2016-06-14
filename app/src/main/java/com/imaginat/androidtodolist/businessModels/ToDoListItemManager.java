@@ -8,19 +8,22 @@ import com.imaginat.androidtodolist.data.DbSchema;
 import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
 import com.imaginat.androidtodolist.google.FenceData;
 
+import org.json.JSONArray;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * Created by nat on 5/12/16.
  */
-public class ToDoListItemManager {
+public class ToDoListItemManager{
 
     private static final String TAG = ListManager.class.getSimpleName();
     public static ToDoListItemManager instance;
     private ToDoListSQLHelper mSqlHelper;
     private ArrayList<ToDoListItem> mReminders;
     private boolean mHideCompleted=true;
+    private JSONArray mListJSONArray;
 
     private ToDoListItemManager(Context context) {
         mSqlHelper = ToDoListSQLHelper.getInstance(context);
@@ -352,4 +355,11 @@ public class ToDoListItemManager {
     public void deleteAll(String listID){
         mSqlHelper.deleteAll(listID);
     }
+    //=================POPULATE FROM GOOGLE DRIVE
+    public void readAllReminders(JSONArray allListsJSON){
+
+
+
+    }
+
 }

@@ -207,8 +207,8 @@ public class ToDoListItem implements IListItem {
 
         JSONObject todoListItem_json = new JSONObject();
         todoListItem_json.put("text",mText);
-        //todoListItem_json.put("reminderID",mReminder_id);
-        //todoListItem_json.put("listID",mList_id);
+        todoListItem_json.put("reminderID",mReminder_id);
+        todoListItem_json.put("listID",mList_id);
         //todoListItem_json.put("isCompleted", isCompleted);
 /*
         if(isCalendarAlarm()) {

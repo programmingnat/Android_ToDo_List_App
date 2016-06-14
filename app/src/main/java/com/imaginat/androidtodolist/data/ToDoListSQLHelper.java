@@ -7,6 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.imaginat.androidtodolist.businessModels.ListTitle;
+import com.imaginat.androidtodolist.businessModels.ToDoListItem;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -56,6 +59,22 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
 
 
     //=====================RELATED TO LIST STUFF================================================
+    public Cursor getAllListIDs(){
+        SQLiteDatabase db= this.getReadableDatabase();
+        Cursor c = db.query(DbSchema.lists_table.NAME, //table
+                new String[]{DbSchema.lists_table.cols.LIST_ID}, //columns
+                null,//select
+                null,//selection args
+                null,//group
+                null,//having
+                null,//order
+                null);//limit
+
+        if(c==null || c.getCount()==0){
+            return null;
+        }
+        return c;
+    }
     public String getListName(String listID){
         SQLiteDatabase db= this.getReadableDatabase();
         Cursor c = db.query(DbSchema.lists_table.NAME, //table
@@ -84,6 +103,32 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
         return Long.toString(id);
     }
 
+    public void insertMultipleListValues(ArrayList<ListTitle>listTitles){
+        String sql = "INSERT INTO "+DbSchema.lists_table.NAME+
+                "(\'"+DbSchema.lists_table.cols.LIST_ID+"\',\'"+DbSchema.lists_table.cols.LIST_TITLE+"\') VALUES ";
+        int total = listTitles.size();
+        String args[] = new String[total*2];
+        int argsCounter=0;
+        for(int i=0;i<total;i++){
+            ListTitle listTitle = listTitles.get(i);;
+            sql+="(?,?)";
+
+
+            //sql+="(\'"+listTitle.getList_id()+"\',\'"+listTitle.getText()+"\')";
+            if(i<total-1){
+                sql+=",";
+            }
+            args[argsCounter++]=listTitle.getList_id();
+            args[argsCounter++]=listTitle.getText();
+        }//end of for loop
+
+        Log.d(TAG,"THE multiple insert sql "+sql);
+        SQLiteDatabase db= this.getWritableDatabase();
+        db.execSQL(sql,args);
+
+
+
+    }
     public int doesListNameExist(String listName){
 
 
@@ -152,6 +197,34 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
 //    }
 
     //=============================================================================
+    public void insertMultipleReminderValues(ArrayList<ToDoListItem>toDoListItems){
+
+        String sql = "INSERT INTO "+DbSchema.reminders_table.NAME+
+                "(\'"+DbSchema.reminders_table.cols.REMINDER_ID+"\',\'"+DbSchema.reminders_table.cols.LIST_ID+"\',\'"+DbSchema.reminders_table.cols.REMINDER_TEXT+"\') VALUES ";
+        int total = toDoListItems.size();
+        String args[] = new String[total*3];
+        int argsCounter=0;
+        for(int i=0;i<total;i++){
+            ToDoListItem toDoListItem = toDoListItems.get(i);;
+            sql+="(?,?,?)";
+
+
+            //sql+="(\'"+listTitle.getList_id()+"\',\'"+listTitle.getText()+"\')";
+            if(i<total-1){
+                sql+=",";
+            }
+            args[argsCounter++]=toDoListItem.getReminder_id();
+            args[argsCounter++]=toDoListItem.getListId();
+            args[argsCounter++]=toDoListItem.getText();
+        }//end of for loop
+
+        Log.d(TAG,"THE multiple insert sql "+sql);
+        SQLiteDatabase db= this.getWritableDatabase();
+        db.execSQL(sql,args);
+
+
+
+    }
     public Cursor searchReminders(String searchQuery){
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor c = db.query(DbSchema.reminders_table.NAME, //table

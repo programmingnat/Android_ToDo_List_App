@@ -382,6 +382,11 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
                 JSONObject rootJSON = new JSONObject(result);
                 JSONArray allTitlesJSON = rootJSON.getJSONArray("allTitles");
                 JSONArray allItemsJSON=rootJSON.getJSONArray("allItems");
+
+                ListManager listManager = ListManager.getInstance(BackupToDrive.this);
+                listManager.readListJSON(allTitlesJSON,allItemsJSON,BackupToDrive.this);
+
+
             }catch(JSONException jse){
 
             }

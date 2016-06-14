@@ -26,6 +26,7 @@ import com.imaginat.androidtodolist.R;
 import com.imaginat.androidtodolist.businessModels.IListItem;
 import com.imaginat.androidtodolist.businessModels.ListManager;
 import com.imaginat.androidtodolist.businessModels.ListTitle;
+import com.imaginat.androidtodolist.businessModels.TheDeleter;
 import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
 
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ import java.util.ArrayList;
  * Created by nat on 4/26/16.
  */
 public class MainListFragment extends Fragment implements ReminderListRecycleAdapter.IHandleListClicks,
-        MainListDialogOptions.IUseMainListDialogOptions {
+        MainListDialogOptions.IUseMainListDialogOptions,TheDeleter.IUseTheDeleter {
 
     private static String TAG= MainListFragment.class.getName();
     private boolean isLongClickOn=false;
@@ -329,15 +330,15 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
         //delete from all sub tables
         //then delete from list table
 
-        ToDoListItemManager manager = ToDoListItemManager.getInstance(getContext());
-        manager.deleteAll(id);
+        //ToDoListItemManager manager = ToDoListItemManager.getInstance(getContext());
+        //manager.deleteAll(id);
+
+        TheDeleter deleteTask = new TheDeleter(getContext());
+        deleteTask.setDeletionCompleteCallback(this);
+        deleteTask.execute(id);
 
 
-        ListManager listManager = ListManager.getInstance(getContext());
-        listManager.updateAllListTitles();
-        ArrayList<ListTitle>titles =listManager.getListTitles();
-        mAdapter.setToRemindersArray(titles);
-        mAdapter.notifyDataSetChanged();
+
     }
 
 
@@ -357,5 +358,16 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
         }
         Log.d(TAG,"current count to send over is now "+mainActivity.getMessageCount());
 
+    }
+
+    @Override
+    public void deletionCompleted(boolean result, String s) {
+        Toast.makeText(getContext(),"Deletion is complete",Toast.LENGTH_SHORT).show();
+
+        ListManager listManager = ListManager.getInstance(getContext());
+        listManager.updateAllListTitles();
+        ArrayList<ListTitle>titles =listManager.getListTitles();
+        mAdapter.setToRemindersArray(titles);
+        mAdapter.notifyDataSetChanged();
     }
 }
