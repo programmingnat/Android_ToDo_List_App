@@ -23,16 +23,16 @@
             <!--android:layout_height="wrap_content"-->
             <!--android:layout_alignParentLeft="true"/>-->
 
-        <TextView
-            android:id="@+id/listItemTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:paddingBottom="5dp"
-            android:paddingTop="5dp"
-            android:paddingLeft="10dp"
-            android:text="NO LISTS TO DISPLAY"
-            android:textSize="25sp"/>
+        <!--<TextView-->
+            <!--android:id="@+id/listItemTextView"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_alignParentLeft="true"-->
+            <!--android:paddingBottom="5dp"-->
+            <!--android:paddingTop="5dp"-->
+            <!--android:paddingLeft="10dp"-->
+            <!--android:text="NO LISTS TO DISPLAY"-->
+            <!--android:textSize="25sp"/>-->
     </RelativeLayout>
 
 
@@ -53,7 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:backgroundTint="#424242"
+        app:backgroundTint="#00B8D4"
         android:tint="#FFFFFF"
         android:src="@android:drawable/ic_input_add" />
 
