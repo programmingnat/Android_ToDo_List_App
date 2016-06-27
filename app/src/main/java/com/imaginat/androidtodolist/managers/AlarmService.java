@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.businessModels;
+package com.imaginat.androidtodolist.managers;
 
 import android.app.IntentService;
 import android.app.NotificationManager;

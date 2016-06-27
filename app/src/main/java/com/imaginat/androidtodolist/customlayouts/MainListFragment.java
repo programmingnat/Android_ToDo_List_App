@@ -24,10 +24,10 @@ import android.widget.Toast;
 
 import com.imaginat.androidtodolist.MainActivity;
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.businessModels.ListManager;
-import com.imaginat.androidtodolist.businessModels.ListTitle;
-import com.imaginat.androidtodolist.businessModels.TheDeleter;
-import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
+import com.imaginat.androidtodolist.managers.ListManager;
+import com.imaginat.androidtodolist.models.ListTitle;
+import com.imaginat.androidtodolist.managers.TheDeleter;
+import com.imaginat.androidtodolist.managers.ToDoListItemManager;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.businessModels;
+package com.imaginat.androidtodolist.managers;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -7,6 +7,8 @@ import android.util.Log;
 
 import com.imaginat.androidtodolist.data.DbSchema;
 import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
+import com.imaginat.androidtodolist.models.ListTitle;
+import com.imaginat.androidtodolist.models.ToDoListItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;

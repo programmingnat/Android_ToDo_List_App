@@ -1,10 +1,12 @@
-package com.imaginat.androidtodolist.google;
+package com.imaginat.androidtodolist.google.location;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.util.Log;
+
+import com.imaginat.androidtodolist.google.Constants;
 
 /**
  * Created by nat on 5/17/16.

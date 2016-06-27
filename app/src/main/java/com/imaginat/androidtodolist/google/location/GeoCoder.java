@@ -1,8 +1,10 @@
-package com.imaginat.androidtodolist.google;
+package com.imaginat.androidtodolist.google.location;
 
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+
+import com.imaginat.androidtodolist.google.Constants;
 
 /**
  * Created by nat on 5/17/16.

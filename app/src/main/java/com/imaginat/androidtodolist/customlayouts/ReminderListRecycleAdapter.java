@@ -14,8 +14,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.businessModels.IListItem;
-import com.imaginat.androidtodolist.businessModels.ListTitle;
+import com.imaginat.androidtodolist.models.IListItem;
+import com.imaginat.androidtodolist.models.ListTitle;
 
 import java.util.ArrayList;
 

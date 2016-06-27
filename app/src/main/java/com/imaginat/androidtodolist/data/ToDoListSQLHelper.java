@@ -7,8 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.imaginat.androidtodolist.businessModels.ListTitle;
-import com.imaginat.androidtodolist.businessModels.ToDoListItem;
+import com.imaginat.androidtodolist.models.ListTitle;
+import com.imaginat.androidtodolist.models.ToDoListItem;
 
 import java.util.ArrayList;
 import java.util.HashMap;

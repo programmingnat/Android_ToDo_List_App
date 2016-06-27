@@ -34,10 +34,12 @@ import android.view.SubMenu;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
-import com.imaginat.androidtodolist.businessModels.ListManager;
-import com.imaginat.androidtodolist.businessModels.ToDoListItem;
-import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
+import com.imaginat.androidtodolist.google.location.LocationServices;
+import com.imaginat.androidtodolist.managers.ListManager;
+import com.imaginat.androidtodolist.models.ToDoListItem;
+import com.imaginat.androidtodolist.managers.ToDoListItemManager;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
+import com.imaginat.androidtodolist.customlayouts.AddListFragment;
 import com.imaginat.androidtodolist.customlayouts.AlarmsTriggeredListFragment;
 import com.imaginat.androidtodolist.customlayouts.IChangeToolbar;
 import com.imaginat.androidtodolist.customlayouts.MainListFragment;
@@ -53,7 +55,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity
         implements IChangeToolbar,
-        com.imaginat.androidtodolist.google.LocationServices.ILocationServiceClient,
+        LocationServices.ILocationServiceClient,
         ToDoListOptionsFragment.IGeoOptions,
         NfcAdapter.OnNdefPushCompleteCallback,
         NfcAdapter.CreateNdefMessageCallback{
@@ -121,6 +123,13 @@ public class MainActivity extends AppCompatActivity
                 android.support.v4.app.Fragment f = getSupportFragmentManager().findFragmentById(R.id.my_frame);
                 ActionListFragment alf = (ActionListFragment) f;
                 alf.toggleEdit();
+                return true;
+            case R.id.editListInfo:
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                ft.replace(R.id.my_frame, new AddListFragment());
+                ft.setTransition(FragmentTransaction.TRANSIT_NONE);
+                ft.addToBackStack(null);
+                ft.commit();
                 return true;
             case R.id.deleteList:
 
@@ -447,6 +456,8 @@ public class MainActivity extends AppCompatActivity
             menuItem.setVisible(true);
             menuItem=menu.findItem(R.id.shareListNFC);
             menuItem.setVisible(true);
+            menuItem=menu.findItem(R.id.editListInfo);
+            menuItem.setVisible(true);
 
         }else if(TOOLBAR_ICON_INSTRUCTIONS==200){
             MenuItem menuItem = menu.findItem(R.id.search);
@@ -454,6 +465,8 @@ public class MainActivity extends AppCompatActivity
             menuItem=menu.findItem(R.id.deleteList);
             menuItem.setVisible(false);
             menuItem=menu.findItem(R.id.shareListNFC);
+            menuItem.setVisible(false);
+            menuItem=menu.findItem(R.id.editListInfo);
             menuItem.setVisible(false);
         }
     }

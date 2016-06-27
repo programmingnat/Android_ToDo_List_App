@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.google;
+package com.imaginat.androidtodolist.google.location;
 
 /**
  * Copyright 2014 Google Inc. All Rights Reserved.

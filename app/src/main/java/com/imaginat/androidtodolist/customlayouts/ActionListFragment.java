@@ -20,7 +20,7 @@ import android.widget.Toast;
 
 import com.imaginat.androidtodolist.GlobalConstants;
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
+import com.imaginat.androidtodolist.managers.ToDoListItemManager;
 
 /**
  * Created by nat on 4/26/16.

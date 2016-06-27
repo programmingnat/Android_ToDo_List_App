@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.google;
+package com.imaginat.androidtodolist.google.location;
 
 /**
  * Created by nat on 5/17/16.
@@ -19,6 +19,8 @@ import android.util.Log;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 import com.imaginat.androidtodolist.MainActivity;
+import com.imaginat.androidtodolist.google.Constants;
+import com.imaginat.androidtodolist.google.location.GeofenceErrorMessages;
 
 import java.util.ArrayList;
 import java.util.List;

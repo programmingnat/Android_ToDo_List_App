@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.businessModels;
+package com.imaginat.androidtodolist.models;
 
 /**
  * Created by nat on 4/17/16.

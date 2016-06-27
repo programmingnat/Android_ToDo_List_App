@@ -29,11 +29,11 @@ import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
-import com.imaginat.androidtodolist.businessModels.ListManager;
-import com.imaginat.androidtodolist.businessModels.ListTitle;
-import com.imaginat.androidtodolist.businessModels.ToDoListItem;
-import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
-import com.imaginat.androidtodolist.google.ApiClientAsyncTask;
+import com.imaginat.androidtodolist.managers.ListManager;
+import com.imaginat.androidtodolist.models.ListTitle;
+import com.imaginat.androidtodolist.models.ToDoListItem;
+import com.imaginat.androidtodolist.managers.ToDoListItemManager;
+import com.imaginat.androidtodolist.google.drive.ApiClientAsyncTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;

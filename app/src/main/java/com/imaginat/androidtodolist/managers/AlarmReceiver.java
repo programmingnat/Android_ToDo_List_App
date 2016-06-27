@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.businessModels;
+package com.imaginat.androidtodolist.managers;
 
 import android.app.Activity;
 import android.content.Context;

@@ -20,7 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.businessModels.ToDoListItem;
+import com.imaginat.androidtodolist.models.ToDoListItem;
 
 import java.util.ArrayList;
 

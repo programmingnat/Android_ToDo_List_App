@@ -1,8 +1,12 @@
 package com.imaginat.androidtodolist.customlayouts;
 
+import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -11,8 +15,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.imaginat.androidtodolist.MainActivity;
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.businessModels.ListManager;
+import com.imaginat.androidtodolist.managers.ListManager;
 
 /**
  * Created by nat on 5/1/16.
@@ -21,6 +26,7 @@ public class AddListFragment extends Fragment {
 
     private static final String TAG=AddListFragment.class.getSimpleName();
     private EditText mEditTextOfListName;
+    private boolean mUseInEditMode;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -53,5 +59,17 @@ public class AddListFragment extends Fragment {
         super.onPrepareOptionsMenu(menu);
 
         //Toast.makeText(getContext(),"Attempted to disable", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        MainActivity mainActivity = (MainActivity)getActivity();
+        mainActivity.swapIcons(200);
+
+        int[] attrs = {android.R.attr.colorPrimary,android.R.attr.colorPrimaryDark,android.R.attr.colorAccent};
+        TypedArray ta = mainActivity.obtainStyledAttributes(R.style.AppTheme,attrs);
+        Toolbar toolbar = (Toolbar)getActivity().findViewById(R.id.my_toolbar);
+        toolbar.setBackgroundColor(ta.getColor(0, Color.BLACK));
     }
 }

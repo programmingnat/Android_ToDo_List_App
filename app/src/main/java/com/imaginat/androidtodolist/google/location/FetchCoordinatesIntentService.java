@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.google;
+package com.imaginat.androidtodolist.google.location;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -8,6 +8,8 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.util.Log;
+
+import com.imaginat.androidtodolist.google.Constants;
 
 import java.io.IOException;
 import java.util.List;

@@ -21,14 +21,14 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.businessModels.AlarmReceiver;
-import com.imaginat.androidtodolist.businessModels.ToDoListItem;
-import com.imaginat.androidtodolist.businessModels.ToDoListItemManager;
+import com.imaginat.androidtodolist.managers.AlarmReceiver;
+import com.imaginat.androidtodolist.models.ToDoListItem;
+import com.imaginat.androidtodolist.managers.ToDoListItemManager;
 import com.imaginat.androidtodolist.data.DbSchema;
 import com.imaginat.androidtodolist.google.Constants;
-import com.imaginat.androidtodolist.google.CoordinatesResultReceiver;
-import com.imaginat.androidtodolist.google.FenceData;
-import com.imaginat.androidtodolist.google.GeoCoder;
+import com.imaginat.androidtodolist.google.location.CoordinatesResultReceiver;
+import com.imaginat.androidtodolist.google.location.FenceData;
+import com.imaginat.androidtodolist.google.location.GeoCoder;
 import com.imaginat.androidtodolist.google.LocationUpdateService;
 
 import java.text.DateFormat;

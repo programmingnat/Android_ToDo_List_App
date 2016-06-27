@@ -1,10 +1,12 @@
-package com.imaginat.androidtodolist.google;
+package com.imaginat.androidtodolist.google.location;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
+
+import com.imaginat.androidtodolist.google.Constants;
 
 /**
  * Created by nat on 5/25/16.

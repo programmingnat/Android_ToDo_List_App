@@ -64,18 +64,18 @@
         <service android:name=".google.LocationUpdateService">
         </service>
         <service
-            android:name=".google.FetchAddressIntentService"
+            android:name=".google.location.FetchAddressIntentService"
             android:exported="true"/>
         <service
-            android:name=".google.FetchCoordinatesIntentService"
+            android:name=".google.location.FetchCoordinatesIntentService"
             android:exported="true"/>
         <service
-            android:name=".businessModels.AlarmService"
+            android:name=".managers.AlarmService"
             android:enabled="true"/>
 
-        <receiver android:name=".businessModels.AlarmReceiver"/>
+        <receiver android:name=".managers.AlarmReceiver"/>
         <receiver
-            android:name=".google.GeofenceReceiver"
+            android:name=".google.location.GeofenceReceiver"
             android:enabled="true"
             android:exported="true"
             android:process=":remote">
@@ -85,7 +85,7 @@
         </receiver>
 
         <service
-            android:name=".google.GeofenceTransitionsIntentService"
+            android:name=".google.location.GeofenceTransitionsIntentService"
             android:exported="true"/>
 
         <activity android:name=".BackupToDrive">

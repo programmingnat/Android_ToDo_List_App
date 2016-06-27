@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.google;
+package com.imaginat.androidtodolist.google.location;
 
 /**
  * Created by nat on 5/16/16.
@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.imaginat.androidtodolist.google.Constants;
 
 import java.io.IOException;
 import java.util.ArrayList;

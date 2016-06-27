@@ -23,6 +23,9 @@ import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.imaginat.androidtodolist.google.location.FenceData;
+import com.imaginat.androidtodolist.google.location.GeofenceErrorMessages;
+import com.imaginat.androidtodolist.google.location.GeofenceTransitionsIntentService;
 
 import java.util.ArrayList;
 

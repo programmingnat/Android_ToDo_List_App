@@ -5,6 +5,8 @@ package com.imaginat.androidtodolist;
  */
 public class GlobalConstants {
     public static final int HIDE_COMPLETED_ITEMS=2340;
+
+    //ICONS FOR THE LIST
     public static final int GENERIC_REMINDER_ICON=0;
     public static final int SHOPPING_CART_ICON=1;
     public static final int WORKOUT_ICON=2;

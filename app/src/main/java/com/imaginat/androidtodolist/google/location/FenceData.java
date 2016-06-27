@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.google;
+package com.imaginat.androidtodolist.google.location;
 
 /**
  * Created by nat on 5/28/16.

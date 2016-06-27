@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.google;
+package com.imaginat.androidtodolist.google.location;
 
 import android.content.IntentSender;
 import android.location.Location;
@@ -16,6 +16,7 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.model.LatLng;
+import com.imaginat.androidtodolist.google.Constants;
 
 import java.util.ArrayList;
 import java.util.Map;

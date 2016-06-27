@@ -1,7 +1,11 @@
-package com.imaginat.androidtodolist.businessModels;
+package com.imaginat.androidtodolist.managers;
 
 import android.content.Context;
 import android.os.AsyncTask;
+
+import com.imaginat.androidtodolist.managers.ListManager;
+import com.imaginat.androidtodolist.managers.ToDoListItemManager;
+import com.imaginat.androidtodolist.models.ListTitle;
 
 import java.util.ArrayList;
 

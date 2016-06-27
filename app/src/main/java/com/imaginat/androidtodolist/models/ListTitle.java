@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.businessModels;
+package com.imaginat.androidtodolist.models;
 
 import org.json.JSONException;
 import org.json.JSONObject;
