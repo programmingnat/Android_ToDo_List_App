@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.imaginat.androidtodolist.MainActivity;
 import com.imaginat.androidtodolist.R;
+import com.imaginat.androidtodolist.customlayouts.list.AddListFragment;
 import com.imaginat.androidtodolist.managers.ListManager;
 import com.imaginat.androidtodolist.models.ListTitle;
 import com.imaginat.androidtodolist.managers.TheDeleter;

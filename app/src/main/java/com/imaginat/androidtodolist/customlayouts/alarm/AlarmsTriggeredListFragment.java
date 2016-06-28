@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.customlayouts;
+package com.imaginat.androidtodolist.customlayouts.alarm;
 
 
 import android.content.Context;
@@ -15,6 +15,8 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.imaginat.androidtodolist.R;
+import com.imaginat.androidtodolist.customlayouts.ToDoListOptionsFragment;
+import com.imaginat.androidtodolist.customlayouts.ToDoListRecyclerAdapter;
 import com.imaginat.androidtodolist.models.ToDoListItem;
 import com.imaginat.androidtodolist.managers.ToDoListItemManager;
 

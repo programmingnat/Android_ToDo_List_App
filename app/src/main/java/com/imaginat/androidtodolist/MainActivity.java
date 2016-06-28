@@ -39,8 +39,8 @@ import com.imaginat.androidtodolist.managers.ListManager;
 import com.imaginat.androidtodolist.models.ToDoListItem;
 import com.imaginat.androidtodolist.managers.ToDoListItemManager;
 import com.imaginat.androidtodolist.customlayouts.ActionListFragment;
-import com.imaginat.androidtodolist.customlayouts.AddListFragment;
-import com.imaginat.androidtodolist.customlayouts.AlarmsTriggeredListFragment;
+import com.imaginat.androidtodolist.customlayouts.list.AddListFragment;
+import com.imaginat.androidtodolist.customlayouts.alarm.AlarmsTriggeredListFragment;
 import com.imaginat.androidtodolist.customlayouts.IChangeToolbar;
 import com.imaginat.androidtodolist.customlayouts.MainListFragment;
 import com.imaginat.androidtodolist.customlayouts.SearchResultsFragment;
@@ -673,7 +673,7 @@ public class MainActivity extends AppCompatActivity
                     String s = messagesReceivedArray.get(i);
                     Log.d(TAG,s);
                     if(i==0){
-                        listID=listManager.createNewList(s);
+                        listID=listManager.createNewList(s,0);
                         continue;
                     }
                     toDoListItemManager.createNewReminder(listID,s);

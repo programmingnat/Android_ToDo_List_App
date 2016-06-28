@@ -21,6 +21,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.imaginat.androidtodolist.R;
+import com.imaginat.androidtodolist.customlayouts.alarm.DatePickerFragment;
+import com.imaginat.androidtodolist.customlayouts.alarm.DialogMapFragment;
+import com.imaginat.androidtodolist.customlayouts.alarm.TimePickerFragment;
 import com.imaginat.androidtodolist.managers.AlarmReceiver;
 import com.imaginat.androidtodolist.models.ToDoListItem;
 import com.imaginat.androidtodolist.managers.ToDoListItemManager;

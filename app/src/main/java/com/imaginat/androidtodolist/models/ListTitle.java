@@ -8,6 +8,15 @@ import org.json.JSONObject;
  */
 public class ListTitle extends AListItem {
     private String list_id=null;
+    private int mIcon;
+
+    public int getIcon() {
+        return mIcon;
+    }
+
+    public void setIcon(int icon) {
+        mIcon = icon;
+    }
 
     public ListTitle(){
         super();

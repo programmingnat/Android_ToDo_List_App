@@ -13,5 +13,6 @@ public class GlobalConstants {
     public static final int WORK_ICON=3;
     public static final int KIDS_ICON=4;
     public static final int BEACH_ICON=5;
+    public static final int TOTAL_ICONS=6;
 
 }

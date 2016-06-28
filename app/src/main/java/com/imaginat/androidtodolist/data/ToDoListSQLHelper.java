@@ -92,9 +92,10 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
         c.moveToFirst();
         return c.getString(0);
     }
-    public String insertIntoListTable(String listName){
+    public String insertIntoListTable(String listName,int iconID){
         ContentValues values = new ContentValues();
         values.put(DbSchema.lists_table.cols.LIST_TITLE,listName);
+        values.put(DbSchema.lists_table.cols.LIST_ICON,iconID);
         SQLiteDatabase db= this.getWritableDatabase();
 
         long id=db.insert(DbSchema.lists_table.NAME,

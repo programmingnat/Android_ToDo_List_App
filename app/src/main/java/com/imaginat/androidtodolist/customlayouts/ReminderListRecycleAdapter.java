@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.imaginat.androidtodolist.GlobalConstants;
 import com.imaginat.androidtodolist.R;
 import com.imaginat.androidtodolist.models.IListItem;
 import com.imaginat.androidtodolist.models.ListTitle;
@@ -147,26 +148,28 @@ public class ReminderListRecycleAdapter extends RecyclerView.Adapter<ReminderLis
             holder.mTextView.setText(reminder.getText());
 
             //randomly assign image (temp)
-            int imageIndex = (int) (Math.random() * 6);
+            int imageIndex = reminder.getIcon();
             switch (imageIndex) {
-                case 0:
-                    holder.mImageView.setBackgroundResource(R.drawable.generic_reminder);
-                    break;
-                case 1:
+
+                case GlobalConstants.WORKOUT_ICON:
                     holder.mImageView.setBackgroundResource(R.drawable.workout);
                     break;
-                case 2:
+                case GlobalConstants.SHOPPING_CART_ICON:
                     holder.mImageView.setBackgroundResource(R.drawable.shopping_cart);
                     break;
-                case 3:
+                case GlobalConstants.WORK_ICON:
                     holder.mImageView.setBackgroundResource(R.drawable.laptop);
                     break;
-                case 4:
+                case GlobalConstants.KIDS_ICON:
                     holder.mImageView.setBackgroundResource(R.drawable.kids_logo);
                     break;
-                case 5:
+                case GlobalConstants.BEACH_ICON:
                     holder.mImageView.setBackgroundResource(R.drawable.beach_logo);
                     break;
+                default:
+                case GlobalConstants.GENERIC_REMINDER_ICON:
+                holder.mImageView.setBackgroundResource(R.drawable.generic_reminder);
+                break;
             }
         }
 

@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.customlayouts;
+package com.imaginat.androidtodolist.customlayouts.list;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,6 +29,7 @@ public class AddListFragment extends Fragment {
     private static final String TAG=AddListFragment.class.getSimpleName();
     private EditText mEditTextOfListName;
     private boolean mUseInEditMode;
+    IconListAdapter iconListAdapter=null;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -38,6 +41,8 @@ public class AddListFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d(TAG,"onClick called");
+                int selectedIcon = iconListAdapter.getSelectedIcon();
+                Log.d(TAG,"selectedIcon is "+selectedIcon);
                 if(mEditTextOfListName.getText()==null || mEditTextOfListName.getText().length()==0){
                     //indicate error
                     mEditTextOfListName.setError("FILL thIS IN");
@@ -45,10 +50,18 @@ public class AddListFragment extends Fragment {
 
                 String newListName = mEditTextOfListName.getText().toString();
                 ListManager listManager = ListManager.getInstance(getContext());
-                listManager.createNewList(newListName);
+                listManager.createNewList(newListName,selectedIcon);
                 getFragmentManager().popBackStackImmediate();
             }
         });
+
+        //the list
+        RecyclerView listView = (RecyclerView) view.findViewById(R.id.listOfIcons);
+        iconListAdapter = new IconListAdapter();
+        listView.setAdapter(iconListAdapter);
+        LinearLayoutManager llm=new LinearLayoutManager(getActivity());
+        llm.setOrientation(LinearLayoutManager.HORIZONTAL);
+        listView.setLayoutManager(llm);
 
         return view;
 

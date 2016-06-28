@@ -51,7 +51,7 @@ public class ListManager implements TheDeleter.IUseTheDeleter {
      * @param listName
      * @return - row id as string
      */
-    public String createNewList(String listName) {
+    public String createNewList(String listName,int selectedIcon) {
         //check if list name already exists
         int countFound = mSqlHelper.doesListNameExist(listName);
 
@@ -64,7 +64,7 @@ public class ListManager implements TheDeleter.IUseTheDeleter {
         }
 
         //add it
-        return mSqlHelper.insertIntoListTable(listName);
+        return mSqlHelper.insertIntoListTable(listName,selectedIcon);
 
     }
 
@@ -77,9 +77,11 @@ public class ListManager implements TheDeleter.IUseTheDeleter {
             int list_id = c.getInt(colIndex);
             colIndex = c.getColumnIndex(DbSchema.lists_table.cols.LIST_TITLE);
             String title = c.getString(colIndex);
+            int icon = c.getInt(c.getColumnIndex(DbSchema.lists_table.cols.LIST_ICON));
             ListTitle lt = new ListTitle();
             lt.setText(title);
             lt.setList_id(Integer.toString(list_id));
+            lt.setIcon(icon);
             mListTitles.add(lt);
             c.moveToNext();
         }

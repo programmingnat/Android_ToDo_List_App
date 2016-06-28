@@ -1,61 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
+              android:layout_height="wrap_content"
               android:orientation="vertical">
 
 
     <EditText
         android:id="@+id/addNameOfNewList_EditText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="90"
+        android:layout_height="40dp"
         android:hint="ADD TITLE OF NEW LIST HERE"
         android:textColorHint="#555555"/>
-    <RadioGroup
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-        <RadioButton
-            android:id="@+id/genericReminderRB"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawableRight="@drawable/generic_reminder"
-            android:checked="true">
-        </RadioButton>
-        <RadioButton
-            android:id="@+id/shoppingReminderRB"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawableRight="@drawable/shopping_cart"
-            android:checked="true">
-        </RadioButton>
-        <RadioButton
-            android:id="@+id/workOutReminderRB"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawableRight="@drawable/workout"
-            android:checked="true">
-        </RadioButton>
-        <RadioButton
-        android:id="@+id/workReminderRB"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:drawableRight="@drawable/laptop"
-        android:checked="true">
-    </RadioButton>
-        <RadioButton
-            android:id="@+id/kidReminderRB"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawableRight="@drawable/kids_logo"
-            android:checked="true">
-        </RadioButton>
-    </RadioGroup>
+
+    <TextView
+        android:text="SELECT ICON FOR LIST:"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/listOfIcons"
+        android:layout_width="match_parent"
+        android:layout_height="166dp"
+        />
+
+
+
 
     <Button
         android:id="@+id/doneButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:text="DONE"/>
+        android:text="DONE"
+        />
 </LinearLayout>

@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.customlayouts;
+package com.imaginat.androidtodolist.customlayouts.alarm;
 
 import android.app.Activity;
 import android.app.Dialog;
