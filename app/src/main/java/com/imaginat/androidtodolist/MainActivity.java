@@ -60,26 +60,30 @@ public class MainActivity extends AppCompatActivity
         NfcAdapter.OnNdefPushCompleteCallback,
         NfcAdapter.CreateNdefMessageCallback{
 
-    private static final String TAG = MainActivity.class.getName();
 
+    private static final String TAG = MainActivity.class.getName();
     private static final int REQUEST_FINE_LOCATION = 0;
     private static final int REQUEST_LOCATION = 12;
-
     private int TOOLBAR_ICON_INSTRUCTIONS=-1;
+
+
+    //NFC related variables
     private NfcAdapter mNfcAdapter;
-    //The array lists to hold our messages
     private ArrayList<String> messagesToSendArray = new ArrayList<>();
     private ArrayList<String> messagesReceivedArray = new ArrayList<>();
-    //for reference to service
+
+    //GEO & Google related variables
     LocationUpdateService mLocationUpdateService;
     boolean mLocationUpdateServiceBound;
     MyServiceConnection mServiceConnection;
 
+    //Save options
     private SharedPreferences mSharedPreferences;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //return super.onCreateOptionsMenu(menu);
+
+
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.lists_of_lists_dropdown, menu);
 
@@ -203,16 +207,18 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //toolbar related
         Toolbar toolbar = (Toolbar)findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
-        Log.d(TAG,"inside onCreate");
+
         //shared preferences
         mSharedPreferences = getSharedPreferences(Constants.PREFERENCES, Context.MODE_PRIVATE);
         //UI Stuff
         getSupportActionBar().setTitle("Main");
 
 
-        //Settinig up the initial fragment
+        //Setting up the initial fragment
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
@@ -222,7 +228,6 @@ public class MainActivity extends AppCompatActivity
         fragmentTransaction.commit();
 
         //For Search Bar and NFC
-
         if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
             Log.d(TAG,"onCreate INTENT nfc received");
             handleNfcIntent(getIntent());
@@ -374,16 +379,6 @@ public class MainActivity extends AppCompatActivity
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-       // handleIntent(intent);
-
-        //For Search Bar and NFC
-  /*      if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
-            Log.d(TAG,"onNewIntent INTENT nfc received");
-            handleNfcIntent(getIntent());
-        }else {
-            Log.d(TAG,"onNewIntent non nfc intent receiaved");
-            handleIntent(getIntent());
-        }*/
     }
 
     private void handleIntent(Intent intent) {
@@ -482,7 +477,6 @@ public class MainActivity extends AppCompatActivity
 
     public void swapIcons(int instructions){
         Log.d(TAG,"inside swapIcons");
-
         TOOLBAR_ICON_INSTRUCTIONS=instructions;
         invalidateOptionsMenu();
     }
@@ -580,7 +574,7 @@ public class MainActivity extends AppCompatActivity
         editor.putInt(Constants.GEO_ALARM_COUNT, currentTotal);
     }
 
-    //==================NFC STUFF==================================
+    //===============================NFC STUFF=========================================
     public void addToNFCSendList(String data){
         messagesToSendArray.add(data);
     }
@@ -643,6 +637,7 @@ public class MainActivity extends AppCompatActivity
         return records;
     }
 
+
     private void handleNfcIntent(Intent NfcIntent) {
         Log.d(TAG,"handleNFcIntent");
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(NfcIntent.getAction())) {
@@ -689,6 +684,9 @@ public class MainActivity extends AppCompatActivity
         dummyIntent.setAction("stand in intent");
         setIntent(dummyIntent);
     }
+
+
+    //==========================================================================
     private class MyServiceConnection implements ServiceConnection {
 
         @Override
