@@ -58,7 +58,7 @@ public class TimePickerFragment extends DialogFragment{
             mTimePicker.setMinute(min);
         } else{
             // do something for phones running an SDK before lollipop
-            mTimePicker.setCurrentHour(20);
+            mTimePicker.setCurrentHour(hour);
             mTimePicker.setCurrentMinute(min);
         }
 
@@ -71,8 +71,17 @@ public class TimePickerFragment extends DialogFragment{
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                int hour = mTimePicker.getHour();
-                                int min = mTimePicker.getMinute();
+                                int currentapiVersion = android.os.Build.VERSION.SDK_INT;
+                                int hour=0,min=0;
+                                if (currentapiVersion >= 23){
+                                     hour = mTimePicker.getHour();
+                                     min = mTimePicker.getMinute();
+
+                                }else{
+                                    hour = mTimePicker.getCurrentHour();
+                                    min = mTimePicker.getCurrentMinute();
+                                }
+
                                 //ignore year,month, day. we just want time
                                 Date date = new GregorianCalendar(2016,1,1,hour,min).getTime();
                                 sendResult(Activity.RESULT_OK,date);

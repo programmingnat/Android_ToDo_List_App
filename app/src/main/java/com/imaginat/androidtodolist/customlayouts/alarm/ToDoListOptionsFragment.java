@@ -1,8 +1,9 @@
-package com.imaginat.androidtodolist.customlayouts;
+package com.imaginat.androidtodolist.customlayouts.alarm;
 
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
@@ -14,25 +15,24 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.imaginat.androidtodolist.GlobalConstants;
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.customlayouts.alarm.DatePickerFragment;
-import com.imaginat.androidtodolist.customlayouts.alarm.DialogMapFragment;
-import com.imaginat.androidtodolist.customlayouts.alarm.TimePickerFragment;
-import com.imaginat.androidtodolist.managers.AlarmReceiver;
-import com.imaginat.androidtodolist.models.ToDoListItem;
-import com.imaginat.androidtodolist.managers.ToDoListItemManager;
 import com.imaginat.androidtodolist.data.DbSchema;
 import com.imaginat.androidtodolist.google.Constants;
+import com.imaginat.androidtodolist.google.LocationUpdateService;
 import com.imaginat.androidtodolist.google.location.CoordinatesResultReceiver;
 import com.imaginat.androidtodolist.google.location.FenceData;
 import com.imaginat.androidtodolist.google.location.GeoCoder;
-import com.imaginat.androidtodolist.google.LocationUpdateService;
+import com.imaginat.androidtodolist.managers.AlarmReceiver;
+import com.imaginat.androidtodolist.managers.ToDoListItemManager;
+import com.imaginat.androidtodolist.models.ToDoListItem;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -94,6 +94,14 @@ public class ToDoListOptionsFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.todos_more_options, container, false);
+        if(savedInstanceState!=null){
+            String savedListID= savedInstanceState.getString(GlobalConstants.CURRENT_LIST_ID,null);
+            String savedItemID = savedInstanceState.getString(GlobalConstants.CURRENT_ITEM_ID,null);
+            if(savedListID!=null && savedItemID!=null){
+                mListID=savedListID;
+                mItemID=savedItemID;
+            }
+        }
 
         //I. GET REFERENCE TO VIEWS
         mEditTextOfListItem = (EditText) view.findViewById(R.id.theItemText_EditText);
@@ -174,6 +182,9 @@ public class ToDoListOptionsFragment extends Fragment
         selectDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+
                 FragmentManager manager = getFragmentManager();
                 DatePickerFragment dialog = DatePickerFragment.newInstance(new Date(System.currentTimeMillis()));
                 //DatePickerFragment dialog = new DatePickerFragment();
@@ -186,6 +197,9 @@ public class ToDoListOptionsFragment extends Fragment
         selectTimeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+
                 FragmentManager manager = getFragmentManager();
                 TimePickerFragment dialog = TimePickerFragment.newInstance(new Date(System.currentTimeMillis()));
                 //TimePickerFragment dialog = new TimePickerFragment();
@@ -268,6 +282,13 @@ public class ToDoListOptionsFragment extends Fragment
         }
 
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(GlobalConstants.CURRENT_LIST_ID,mListID);
+        outState.putString(GlobalConstants.CURRENT_ITEM_ID,mItemID);
     }
 
     public void setIGeoOptions(IGeoOptions IGeoOptions) {

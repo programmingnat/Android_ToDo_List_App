@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.customlayouts;
+package com.imaginat.androidtodolist.customlayouts.list;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -20,6 +20,8 @@ import android.widget.Toast;
 
 import com.imaginat.androidtodolist.GlobalConstants;
 import com.imaginat.androidtodolist.R;
+import com.imaginat.androidtodolist.customlayouts.IChangeToolbar;
+import com.imaginat.androidtodolist.customlayouts.alarm.ToDoListOptionsFragment;
 import com.imaginat.androidtodolist.managers.ToDoListItemManager;
 
 /**
@@ -31,6 +33,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
 
     private static String TAG = ActionListFragment.class.getName();
     private String mListId = null;
+    private String mQuery=null;
     ToDoListRecyclerAdapter mAdapter;
     RelativeLayout mTheAddingLayout;
     RecyclerView mRecyclerView;
@@ -44,10 +47,17 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
 
     public void setListId(String id) {
         mListId = id;
+        mQuery=null;
     }
 
     public void callNotifyDataChange(){
         mAdapter.notifyDataSetChanged();
+    }
+
+    public void setQuery(String searchQuery){
+        mQuery=searchQuery;
+        mListId=null;
+
     }
     @Nullable
     @Override
@@ -55,12 +65,24 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
         View view = inflater.inflate(R.layout.todos_list_fragment, container, false);
         setHasOptionsMenu(true);
 
-
-
+        if(savedInstanceState!=null){
+            String prevSavedListID = savedInstanceState.getString(GlobalConstants.CURRENT_LIST_ID,null);
+            Log.d(TAG,"previously saved list id  is "+prevSavedListID);
+            if(prevSavedListID!=null){
+                setListId(prevSavedListID);
+            }
+        }
 
         mToDoListItemManager = ToDoListItemManager.getInstance(getContext());
-        mToDoListItemManager.loadAllRemindersForList(mListId);
-        String listName = mToDoListItemManager.getListName(mListId);
+        String listName="RemindMe";
+        if(mListId==null) {
+            mToDoListItemManager.loadAllSearchResults(mQuery);
+            listName="Search Results for "+mQuery+":";
+        }else{
+            mToDoListItemManager.loadAllRemindersForList(mListId);
+            listName = mToDoListItemManager.getListName(mListId);
+        }
+
         mTheAddingLayout = (RelativeLayout) view.findViewById(R.id.addItemOverlayView);
         //mAddListOverlayView = (TextView) mTheAddingLayout.findViewById(R.id.addListEditText);
         mAdapter = new ToDoListRecyclerAdapter((Context) getActivity(), mToDoListItemManager.getReminders(), this);
@@ -83,7 +105,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
 
 
         //mAddListOverlayView.setHeight(itemFromList.getHeight());
-        recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+       /* recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -99,12 +121,16 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
                 }
 
             }
-        });
+        });*/
         setHasOptionsMenu(true);
         return view;
     }
 
-
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(GlobalConstants.CURRENT_LIST_ID,mListId);
+    }
 
     //======
     @Override
@@ -121,17 +147,7 @@ public class ActionListFragment extends Fragment implements ToDoListRecyclerAdap
     public void onResume() {
         super.onResume();
 
-        //duplicate logic, move to method?
-      /*  LinearLayoutManager linearLayoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
-        int lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition();
-        int lastIndex=mReminders.size()-1;
-        Toast.makeText(getContext(),"lastVisible vs lastIndex "+lastVisibleItem+" vs "+lastIndex,Toast.LENGTH_SHORT).show();
-        if(linearLayoutManager.findLastVisibleItemPosition()<lastIndex){
-            mTheAddingLayout.setVisibility(View.VISIBLE);
-        }else{
-            mTheAddingLayout.setVisibility(View.GONE);
-        }*/
-        //set height and width
+   
     }
 
     public void reloadPage(){

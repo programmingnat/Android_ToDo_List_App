@@ -1,4 +1,4 @@
-package com.imaginat.androidtodolist.customlayouts;
+package com.imaginat.androidtodolist.customlayouts.list;
 
 import android.app.Dialog;
 import android.os.Bundle;

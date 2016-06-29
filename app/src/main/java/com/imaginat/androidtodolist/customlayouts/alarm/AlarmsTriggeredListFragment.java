@@ -15,8 +15,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.customlayouts.ToDoListOptionsFragment;
-import com.imaginat.androidtodolist.customlayouts.ToDoListRecyclerAdapter;
+import com.imaginat.androidtodolist.customlayouts.list.ToDoListRecyclerAdapter;
 import com.imaginat.androidtodolist.models.ToDoListItem;
 import com.imaginat.androidtodolist.managers.ToDoListItemManager;
 

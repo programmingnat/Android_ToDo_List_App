@@ -9,31 +9,7 @@
     tools:context="com.imaginat.androidtodolist.MainActivity">
 
 
-    <RelativeLayout android:id="@+id/topPlaceHolder"
-                    xmlns:android="http://schemas.android.com/apk/res/android"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/textlines"
-                    android:orientation="horizontal">
 
-
-        <!--<RadioButton-->
-            <!--android:id="@+id/competedRadioButton"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_alignParentLeft="true"/>-->
-
-        <!--<TextView-->
-            <!--android:id="@+id/listItemTextView"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_alignParentLeft="true"-->
-            <!--android:paddingBottom="5dp"-->
-            <!--android:paddingTop="5dp"-->
-            <!--android:paddingLeft="10dp"-->
-            <!--android:text="NO LISTS TO DISPLAY"-->
-            <!--android:textSize="25sp"/>-->
-    </RelativeLayout>
 
 
 

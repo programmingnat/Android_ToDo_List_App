@@ -151,16 +151,23 @@ public class ToDoListItemManager{
         mSqlHelper.updateCheckMark(listId,reminderID,value.equals("CHECKED")?1:0);
     }
     public ArrayList<ToDoListItem>getAllRemindersForList(String listID,boolean hideCompleted){
+        Cursor c = mSqlHelper.getAllReminderForThisList(listID,hideCompleted);
         ArrayList<ToDoListItem>todoList = new ArrayList<>();
-        fillArrayListWithRemindersForList(listID,hideCompleted,todoList);
+        fillArrayListWithRemindersForList(c,todoList);
         return todoList;
     }
     public void loadAllRemindersForList(String listID) {
-        fillArrayListWithRemindersForList(listID,mHideCompleted,mReminders);
+        Cursor c = mSqlHelper.getAllReminderForThisList(listID,mHideCompleted);
+        fillArrayListWithRemindersForList(c,mReminders);
     }
 
-    private void fillArrayListWithRemindersForList(String listID,boolean hideCompleted, ArrayList<ToDoListItem> toDoListToFill){
-        Cursor c = mSqlHelper.getAllReminderForThisList(listID,hideCompleted);
+    public void loadAllSearchResults(String query){
+        Cursor c = mSqlHelper.searchReminders(query);
+        fillArrayListWithRemindersForList(c,mReminders);
+
+    }
+    private void fillArrayListWithRemindersForList(Cursor c, ArrayList<ToDoListItem> toDoListToFill){
+
         toDoListToFill.clear();
         c.moveToFirst();
         while (c.isAfterLast() == false) {
@@ -168,6 +175,8 @@ public class ToDoListItemManager{
             String reminder_id = c.getString(colIndex);
             colIndex = c.getColumnIndex(DbSchema.reminders_table.cols.REMINDER_TEXT);
             String text = c.getString(colIndex);
+            colIndex=c.getColumnIndex(DbSchema.reminders_table.cols.LIST_ID);
+            String listID = c.getString(colIndex);
             ToDoListItem listItem = new ToDoListItem(text, reminder_id);
             listItem.setListId(listID);
             colIndex=c.getColumnIndex(DbSchema.reminders_table.cols.IS_COMPLETED);
