@@ -1,11 +1,9 @@
 package com.imaginat.androidtodolist.managers;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.imaginat.androidtodolist.data.DbSchema;
 import com.imaginat.androidtodolist.data.ToDoListSQLHelper;
 import com.imaginat.androidtodolist.models.ListTitle;
 import com.imaginat.androidtodolist.models.ToDoListItem;
@@ -15,6 +13,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+
+import rx.Observer;
 
 /**
  * Created by nat on 5/10/16.
@@ -68,8 +68,27 @@ public class ListManager implements TheDeleter.IUseTheDeleter {
 
     }
 
+
     public void updateAllListTitles() {
-        Cursor c = mSqlHelper.getAllListNames();
+        mSqlHelper.getAllListNames2().subscribe(new Observer<ArrayList<ListTitle>>() {
+            @Override
+            public void onCompleted() {
+                Log.d(TAG,"updateAllListTitles onCompleted");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG,"updateAllListTitles onError");
+            }
+
+            @Override
+            public void onNext(ArrayList<ListTitle> listTitles) {
+                mListTitles=listTitles;
+            }
+        });
+
+
+       /* Cursor c = mSqlHelper.getAllListNames();
         mListTitles.clear();
         c.moveToFirst();
         while (c.isAfterLast() == false) {
@@ -84,7 +103,7 @@ public class ListManager implements TheDeleter.IUseTheDeleter {
             lt.setIcon(icon);
             mListTitles.add(lt);
             c.moveToNext();
-        }
+        }*/
     }
 
     public void readListJSON(JSONArray allListsJSON, JSONArray allReminders, Context context) {

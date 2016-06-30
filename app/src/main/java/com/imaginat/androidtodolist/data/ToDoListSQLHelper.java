@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import rx.Observable;
+
 /**
  * Created by nat on 5/10/16.
  */
@@ -154,6 +156,39 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
 //        return c;
     }
 
+    public Observable<ArrayList<ListTitle>> getAllListNames2(){
+        return Observable.create(subscriber->{
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor c = db.query(DbSchema.lists_table.NAME, //table
+                    DbSchema.lists_table.ALL_COLUMNS, //columns
+                    null,//select
+                    null,//selection args
+                    null,//group
+                    null,//having
+                    null,//order
+                    null);//limit
+            c.moveToFirst();
+
+            ArrayList<ListTitle>listTitles = new ArrayList<ListTitle>();
+            while (c.isAfterLast() == false) {
+                int colIndex = c.getColumnIndex(DbSchema.lists_table.cols.LIST_ID);
+                int list_id = c.getInt(colIndex);
+                colIndex = c.getColumnIndex(DbSchema.lists_table.cols.LIST_TITLE);
+                String title = c.getString(colIndex);
+                int icon = c.getInt(c.getColumnIndex(DbSchema.lists_table.cols.LIST_ICON));
+                ListTitle lt = new ListTitle();
+                lt.setText(title);
+                lt.setList_id(Integer.toString(list_id));
+                lt.setIcon(icon);
+                listTitles.add(lt);
+                c.moveToNext();
+            }
+            subscriber.onNext(listTitles);
+            subscriber.onCompleted();
+        });
+
+
+    }
     public Cursor getAllListNames(){
         Log.d(TAG,"inside getAllListNames()");
         SQLiteDatabase db = this.getReadableDatabase();

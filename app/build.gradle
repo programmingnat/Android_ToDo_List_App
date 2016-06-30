@@ -1,9 +1,18 @@
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
 
+repositories {
+    mavenCentral()
+    maven { url "https://github.com/alter-ego/advanced-android-logger/raw/develop/releases/" }
+}
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
     defaultConfig {
         applicationId "com.imaginat.androidtodolist"
         minSdkVersion 16
