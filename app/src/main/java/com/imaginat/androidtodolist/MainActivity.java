@@ -405,9 +405,7 @@ public class MainActivity extends AppCompatActivity
             AlarmsTriggeredListFragment fragment = new AlarmsTriggeredListFragment();
             ArrayList<String> selectedTags = intent.getStringArrayListExtra(Constants.LIST_OF_TRIGGERED);
             fragment.setSelectedTags(selectedTags);
-            //fragment.setIGeoOptions(mIGeoOptions);
-            //Log.d(TAG,"List id is "+data);
-            //fragment.setListId(data);
+
             fragmentTransaction.replace(R.id.my_frame, fragment);
             fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_NONE);
             fragmentTransaction.addToBackStack(null);

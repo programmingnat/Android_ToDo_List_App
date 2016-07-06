@@ -6,6 +6,5 @@ package com.imaginat.androidtodolist.models;
  * but classes that implment this class can have a different display method
  */
 public interface IListItem {
-    public String getText();
-    public void setText(String s);
+
 }

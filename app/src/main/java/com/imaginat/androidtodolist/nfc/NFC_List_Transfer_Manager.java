@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.imaginat.androidtodolist.managers.ListManager;
 import com.imaginat.androidtodolist.managers.ToDoListItemManager;
+import com.imaginat.androidtodolist.models.list.ListOfListTitles;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -170,14 +171,18 @@ public class NFC_List_Transfer_Manager  implements
 
                 //updateTextViews();
                 ListManager listManager = ListManager.getInstance(activity);
+                ListOfListTitles listOfListTitles = new ListOfListTitles(activity);
                 ToDoListItemManager toDoListItemManager = ToDoListItemManager.getInstance(activity);
+
                 int total=messagesReceivedArray.size();
+
                 String listID=null;
                 for(int i=0;i<total;i++){
                     String s = messagesReceivedArray.get(i);
                     Log.d(TAG,s);
                     if(i==0){
                         listID=listManager.createNewList(s,0);
+
                         continue;
                     }
                     toDoListItemManager.createNewReminder(listID,s);

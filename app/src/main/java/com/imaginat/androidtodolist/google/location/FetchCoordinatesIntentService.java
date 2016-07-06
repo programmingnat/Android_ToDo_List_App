@@ -146,27 +146,3 @@ public class FetchCoordinatesIntentService extends IntentService{
 }
 
 
-/*
-
-        Geocoder coder = new Geocoder(c);
-        List<Address> address;
-        Barcode.GeoPoint p1 = null;
-        Location l=null;
-        try {
-            address = coder.getFromLocationName(strAddress,5);
-            if (address==null) {
-                return null;
-            }
-            Address location=address.get(0);
-
-            l = new Location("");
-            l.setLatitude(location.getLatitude());
-            l.setLongitude(location.getLongitude());
-
-
-
-        }catch(Exception ex){
-            ex.printStackTrace();
-        }
-        return l;
- */

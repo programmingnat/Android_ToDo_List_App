@@ -15,8 +15,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import rx.Observable;
-
 /**
  * Created by nat on 5/10/16.
  */
@@ -106,6 +104,8 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
         return Long.toString(id);
     }
 
+
+
     public void insertMultipleListValues(ArrayList<ListTitle>listTitles){
         String sql = "INSERT INTO "+DbSchema.lists_table.NAME+
                 "(\'"+DbSchema.lists_table.cols.LIST_ID+"\',\'"+DbSchema.lists_table.cols.LIST_TITLE+"\') VALUES ";
@@ -156,8 +156,8 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
 //        return c;
     }
 
-    public Observable<ArrayList<ListTitle>> getAllListNames2(){
-        return Observable.create(subscriber->{
+    public ArrayList<ListTitle> getAllListNames2(){
+
             SQLiteDatabase db = this.getReadableDatabase();
             Cursor c = db.query(DbSchema.lists_table.NAME, //table
                     DbSchema.lists_table.ALL_COLUMNS, //columns
@@ -183,9 +183,9 @@ public class ToDoListSQLHelper extends SQLiteOpenHelper{
                 listTitles.add(lt);
                 c.moveToNext();
             }
-            subscriber.onNext(listTitles);
-            subscriber.onCompleted();
-        });
+        return listTitles;
+
+
 
 
     }

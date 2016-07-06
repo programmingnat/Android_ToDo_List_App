@@ -25,13 +25,16 @@ import com.imaginat.androidtodolist.R;
 import com.imaginat.androidtodolist.customlayouts.IChangeToolbar;
 import com.imaginat.androidtodolist.customlayouts.MainListDialogOptions;
 import com.imaginat.androidtodolist.customlayouts.alarm.ToDoListOptionsFragment;
-import com.imaginat.androidtodolist.managers.ListManager;
 import com.imaginat.androidtodolist.managers.TheDeleter;
 import com.imaginat.androidtodolist.managers.ToDoListItemManager;
 import com.imaginat.androidtodolist.models.ListTitle;
+import com.imaginat.androidtodolist.models.list.ListOfListTitles;
 import com.imaginat.androidtodolist.nfc.NFC_List_Transfer_Manager;
 
 import java.util.ArrayList;
+
+import rx.Observer;
+import rx.Subscriber;
 
 /**
  * Created by nat on 4/26/16.
@@ -40,6 +43,8 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
         MainListDialogOptions.IUseMainListDialogOptions,TheDeleter.IUseTheDeleter {
 
     private static String TAG= MainListFragment.class.getName();
+
+    ListOfListTitles mListOfListTitles;
 
     private boolean isLongClickOn=false;
 
@@ -66,17 +71,35 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View  view= inflater.inflate(R.layout.main_list_fragment, container, false);
+        mListOfListTitles = new ListOfListTitles(getContext());
+
+        mListOfListTitles.getAllListItems().subscribe(new Observer<ArrayList<ListTitle>>() {
+            @Override
+            public void onCompleted() {
+                Log.d(TAG,"updateAllListTitles onCompleted");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG,"updateAllListTitles onError");
+            }
+
+            @Override
+            public void onNext(ArrayList<ListTitle> listTitles) {
+
+                mAdapter = new ReminderListRecycleAdapter((Context)getActivity(),mReminders=listTitles,MainListFragment.this);
+                RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.theRecyclerView);
+                recyclerView.setAdapter(mAdapter);
+                int orientation= GridLayoutManager.VERTICAL;
+                boolean reverseLayout=false;
+                recyclerView.setLayoutManager(new GridLayoutManager(getContext(),2,orientation,reverseLayout));
+                ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(getContext(),R.dimen.item_offset );
+                recyclerView.addItemDecoration(itemDecoration);
+            }
+        });
 
 
-        mAdapter = new ReminderListRecycleAdapter((Context)getActivity(),mReminders=new ArrayList<ListTitle>(),this);
-        RecyclerView recyclerView = (RecyclerView)view.findViewById(R.id.theRecyclerView);
-        recyclerView.setAdapter(mAdapter);
 
-        int orientation=GridLayoutManager.VERTICAL;
-        boolean reverseLayout=false;
-        recyclerView.setLayoutManager(new GridLayoutManager(getContext(),2,orientation,reverseLayout));
-        ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(getContext(),R.dimen.item_offset );
-        recyclerView.addItemDecoration(itemDecoration);
 
         //save color for later
         MainActivity mainActivity = (MainActivity)getActivity();
@@ -117,12 +140,29 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
     @Override
     public void onResume() {
         super.onResume();
-        ListManager listManager = ListManager.getInstance(getContext());
-        listManager.updateAllListTitles();
-        ArrayList<ListTitle>titles =listManager.getListTitles();
-        mAdapter.setToRemindersArray(titles);
-        mAdapter.notifyDataSetChanged();
-        mIChangeToolbar.onUpdateTitle("RemindME");
+        mListOfListTitles.getAllListItems().subscribe(new Subscriber<ArrayList<ListTitle>>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(ArrayList<ListTitle> listTitles) {
+                mAdapter.setToRemindersArray(listTitles);
+                mAdapter.notifyDataSetChanged();
+                mIChangeToolbar.onUpdateTitle("RemindME");
+            }
+        });
+
+        //ListManager listManager = ListManager.getInstance(getContext());
+        //listManager.updateAllListTitles();
+        //ArrayList<ListTitle>titles =listManager.getListTitles();
+
 
 
     }
@@ -153,7 +193,7 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ActionListFragment alf = new ActionListFragment();
         alf.setIGeoOptions(mIGeoOptions);
-        Log.d(TAG,"List id is "+data);
+
         alf.setListId(data);
             ft.replace(R.id.my_frame, alf);
             ft.setTransition(FragmentTransaction.TRANSIT_NONE);
@@ -242,11 +282,27 @@ public class MainListFragment extends Fragment implements ReminderListRecycleAda
     public void deletionCompleted(boolean result, String s) {
         Toast.makeText(getContext(),"Deletion is complete",Toast.LENGTH_SHORT).show();
 
-        ListManager listManager = ListManager.getInstance(getContext());
-        listManager.updateAllListTitles();
-        ArrayList<ListTitle>titles =listManager.getListTitles();
-        mAdapter.setToRemindersArray(titles);
-        mAdapter.notifyDataSetChanged();
+        //ListManager listManager = ListManager.getInstance(getContext());
+        //listManager.updateAllListTitles();
+        mListOfListTitles.getAllListItems().subscribe(new Subscriber<ArrayList<ListTitle>>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(ArrayList<ListTitle> listTitles) {
+                mAdapter.setToRemindersArray(listTitles);
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+       // ArrayList<ListTitle>titles =listManager.getListTitles();
+
     }
 
 

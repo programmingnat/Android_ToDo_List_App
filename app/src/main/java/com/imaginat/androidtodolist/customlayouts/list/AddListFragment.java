@@ -19,7 +19,9 @@ import android.widget.EditText;
 
 import com.imaginat.androidtodolist.MainActivity;
 import com.imaginat.androidtodolist.R;
-import com.imaginat.androidtodolist.managers.ListManager;
+import com.imaginat.androidtodolist.models.list.ListOfListTitles;
+
+import rx.Subscriber;
 
 /**
  * Created by nat on 5/1/16.
@@ -49,8 +51,25 @@ public class AddListFragment extends Fragment {
                 }
 
                 String newListName = mEditTextOfListName.getText().toString();
-                ListManager listManager = ListManager.getInstance(getContext());
-                listManager.createNewList(newListName,selectedIcon);
+                //ListManager listManager = ListManager.getInstance(getContext());
+                //listManager.createNewList(newListName,selectedIcon);
+                ListOfListTitles listOfListTitles = new ListOfListTitles(getContext());
+                listOfListTitles.createNewList(newListName,selectedIcon).subscribe(new Subscriber<String>() {
+                    @Override
+                    public void onCompleted() {
+                        Log.d(TAG,"completed create new list");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.d(TAG,"error creating new list");
+                    }
+
+                    @Override
+                    public void onNext(String s) {
+                        Log.d(TAG,"create new list with id "+s);
+                    }
+                });
                 getFragmentManager().popBackStackImmediate();
             }
         });

@@ -9,7 +9,7 @@ import org.json.JSONObject;
  * Created by nat on 5/1/16.
  * the actual items in the list
  */
-public class ToDoListItem extends AListItem {//implements IListItem {
+public class ToDoListItem extends AListItem {
 
     private String mText;
     private String mReminder_id;

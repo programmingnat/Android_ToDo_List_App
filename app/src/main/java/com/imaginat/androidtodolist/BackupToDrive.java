@@ -29,11 +29,12 @@ import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.query.Filters;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.drive.query.SearchableField;
+import com.imaginat.androidtodolist.google.drive.ApiClientAsyncTask;
 import com.imaginat.androidtodolist.managers.ListManager;
+import com.imaginat.androidtodolist.managers.ToDoListItemManager;
 import com.imaginat.androidtodolist.models.ListTitle;
 import com.imaginat.androidtodolist.models.ToDoListItem;
-import com.imaginat.androidtodolist.managers.ToDoListItemManager;
-import com.imaginat.androidtodolist.google.drive.ApiClientAsyncTask;
+import com.imaginat.androidtodolist.models.list.ListOfListTitles;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,17 +47,26 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func0;
+import rx.schedulers.Schedulers;
+
 public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     protected static final int REQUEST_CODE_RESOLUTION = 1;
-    protected static final int RESOLVE_CONNECTION_REQUEST_CODE=2;
-    protected static final int COMPLETE_AUTHORIZATION_REQUEST_CODE=3;
-    private DriveFile driveFileID=null;
+    protected static final int RESOLVE_CONNECTION_REQUEST_CODE = 2;
+    protected static final int COMPLETE_AUTHORIZATION_REQUEST_CODE = 3;
+    private DriveFile driveFileID = null;
 
     GoogleApiClient mGoogleApiClient;
-    boolean isClientConnected=false;
+    boolean isClientConnected = false;
+    ListOfListTitles mListOfListTitles;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,30 +81,31 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
                 .addOnConnectionFailedListener(this)
                 .build();
 
+        mListOfListTitles = new ListOfListTitles(this);
 
-        Button createButton = (Button)findViewById(R.id.createFileOnDrive);
-        if(createButton!=null) {
+        Button createButton = (Button) findViewById(R.id.createFileOnDrive);
+        if (createButton != null) {
             createButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(isClientConnected) {
+                    if (isClientConnected) {
                         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                                 .setResultCallback(BackupToDrive.this.driveContentsCallback);
-                    }else{
-                        Toast.makeText(BackupToDrive.this,"client is not connected",Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(BackupToDrive.this, "client is not connected", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
         }
-        Button findFileButton = (Button)findViewById(R.id.FindFileOnDrive);
-        if(findFileButton!=null) {
+        Button findFileButton = (Button) findViewById(R.id.FindFileOnDrive);
+        if (findFileButton != null) {
             findFileButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (isClientConnected) {
                         Query query = new Query.Builder()
                                 .addFilter(Filters.eq(SearchableField.MIME_TYPE, "text/plain"))
-                                .addFilter(Filters.eq(SearchableField.TITLE,"backupRemindeMe.txt"))
+                                .addFilter(Filters.eq(SearchableField.TITLE, "backupRemindeMe.txt"))
                                 .build();
                         Drive.DriveApi.query(mGoogleApiClient, query)
                                 .setResultCallback(metadataCallback);
@@ -104,24 +115,44 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
                 }
             });
         }
-        Button updateFileButton = (Button)findViewById(R.id.UpdateFileODrive);
-        if(updateFileButton!=null) {
+        Button updateFileButton = (Button) findViewById(R.id.UpdateFileODrive);
+        if (updateFileButton != null) {
             updateFileButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (isClientConnected) {
                         // Drive.DriveApi.newDriveContents(mGoogleApiClient)
                         //       .setResultCallback(driveContentsCallback);
-                        EditContentsAsyncTask updateFile = new EditContentsAsyncTask(BackupToDrive.this);
-                        updateFile.execute(driveFileID);
+                        //EditContentsAsyncTask updateFile = new EditContentsAsyncTask(BackupToDrive.this);
+                        //updateFile.execute(driveFileID);
+                        writeToGoogleDrive()
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Subscriber<Boolean>() {
+                            @Override
+                            public void onCompleted() {
+                                Log.d(TAG," onCompleted");
+                            }
+
+                            @Override
+                            public void onError(Throwable e) {
+                                Log.d(TAG," onError "+e.toString());
+                            }
+
+                            @Override
+                            public void onNext(Boolean aBoolean) {
+                                Log.d(TAG,"onNExt out==should be big celebration");
+                                //Toast.makeText(BackupToDrive,)
+                            }
+                        });
                     } else {
                         Toast.makeText(BackupToDrive.this, "client is not connected", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
         }
-        Button readFileButton = (Button)findViewById(R.id.ReadFileODrive);
-        if(readFileButton!=null) {
+        Button readFileButton = (Button) findViewById(R.id.ReadFileODrive);
+        if (readFileButton != null) {
             readFileButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -130,6 +161,7 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
                         //       .setResultCallback(driveContentsCallback);
                         RetrieveDriveFileContentsAsyncTask retrieve = new RetrieveDriveFileContentsAsyncTask(BackupToDrive.this);
                         retrieve.execute(driveFileID.getDriveId());
+
                     } else {
                         Toast.makeText(BackupToDrive.this, "client is not connected", Toast.LENGTH_SHORT).show();
                     }
@@ -149,16 +181,16 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
                         showMessage("Problem while retrieving results");
                         return;
                     }
-                    MetadataBuffer mdBuffer=result.getMetadataBuffer();
+                    MetadataBuffer mdBuffer = result.getMetadataBuffer();
 
                     try {
                         Iterator<Metadata> iterator = mdBuffer.iterator();
-                        Metadata m=null;
-                        int counter=0;
-                        while(iterator.hasNext()==true){
-                            m=iterator.next();
-                            Log.d(TAG,counter+" FOUND: "+m.getOriginalFilename()+" "+m.getDriveId());
-                            BackupToDrive.this.driveFileID=m.getDriveId().asDriveFile();
+                        Metadata m = null;
+                        int counter = 0;
+                        while (iterator.hasNext() == true) {
+                            m = iterator.next();
+                            Log.d(TAG, counter + " FOUND: " + m.getOriginalFilename() + " " + m.getDriveId());
+                            BackupToDrive.this.driveFileID = m.getDriveId().asDriveFile();
                             counter++;
                         }
 
@@ -167,7 +199,7 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
 //                           Log.d(TAG,"FOUND: "+m.getOriginalFilename()+" "+m.getDriveId());
 //                           m = iterator.next();
 //                        }
-                    }catch(Exception ex){
+                    } catch (Exception ex) {
                         ex.printStackTrace();
                     }
                 }
@@ -203,9 +235,10 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
                     }
                     showMessage("Created a file in App Folder: "
                             + result.getDriveFile().getDriveId());
-                    Log.d(TAG,"Drive id: "+result.getDriveFile().getDriveId());
+                    Log.d(TAG, "Drive id: " + result.getDriveFile().getDriveId());
                 }
             };
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -214,20 +247,20 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.d(TAG,"on connected");
-        isClientConnected=true;
-        Toast.makeText(this,"CONNECTION MADE",Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "on connected");
+        isClientConnected = true;
+        Toast.makeText(this, "CONNECTION MADE", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-        Log.d(TAG,"connection suspended");
+        Log.d(TAG, "connection suspended");
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(TAG,"Connection failed");
-        Toast.makeText(this,"CONNECTION NOT MADE",Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Connection failed");
+        Toast.makeText(this, "CONNECTION NOT MADE", Toast.LENGTH_SHORT).show();
         if (connectionResult.hasResolution()) {
             try {
                 connectionResult.startResolutionForResult(this, RESOLVE_CONNECTION_REQUEST_CODE);
@@ -245,95 +278,91 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
             case COMPLETE_AUTHORIZATION_REQUEST_CODE:
                 if (resultCode == Activity.RESULT_OK) {
                     // App is authorized, you can go back to sending the API request
-                    Log.d(TAG,"USER ACCOUNT AUTHORIZED");
+                    Log.d(TAG, "USER ACCOUNT AUTHORIZED");
                 } else {
                     // User denied access, show him the account chooser again
-                    Log.d(TAG,"USER ACCOUNT DENIED");
+                    Log.d(TAG, "USER ACCOUNT DENIED");
                 }
                 break;
         }
     }
 
 
-
-    public class EditContentsAsyncTask extends ApiClientAsyncTask<DriveFile, Void, Boolean> {
-
-        public EditContentsAsyncTask(Context context) {
-            super(context);
-        }
-
-        @Override
-        protected Boolean doInBackgroundConnected(DriveFile... args) {
-            DriveFile file = args[0];
-            try {
-                DriveApi.DriveContentsResult driveContentsResult = file.open(
-                        getGoogleApiClient(), DriveFile.MODE_WRITE_ONLY, null).await();
-                if (!driveContentsResult.getStatus().isSuccess()) {
-                    return false;
-                }
-
-                ListManager listManager = ListManager.getInstance(BackupToDrive.this);
-                ToDoListItemManager todoListItemManager = ToDoListItemManager.getInstance(BackupToDrive.this);
-
-                ArrayList<ListTitle>allListTitles = listManager.getListTitles();
+    public Boolean writeToDrive(DriveFile file) throws IOException {
 
 
-                JSONArray listTitlesJsonArray = new JSONArray();
-                JSONObject todoListBackUpJSON = new JSONObject();
-
-                JSONArray allListReminders = new JSONArray();
-
-                try{
-                    //Save all the titles to the drive
-                    for(ListTitle title:allListTitles){
-                        listTitlesJsonArray.put(title.toJSON());
-
-                        ArrayList<ToDoListItem>reminders =
-                                todoListItemManager.getAllRemindersForList(title.getList_id(),false);
-                        Log.d(TAG,title.getList_id()+"is the list_id");
-                        for(ToDoListItem reminder:reminders){
-                            if(reminder!=null) {
-                                allListReminders.put(reminder.toJSON());
-                            }
-                        }
-                    }
-                    todoListBackUpJSON.put("allTitles",listTitlesJsonArray);
-                    todoListBackUpJSON.put("allItems", allListReminders);
-
-                    //Save all the reminders
-
-
-
-
-
-                }catch(JSONException jex){
-                    jex.printStackTrace();
-                }
-
-
-                DriveContents driveContents = driveContentsResult.getDriveContents();
-                OutputStream outputStream = driveContents.getOutputStream();
-                outputStream.write(todoListBackUpJSON.toString().getBytes());
-                com.google.android.gms.common.api.Status status =
-                        driveContents.commit(getGoogleApiClient(), null).await();
-                return status.getStatus().isSuccess();
-            } catch (IOException e) {
-                Log.e(TAG, "IOException while appending to the output stream", e);
-            }
+        DriveApi.DriveContentsResult driveContentsResult = file.open(
+                mGoogleApiClient, DriveFile.MODE_WRITE_ONLY, null).await();
+        if (!driveContentsResult.getStatus().isSuccess()) {
             return false;
         }
 
-        @Override
-        protected void onPostExecute(Boolean result) {
-            if (!result) {
-                showMessage("Error while editing contents");
-                Log.d(TAG,"Error edited contents");
-                return;
+        ListManager listManager = ListManager.getInstance(BackupToDrive.this);
+        ToDoListItemManager todoListItemManager = ToDoListItemManager.getInstance(BackupToDrive.this);
+        listManager.updateAllListTitles();
+        ListOfListTitles listOfListTitles = new ListOfListTitles(BackupToDrive.this);
+
+        ArrayList<ListTitle> allListTitles = listManager.getListTitles();
+        Log.d(TAG, "All list titles length " + allListTitles.size());
+
+        JSONArray listTitlesJsonArray = new JSONArray();
+        JSONObject todoListBackUpJSON = new JSONObject();
+
+        JSONArray allListReminders = new JSONArray();
+
+        try {
+            //Save all the titles to the drive
+            for (ListTitle title : allListTitles) {
+                Log.d(TAG, "title " + title);
+                listTitlesJsonArray.put(title.toJSON());
+
+                ArrayList<ToDoListItem> reminders =
+                        todoListItemManager.getAllRemindersForList(title.getList_id(), false);
+                Log.d(TAG, title.getList_id() + "is the list_id");
+                for (ToDoListItem reminder : reminders) {
+                    if (reminder != null) {
+                        allListReminders.put(reminder.toJSON());
+                    }
+                }
             }
-            showMessage("Successfully edited contents");
-            Log.d(TAG,"Successfully edited contents");
+            todoListBackUpJSON.put("allTitles", listTitlesJsonArray);
+            todoListBackUpJSON.put("allItems", allListReminders);
+
+            //Save all the reminders
+
+
+        } catch (JSONException jex) {
+            jex.printStackTrace();
         }
+
+
+        DriveContents driveContents = driveContentsResult.getDriveContents();
+        OutputStream outputStream = driveContents.getOutputStream();
+        outputStream.write(todoListBackUpJSON.toString().getBytes());
+        com.google.android.gms.common.api.Status status =
+                driveContents.commit(mGoogleApiClient, null).await();
+
+        return true;
+
     }
+
+    public Observable<Boolean> writeToGoogleDrive(){
+        return Observable.defer(new Func0<Observable<Boolean>>() {
+            @Override
+            public Observable<Boolean> call() {
+                try{
+                    return Observable.just(BackupToDrive.this.writeToDrive(driveFileID));
+                }catch(IOException ex){
+                    return null;
+                }
+
+            }
+        });
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     final private class RetrieveDriveFileContentsAsyncTask
             extends ApiClientAsyncTask<DriveId, Boolean, String> {
@@ -345,7 +374,7 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
         @Override
         protected String doInBackgroundConnected(DriveId... params) {
             String contents = null;
-            Log.d(TAG,"inside doInBackground with "+params[0]);
+            Log.d(TAG, "inside doInBackground with " + params[0]);
             DriveFile file = params[0].asDriveFile();
             DriveApi.DriveContentsResult driveContentsResult =
                     file.open(getGoogleApiClient(), DriveFile.MODE_READ_ONLY, null).await();
@@ -381,13 +410,13 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
             try {
                 JSONObject rootJSON = new JSONObject(result);
                 JSONArray allTitlesJSON = rootJSON.getJSONArray("allTitles");
-                JSONArray allItemsJSON=rootJSON.getJSONArray("allItems");
+                JSONArray allItemsJSON = rootJSON.getJSONArray("allItems");
 
                 ListManager listManager = ListManager.getInstance(BackupToDrive.this);
-                listManager.readListJSON(allTitlesJSON,allItemsJSON,BackupToDrive.this);
+                listManager.readListJSON(allTitlesJSON, allItemsJSON, BackupToDrive.this);
 
 
-            }catch(JSONException jse){
+            } catch (JSONException jse) {
 
             }
 
@@ -399,7 +428,6 @@ public class BackupToDrive extends AppCompatActivity implements GoogleApiClient.
     public void showMessage(String message) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
-
 
 
 }
